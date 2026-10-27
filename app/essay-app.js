@@ -95,13 +95,12 @@
           '<button id="essayLibraryBtn" class="essay-btn hidden">← 申论列表</button>' +
           '<button id="essayPauseBtn" class="essay-btn hidden">暂停</button>' +
           '<button id="essaySubmitBtn" class="essay-btn danger hidden">交卷</button>' +
-          '<button id="essayImportBtn" class="essay-btn primary">＋ 导入申论 PDF</button>' +
           '<button id="essayCloseBtn" class="essay-btn ghost">关闭</button>' +
         '</div>' +
       '</header>' +
       '<main id="essayLibraryView" class="essay-library">' +
         '<div class="essay-library-head"><div><h1>申论</h1><p>导入申论真题/材料 PDF → 配置题目与分值 → 左侧阅读材料、右侧长文本作答 → 自动保存版本 → 导出 ChatGPT 批改包 → 导入评分结果。所有数据保存在本地。</p></div>' +
-        '<div class="essay-actions"><button id="essayAddBtn" class="essay-btn primary">＋ 导入申论 PDF</button><input id="essayPdfInput" type="file" accept="application/pdf,.pdf" class="hidden"></div></div>' +
+        '<div class="essay-actions"><button id="essayAddBtn" class="essay-btn primary">＋ 导入申论 PDF</button></div></div>' +
         '<div id="essayCards" class="essay-cards"></div>' +
       '</main>' +
       '<main id="essaySessionView" class="essay-session hidden">' +
@@ -137,7 +136,6 @@
     $('essayResultLibrary').addEventListener('click', showLibrary);
     $('essayRetrySaveBtn').addEventListener('click', function () { saveDraftNow({ force: true }); });
     $('essayAddBtn').addEventListener('click', function () { $('essayPdfFileInput').click(); });
-    $('essayImportBtn').addEventListener('click', function () { $('essayPdfFileInput').click(); });
     $('essayPdfFileInput').addEventListener('change', onPdfSelected);
     $('essayPrevPage').addEventListener('click', function () { changePage(-1); });
     $('essayNextPage').addEventListener('click', function () { changePage(1); });
@@ -249,6 +247,7 @@
   }
 
   async function showLibrary() {
+      var et = document.querySelector('.essay-top'); if (et) et.classList.add('hidden');
     state.view = 'library';
     state.exam = null;
     state.session = null;
@@ -262,8 +261,7 @@
     $('essayPauseBtn').classList.add('hidden');
     $('essaySubmitBtn').classList.add('hidden');
     $('essayLibraryBtn').classList.add('hidden');
-    $('essayImportBtn').classList.remove('hidden');
-    $('essaySaveStatus').textContent = '';
+        $('essaySaveStatus').textContent = '';
     var tt = $('essayTopTitle'); if (tt) tt.textContent = '申论 · 本地离线';
     await renderCards();
   }
@@ -350,7 +348,7 @@
       try {
         if (root.EssayDetect) {
           var extracted = await EssayDetect.extract(doc);
-          detection = EssayDetect.detect(extracted);
+          detection = EssayDetect.detect(extracted, { fileName: file.name });
         }
       } catch (e) { console.warn('申论文字识别失败，转为人工配置', e); }
       await doc.destroy();
@@ -376,8 +374,8 @@
     openModal('<h3>导入申论 PDF · 核对题目</h3>' +
       '<div class="hint">PDF 共 ' + pageCount + ' 页。' + summary + '识别不到的分值或字数会留空，请以原文为准补充，不会自动编造。</div>' +
       '<div class="row"><label>试卷名称<input id="essayCfgTitle" type="text" value="' + esc(defaultTitle) + '" style="min-width:300px"></label>' +
-      '<label>年份<input id="essayCfgYear" type="number" min="2000" max="2100" value="' + new Date().getFullYear() + '"></label>' +
-      '<label>考试类型<select id="essayCfgType"><option value="unknown">未识别/自定义</option><option value="gd">广东省考</option><option value="sz">深圳市考</option></select></label>' +
+      '<label>年份<input id="essayCfgYear" type="number" min="2000" max="2100" value="' + (detection.year || new Date().getFullYear()) + '"></label>' +
+      '<label>考试类型<select id="essayCfgType"><option value="unknown"' + ((detection.examType || 'unknown') === 'unknown' ? ' selected' : '') + '>未识别/自定义</option><option value="gd"' + (detection.examType === 'gd' ? ' selected' : '') + '>广东省考</option><option value="sz"' + (detection.examType === 'sz' ? ' selected' : '') + '>深圳市考</option></select></label>' +
       '<label>默认时长（分钟）<input id="essayCfgDuration" type="number" min="10" max="600" value="150"></label></div>' +
       '<div class="hint">题目列表（页码从 1 开始，需在 PDF 范围内；题型不确定请选“待确认/其他”）</div>' +
       '<table id="essayCfgTable"><thead><tr><th>题号</th><th>题型</th><th>分值</th><th>字数限制</th><th>题目所在页</th><th>题干</th><th></th></tr></thead><tbody id="essayCfgRows">' + rows.join('') + '</tbody></table>' +
@@ -419,7 +417,7 @@
       '<td><input class="c-score" type="number" min="1" value="' + sv + '" placeholder="原文分" style="width:70px"></td>' +
       '<td><input class="c-limit" type="number" min="50" value="' + lv + '" placeholder="原文字数" style="width:80px"></td>' +
       '<td><input class="c-page" type="number" min="1" max="' + pageCount + '" value="' + pv + '" style="width:70px"></td>' +
-      '<td><input class="c-title" type="text" value="' + esc(title) + '" placeholder="输入题目原文或要点" style="min-width:220px"></td>' +
+      '<td><textarea class="c-title" rows="3" placeholder="题干与作答要求原文" style="min-width:320px;min-height:66px">' + esc(title) + '</textarea></td>' +
       '<td><button class="essay-btn c-del" type="button">删除</button></td></tr>';
   }
 
@@ -520,6 +518,7 @@
   }
 
   async function enterSession(exam, session) {
+      var et = document.querySelector('.essay-top'); if (et) et.classList.remove('hidden');
     state.exam = exam;
     state.session = session;
     state.view = 'session';
@@ -538,8 +537,7 @@
     $('essayLibraryView').classList.add('hidden');
     $('essaySessionView').classList.remove('hidden');
     $('essayResultView').classList.add('hidden');
-    $('essayImportBtn').classList.add('hidden');
-    $('essayLibraryBtn').classList.remove('hidden');
+        $('essayLibraryBtn').classList.remove('hidden');
     $('essayTimer').classList.remove('hidden');
     $('essayPauseBtn').classList.remove('hidden');
     $('essaySubmitBtn').classList.remove('hidden');
@@ -928,6 +926,7 @@
   /* ---------------- 结果 / 批改 ---------------- */
 
   async function showResult(exam, session) {
+      var et = document.querySelector('.essay-top'); if (et) et.classList.add('hidden');
     state.exam = exam;
     state.session = session;
     state.view = 'result';
@@ -938,8 +937,7 @@
     $('essayTimer').classList.add('hidden');
     $('essayPauseBtn').classList.add('hidden');
     $('essaySubmitBtn').classList.add('hidden');
-    $('essayImportBtn').classList.add('hidden');
-    $('essayLibraryBtn').classList.add('hidden');
+        $('essayLibraryBtn').classList.add('hidden');
     var tt3 = $('essayTopTitle'); if (tt3) tt3.textContent = exam.title || '申论结果';
     var answers = (exam.prompts || []).map(function (p) {
       var d = session.drafts && session.drafts[p.id];

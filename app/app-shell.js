@@ -61,7 +61,7 @@
     'diagnosis-knowledge': ['知识点诊断', '薄弱知识点 · 标签'],
     'diagnosis-wrong': ['错题本与复测', '错题筛选 · 原题定位 · 复测'],
     'diagnosis-trends': ['历史趋势', '练习与复测变化'],
-    'diagnosis-logs': ['诊断日志', '手动学习记录'],
+    'diagnosis-logs': ['诊断日志', '诊断事件 · 分析结果'],
     'bank-questions': ['题库管理', '题目 · 标签 · 原题定位'],
     'bank-profiles': ['考试配置', '考试类型与评分规则'],
     'bank-quality': ['导入质量', '重复风险 · 题目质量']
@@ -224,7 +224,7 @@
   async function attachToc() {
     if (state.view !== 'module') state.returnView = state.view;
     hideModules(); hideBaseViews();
-    state.view = 'module'; state.currentModule = 'learn-textbooks';
+    state.view = 'module'; state.currentModule = 'toc-import';
     setPage('学习 · 教材目录导入', '选择 PDF · 核对目录 · 入库');
     setActive('learn-textbooks');
     document.body.classList.add('shell-mode'); document.body.classList.remove('shell-home');
@@ -233,7 +233,7 @@
   }
   function detachToc() {
     var el = $('tocRoot'); if (el) el.classList.add('hidden');
-    if (state.currentModule === 'learn-textbooks') { openModule('learn-textbooks', function () { if (root.LearningApp) LearningApp.open('textbooks'); }); }
+    if (state.currentModule === 'toc-import') { openModule('learn-textbooks', function () { if (root.LearningApp) LearningApp.open('textbooks'); }); }
   }
 
   function fmtTime(iso) {
@@ -254,14 +254,50 @@
         '<div class="data-card"><span>文件格式</span><b>ExamCard 完整备份</b><small>JSON · 含完整性校验 · 可跨同版本恢复</small></div></div>' +
         '<div class="data-sections"><div class="data-card data-section"><h2>导出完整备份</h2><p>生成一个包含全部本机数据的 JSON 文件。建议在更换电脑、重装软件或批量导入教材前保存。</p><button class="btn primary" id="dataExportBtn2">导出完整备份</button><div id="dataExportStatus" class="data-status"></div></div>' +
         '<div class="data-card data-section"><h2>从备份恢复</h2><p class="data-warn">恢复会覆盖当前本机的全部学习数据。请先导出当前数据，并确认备份文件来源可靠。</p><button class="btn danger" id="dataRestoreBtn2">选择备份文件并恢复</button><div id="dataRestoreStatus" class="data-status"></div></div></div>' +
-        '<div class="data-note">备份文件可能包含你的作答、草稿和学习记录，请妥善保管，不要上传到不可信位置。</div>';
+        '<div class="data-section data-clear"><h2>清空全部学习数据</h2><p>删除本机 ExamCard 管理的全部试卷、作答、申论、错题、教材/课程、学习计划、学习记录、诊断/OCR 草稿与历史。保留数据库结构、考试类型配置和许可证。操作不可撤销。</p><div class="data-clear-grid"><span>试卷/PDF/题目</span><span>行测会话/答案/成绩</span><span>申论/草稿/批改</span><span>错题/复测/诊断</span><span>教材/课程/计划</span><span>学习记录/OCR 草稿</span></div><button class="btn danger" id="dataClearAllBtn">清空全部学习数据…</button><div id="dataClearStatus" class="data-status"></div></div>' +
+         '<div class="data-note">备份文件可能包含你的作答、草稿和学习记录，请妥善保管，不要上传到不可信位置。</div>';
       var pick = function () { $('dataRestoreFile').click(); };
       $('dataExportBtn').addEventListener('click', exportData);
       $('dataExportBtn2').addEventListener('click', exportData);
       $('dataRestoreBtn').addEventListener('click', pick);
       $('dataRestoreBtn2').addEventListener('click', pick);
       $('dataRestoreFile').addEventListener('change', onRestoreFile);
+      if ($('dataClearAllBtn')) $('dataClearAllBtn').addEventListener('click', showClearAllDialog);
     }).catch(function (e) { box.innerHTML = '<div class="home-empty">读取备份状态失败：' + esc(e.message || e) + '</div>'; });
+  }
+  function clearCountRows(counts) {
+    return Object.keys(counts).sort().map(function (k) { return '<tr><td>' + esc(k) + '</td><td>' + esc(counts[k]) + '</td></tr>'; }).join('');
+  }
+  function clearCategories() {
+    return '<ul class="data-clear-list"><li>试卷库、试卷 PDF、题目、标准答案与导入记录</li><li>行测会话、作答、成绩、批改快照、错题与复测</li><li>申论试卷、材料、草稿、答案版本与批改报告</li><li>教材、章节、课程、学习计划、任务/阶段实际</li><li>手动学习记录、诊断数据、OCR 草稿与导入快照</li></ul>';
+  }
+  async function showClearAllDialog() {
+    if (!root.__GD_APP__ || !__GD_APP__.openModal) return;
+    var counts;
+    try { counts = await ExamBackup.getStoreCounts(); } catch (e) { counts = null; }
+    __GD_APP__.openModal('<h3>清空全部学习数据</h3><div class="modal-body"><p class="data-warn"><b>此操作会永久删除本机全部学习记录，且无法撤销。</b></p>' + clearCategories() + '<p>将保留：数据库结构（v5 / 22 表）、广东省考/深圳市考/自定义考试类型配置、软件资源与许可证。</p><p>软件外的 PDF、JSON、CSV 或备份文件不会被删除。</p>' + (counts ? '<details><summary>查看清空前各表数量</summary><table class="data-count-table"><thead><tr><th>数据表</th><th>条数</th></tr></thead><tbody>' + clearCountRows(counts) + '</tbody></table></details>' : '') + '</div><div class="modal-actions"><button class="btn" data-close>取消</button><button class="btn" id="dataClearBackup">先导出完整备份</button><button class="btn danger" id="dataClearContinue">继续</button></div>', 'mid');
+    if ($('dataClearBackup')) $('dataClearBackup').addEventListener('click', function () { exportData(); });
+    if ($('dataClearContinue')) $('dataClearContinue').addEventListener('click', function () { showClearConfirm(counts); });
+  }
+  function showClearConfirm(counts) {
+    __GD_APP__.openModal('<h3>二次确认：清空全部学习数据</h3><div class="modal-body"><p class="data-warn">这是不可撤销的操作。清空后试卷库、申论、学习记录、错题、诊断和 OCR 草稿都会为空。</p><p>请输入“<b>清空</b>”以确认：</p><input id="dataClearConfirmText" class="data-input" autocomplete="off" placeholder="输入 清空"><div id="dataClearConfirmStatus" class="data-status"></div></div><div class="modal-actions"><button class="btn" data-close>取消</button><button class="btn danger" id="dataClearDo" disabled>确认清空全部数据</button></div>', 'small');
+    var input = $('dataClearConfirmText'), btn = $('dataClearDo');
+    if (input) input.addEventListener('input', function () { if (btn) btn.disabled = input.value.trim() !== '清空'; });
+    if (btn) btn.addEventListener('click', async function () {
+      if (input.value.trim() !== '清空') return;
+      btn.disabled = true; btn.textContent = '正在清空…';
+      var st = $('dataClearConfirmStatus'); if (st) st.textContent = '正在清空全部学习数据，请勿关闭软件…';
+      try {
+        var before = await ExamBackup.getStoreCounts();
+        await ExamStore.clearUserData();
+        var after = await ExamBackup.getStoreCounts();
+        __GD_APP__.openModal('<h3>清空完成</h3><div class="modal-body"><p>全部用户学习数据已清空。保留考试类型配置与数据库结构。</p><details open><summary>清空前 / 后数量</summary><table class="data-count-table"><thead><tr><th>数据表</th><th>清空前</th><th>清空后</th></tr></thead><tbody>' + Object.keys(before).sort().map(function (k) { return '<tr><td>' + esc(k) + '</td><td>' + esc(before[k]) + '</td><td>' + esc(after[k] == null ? 0 : after[k]) + '</td></tr>'; }).join('') + '</tbody></table></details><p>请重新导入自己的 PDF/学习计划，或从备份恢复。</p></div><div class="modal-actions"><button class="btn primary" id="dataClearReload">重新载入应用</button></div>', 'mid');
+        if ($('dataClearReload')) $('dataClearReload').addEventListener('click', function () { location.reload(); });
+      } catch (e) {
+        btn.disabled = false; btn.textContent = '确认清空全部数据';
+        if (st) st.textContent = '清空失败：' + (e.message || e) + '。未报告成功；请重试或先导出备份。';
+      }
+    });
   }
   async function exportData() {
     var st = $('dataExportStatus'); if (st) st.textContent = '正在生成备份…';

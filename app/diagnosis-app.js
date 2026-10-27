@@ -20,31 +20,16 @@
     if ($('diagRoot')) return;
     var w = document.createElement('div');
     w.id = 'diagRoot'; w.className = 'diag-root hidden';
-    w.innerHTML =
-      '<header class="diag-top"><div class="diag-brand"><img src="assets/examcard-wordmark.png" alt="ExamCard"><span class="t">学习诊断</span></div>' +
-      '<div class="diag-title">只基于真实作答快照和手动标签；不虚构课程、能力分数或学习进度。</div>' +
-      '<div class="diag-actions"><button id="diagExport" class="diag-btn primary">导出诊断报告</button><button id="diagClose" class="diag-btn ghost">关闭</button></div></header>' +
-      '<nav class="diag-tabs">' + [['overview', '总览'], ['knowledge', '知识点'], ['wrong', '错题本'], ['trends', '历史趋势'], ['logs', '学习记录']].map(function (t) { return '<button class="diag-tab' + (t[0] === 'overview' ? ' active' : '') + '" data-tab="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</nav>' +
-      '<main id="diagBody" class="diag-body"></main><div id="diagModalRoot"></div>';
+    w.innerHTML = '<main id="diagBody" class="diag-body"></main><div id="diagModalRoot"></div>';
     document.body.appendChild(w);
-    $('diagClose').addEventListener('click', close);
-    $('diagExport').addEventListener('click', exportReport);
-    w.querySelectorAll('[data-tab]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        state.tab = b.getAttribute('data-tab');
-        w.querySelectorAll('[data-tab]').forEach(function (x) { x.classList.toggle('active', x === b); });
-        render();
-      });
-    });
     $('diagModalRoot').addEventListener('click', function (e) { if (e.target === $('diagModalRoot').firstElementChild) closeModal(); });
   }
-
   function open(tab) {
     if (typeof tab === 'string') state.tab = tab;
     if (!root.DiagnosisEngine || !root.DiagnosisStore) { toast('诊断模块未加载'); return; }
     var examView = $('examView');
     if (examView && !examView.classList.contains('hidden')) { toast('请先返回行测试卷库，再打开学习诊断'); return; }
-    buildRoot(); state.open = true; $('diagRoot').classList.remove('hidden'); document.querySelectorAll('.diag-tab').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tab') === state.tab); }); refresh();
+    buildRoot(); state.open = true; $('diagRoot').classList.remove('hidden'); refresh();
   }
   function close() { state.open = false; var r = $('diagRoot'); if (r) r.classList.add('hidden'); }
 
@@ -75,7 +60,7 @@
   function renderOverview() {
     var e = state.engine, o = e.overview;
     var notes = e.dataNotes.map(function (n) { return '<div class="diag-note">' + esc(n) + '</div>'; }).join('');
-    var html = '<div class="diag-grid">' +
+    var html = '<div class="diag-actions-row"><button id="diagExportOverview" class="diag-btn primary">导出诊断报告</button><span class="diag-note" style="margin:0">只导出真实作答与标签数据，不虚构学习时长。</span></div><div class="diag-grid">' +
       stat('练习次数', o.attemptCount, o.dateRange ? o.dateRange.from + ' ~ ' + o.dateRange.to : '暂无') +
       stat('作答题数', o.answered, '总记录 ' + o.questions) +
       stat('正确 / 错误', o.correct + ' / ' + o.incorrect, '正确率 ' + pct(o.accuracy)) +
@@ -102,6 +87,8 @@
     html += '<div class="diag-card"><h3>知识点表现</h3>' + (e.knowledge.length ? '<table class="diag-table"><thead><tr><th>知识点</th><th>题次</th><th>正确/错误</th><th>正确率</th><th>平均用时</th><th>会话数</th></tr></thead><tbody>' +
       e.knowledge.map(function (k) { return '<tr><td>' + esc(k.name) + (k.isUntagged ? ' <span class="diag-badge">未标注</span>' : '') + '</td><td>' + k.total + '</td><td>' + k.correct + ' / ' + k.incorrect + '</td><td>' + pct(k.accuracy) + '</td><td>' + sec(k.avgSeconds) + '</td><td>' + k.sessionCount + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="diag-empty">尚未建立知识点标签，或还没有带标签的作答。</div>') + '</div>';
     $('diagBody').innerHTML = html;
+    var ex = $('diagExportOverview');
+    if (ex) ex.addEventListener('click', exportReport);
   }
 
   function tagUsage(tagId) {
@@ -308,59 +295,45 @@
     $('diagBody').innerHTML = html;
   }
 
-  function renderLogs() {
-    var tags = state.tags || [];
-    var logs = state.logs || [];
-    var html = '<div class="diag-card"><h3>学习记录 <span class="diag-badge">手动填写；与软件自动练习记录分开展示</span></h3>' +
-      '<div class="diag-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr))">' +
-      '<div><label class="diag-note" style="margin:0">日期<input id="diagLogDate" type="date" class="diag-input" value="' + new Date().toISOString().slice(0, 10) + '"></label></div>' +
-      '<div><label class="diag-note" style="margin:0">学习时长（分钟）<input id="diagLogDuration" type="number" min="0" class="diag-input" style="width:100%"></label></div>' +
-      '<div><label class="diag-note" style="margin:0">完成题量<input id="diagLogQuestions" type="number" min="0" class="diag-input" style="width:100%"></label></div>' +
-      '<div><label class="diag-note" style="margin:0">正确题量<input id="diagLogCorrect" type="number" min="0" class="diag-input" style="width:100%"></label></div>' +
-      '<div><label class="diag-note" style="margin:0">知识点<select id="diagLogTag" class="diag-select">' + tags.map(function (t) { return '<option value="' + esc(t.id) + '">' + esc(t.name) + '</option>'; }).join('') + '</select></label></div>' +
-      '</div><div class="row" style="margin:8px 0"><label class="diag-note" style="margin:0;width:100%">学习内容<textarea id="diagLogContent" class="diag-textarea" placeholder="例如：资料分析速算练习"></textarea></label></div>' +
-      '<div class="row"><label class="diag-note" style="margin:0;width:100%">备注<textarea id="diagLogNote" class="diag-textarea" placeholder="可选"></textarea></label></div>' +
-      '<div class="diag-actions-row"><button id="diagAddLog" class="diag-btn primary">添加学习记录</button><button id="diagExportLogs" class="diag-btn">导出学习记录 JSON</button></div></div>';
-    html += '<div class="diag-card"><h3>记录列表（' + logs.length + '）</h3>' + (logs.length ? '<table class="diag-table"><thead><tr><th>日期</th><th>内容</th><th>时长</th><th>完成/正确</th><th>知识点</th><th>备注</th><th>操作</th></tr></thead><tbody>' +
-      logs.map(function (l) {
-        var tag = tags.filter(function (t) { return t.id === l.tagId; })[0];
-        return '<tr><td>' + esc(l.date) + '</td><td>' + esc(l.content) + '</td><td>' + (l.durationMin != null ? esc(l.durationMin) + ' 分钟' : '—') + '</td><td>' + esc(l.questions || 0) + ' / ' + esc(l.correct || 0) + '</td><td>' + esc(tag ? tag.name : '—') + '</td><td>' + esc(l.note || '') + '</td><td><button class="diag-btn" data-edit-log="' + esc(l.id) + '">编辑</button> <button class="diag-btn danger" data-del-log="' + esc(l.id) + '">删除</button></td></tr>';
-      }).join('') + '</tbody></table>' : '<div class="diag-empty">还没有手动学习记录。软件自动练习记录不计入此表。</div>') + '</div>';
-    $('diagBody').innerHTML = html;
-    $('diagAddLog').addEventListener('click', async function () {
-      try {
-        await DiagnosisStore.saveStudyLog({
-          date: $('diagLogDate').value, content: $('diagLogContent').value,
-          durationMin: $('diagLogDuration').value ? Number($('diagLogDuration').value) : null,
-          questions: $('diagLogQuestions').value ? Number($('diagLogQuestions').value) : 0,
-          correct: $('diagLogCorrect').value ? Number($('diagLogCorrect').value) : 0,
-          tagId: $('diagLogTag').value || null, note: $('diagLogNote').value
-        });
-        await refresh(); toast('学习记录已添加');
-      } catch (e) { toast(e.message || e); }
+  function diagnosisEvents() {
+    var events = [];
+    var attempts = (state.engine && state.engine.attempts) || [];
+    attempts.forEach(function (a) {
+      var s = (a.record && a.record.summary) || {};
+      events.push({
+        at: a.gradedAt || 0,
+        date: a.date || dateStr(a.gradedAt),
+        type: a.retest ? '错题复测诊断' : '行测练习诊断',
+        scope: a.exam && a.exam.name || '未命名试卷',
+        summary: '共 ' + (s.total == null ? '—' : s.total) + ' 题 · 正确 ' + (s.correct == null ? 0 : s.correct) + ' · 错误 ' + (s.incorrect == null ? 0 : s.incorrect) + ' · 正确率 ' + (s.accuracy == null ? '—' : s.accuracy + '%'),
+        sessionId: a.record && a.record.sessionId || ''
+      });
     });
-    $('diagExportLogs').addEventListener('click', function () { download('ExamCard_学习记录_' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(logs, null, 2)); });
-    $('diagBody').querySelectorAll('[data-del-log]').forEach(function (b) { b.addEventListener('click', function () { confirmModal('删除学习记录', '仅删除手动记录，不影响练习/成绩。', async function () { await DiagnosisStore.deleteStudyLog(b.getAttribute('data-del-log')); await refresh(); }); }); });
-    $('diagBody').querySelectorAll('[data-edit-log]').forEach(function (b) { b.addEventListener('click', function () { openLogModal(logs.filter(function (l) { return l.id === b.getAttribute('data-edit-log'); })[0]); }); });
+    var wrongs = (state.engine && state.engine.wrongs) || [];
+    wrongs.forEach(function (w) {
+      events.push({
+        at: w.lastWrongAt || 0,
+        date: w.lastWrongDate || dateStr(w.lastWrongAt),
+        type: '错题诊断',
+        scope: (w.examName || '未命名试卷') + ' · 第' + w.n + '题',
+        summary: '累计错误 ' + w.wrongCount + ' 次 · ' + (w.retestStatus === 'correct' ? '最近复测正确' : w.retestStatus === 'incorrect' ? '最近复测错误' : '尚未复测'),
+        sessionId: ''
+      });
+    });
+    events.sort(function (a, b) { return (b.at || 0) - (a.at || 0); });
+    return events;
   }
-
-  function openLogModal(log) {
-    log = log || {};
-    var tags = state.tags || [];
-    openModal('<h3>编辑学习记录</h3><div class="row"><label>日期<input id="diagELDate" type="date" class="diag-input" value="' + esc(log.date || new Date().toISOString().slice(0, 10)) + '"></label><label>时长分钟<input id="diagELDuration" type="number" min="0" class="diag-input" value="' + esc(log.durationMin || '') + '"></label><label>题量<input id="diagELQuestions" type="number" min="0" class="diag-input" value="' + esc(log.questions || 0) + '"></label><label>正确<input id="diagELCorrect" type="number" min="0" class="diag-input" value="' + esc(log.correct || 0) + '"></label></div>' +
-      '<div class="row"><label>内容<textarea id="diagELContent" class="diag-textarea">' + esc(log.content || '') + '</textarea></label><label>备注<textarea id="diagELNote" class="diag-textarea">' + esc(log.note || '') + '</textarea></label></div>' +
-      '<div class="row"><label>知识点<select id="diagELTag" class="diag-select">' + tags.map(function (t) { return '<option value="' + esc(t.id) + '"' + (log.tagId === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>'; }).join('') + '</select></label></div>' +
-      '<div class="actions"><button class="diag-btn" data-cancel>取消</button><button class="diag-btn primary" data-ok>保存</button></div>', true);
-    var r = $('diagModalRoot');
-    r.querySelector('[data-cancel]').addEventListener('click', closeModal);
-    r.querySelector('[data-ok]').addEventListener('click', async function () {
-      await DiagnosisStore.saveStudyLog(Object.assign({}, log, {
-        date: $('diagELDate').value, content: $('diagELContent').value,
-        durationMin: $('diagELDuration').value ? Number($('diagELDuration').value) : null,
-        questions: Number($('diagELQuestions').value) || 0, correct: Number($('diagELCorrect').value) || 0,
-        tagId: $('diagELTag').value || null, note: $('diagELNote').value
-      }));
-      closeModal(); await refresh(); toast('学习记录已保存');
+  function renderLogs() {
+    var events = diagnosisEvents();
+    var html = '<div class="diag-card"><div class="diag-actions-row"><div><h3 style="margin:0">诊断事件日志</h3><div class="diag-note" style="margin:4px 0 0">来自真实作答快照、批改结果与错题统计；不包含手动学习时长表单。</div></div><button id="diagExportEvents" class="diag-btn">导出诊断日志 JSON</button></div>' +
+      (events.length ? '<table class="diag-table"><thead><tr><th>时间</th><th>事件</th><th>试卷 / 范围</th><th>诊断摘要</th></tr></thead><tbody>' + events.slice(0, 200).map(function (ev) {
+        return '<tr><td>' + esc(ev.date || '—') + '</td><td><span class="diag-badge tag">' + esc(ev.type) + '</span></td><td>' + esc(ev.scope) + '</td><td>' + esc(ev.summary) + '</td></tr>';
+      }).join('') + '</tbody></table>' : '<div class="diag-empty">暂无可诊断的真实作答事件。完成行测练习并交卷后，这里会显示诊断事件；手动学习记录请到左侧“学习记录”。</div>') + '</div>';
+    $('diagBody').innerHTML = html;
+    var ex = $('diagExportEvents');
+    if (ex) ex.addEventListener('click', function () {
+      download('ExamCard_诊断日志_' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify({ schema: 'examcard.diagnosis-events/v1', generatedAt: new Date().toISOString(), events: events }, null, 2));
+      toast('诊断日志已导出');
     });
   }
 

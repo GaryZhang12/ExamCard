@@ -134,3 +134,10 @@
 .essay-cfg-raw { margin: 10px 0; }
 .essay-cfg-raw summary { cursor: pointer; color: #2563eb; font-size: 13px; }
 .essay-cfg-raw textarea { width: 100%; min-height: 150px; margin-top: 8px; font-size: 12px; line-height: 1.6; }
+
+/* ExamCard 1.0.0: full prompt/requirements editor */
+#essayCfgTable td { vertical-align: top; }
+#essayCfgTable .c-title { width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; line-height: 1.5; resize: vertical; white-space: pre-wrap; }
+#essayCfgTable { width: 100%; table-layout: auto; }
+
+#essayPromptTitle { white-space: pre-wrap; line-height: 1.6; }

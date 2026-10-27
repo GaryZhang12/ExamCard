@@ -241,7 +241,7 @@
       state.draft = r[0]; state.textbooks = r[1] || []; state.drafts = Array.isArray(r[2]) ? r[2] : []; render();
     }).catch(function () { render(); });
   }
-  function close() { state.open = false; var r = $('tocRoot'); if (r) r.classList.add('hidden'); if (root.AppShell && AppShell.detachToc) AppShell.detachToc(); }
+  function close() { if (state.runningTask && state.runningTask.running) state.runningTask.cancelled = true; state.open = false; var r = $('tocRoot'); if (r) r.classList.add('hidden'); if (root.AppShell && AppShell.detachToc) AppShell.detachToc(); }
 
   function methodLabel(m) { return m === 'text' ? '文字目录' : m === 'ocr' ? '扫描识别' : '待识别'; }
   function statusLabel(s) { return { queued: '等待', loading: '处理中', ready: '待核对', error: '失败', cancelled: '已取消' }[s] || s; }

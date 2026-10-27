@@ -645,6 +645,26 @@
       });
     },
 
+    /* 全量清空用户学习数据：保留考试类型配置与升级元数据，其他 store 在同一事务中清空。 */
+    async clearUserData() {
+      return withDb(async function (db) {
+        var stores = Array.prototype.slice.call(db.objectStoreNames);
+        if (stores.indexOf('examProfiles') < 0 || stores.indexOf('meta') < 0) throw new Error('数据库结构不完整，无法安全清空');
+        var migration = await get(db, 'meta', 'migration.v2');
+        var tx = db.transaction(stores, 'readwrite');
+        stores.forEach(function (name) {
+          if (name === 'examProfiles') return;
+          tx.objectStore(name).clear();
+        });
+        if (migration) tx.objectStore('meta').put(migration);
+        await txDone(tx);
+        return {
+          stores: stores,
+          preserved: ['examProfiles', 'meta:migration.v2'],
+          clearedStores: stores.filter(function (name) { return name !== 'examProfiles' && name !== 'meta'; }).concat(['meta (except migration.v2)'])
+        };
+      });
+    },
     /* 元数据 */
     async getMeta(key) { return withDb(async function (db) { var r = await get(db, 'meta', key); return r ? r.value : null; }); },
     async setMeta(key, value) { return withDb(function (db) { return putOne(db, 'meta', { key: key, value: value }); }); },

@@ -12,11 +12,11 @@
 
 | File | SHA-256 |
 | --- | --- |
-| `ExamCard-1.0.0-win-portable.exe` | `20312B7EEBA590723ED1DB955B16864F66D9F4919E6C936689F55A676A973745` |
-| `ExamCard-1.0.0-win-setup.exe` | `B2CE7E964D71FC03B3B36821CCE0F75ECD54C5D6D9EFA84CC1E7C0342810E371` |
+| `ExamCard-1.0.0-win-portable.exe` | `547F84F9B59CD0EC57C1D3C629D691219345AA906B094271F16E07B091F360AD` |
+| `ExamCard-1.0.0-win-setup.exe` | `1EC9FCD2ABB7B5F42C992147436C03B0AADE65ACC38D6212B81D644FAC74E159` |
 | `ExamCard-1.0.0-source.zip` | Listed in `SHA256SUMS.txt` |
 
-Portable 175692078 bytes; setup 202663520 bytes. The workspace build directory carries a Low Integrity label; delivery copies in a normal user Documents folder were created by copying into a normal user folder and show no Low Mandatory Level label. No ACL/UAC/Defender settings were changed.
+Portable 175,721,156 bytes; setup 202,664,546 bytes. The workspace build directory carries a Low Integrity label; delivery copies in a normal user Documents folder were created by copying into a normal user folder and show no Low Mandatory Level label. No ACL/UAC/Defender settings were changed.
 
 ## Built-in exam removal
 
@@ -29,6 +29,7 @@ Portable 175692078 bytes; setup 202663520 bytes. The workspace build directory c
 ## Function checks
 
 - Unified workspace: all ordinary modules mount inside `workspaceHost`; sidebar remains visible; no fixed/z-index page emulation; module duplicate brand/title/close controls removed.
+- Four-fix report: see `FINAL_FOUR_FIXES_1.0.0.md` (essay PDF detection, clear-all, diagnosis logs, OCR navigation).
 - About: independent page; one main title; product intro; Version 1.0.0; Copyright; Apache License 2.0 link; real GitHub URL; **clickable Third-party Licenses opens an in-app component/license list**; no "personal study" limitation wording; industry/commercial use explicitly permitted by Apache-2.0; technical DB/backup information folded.
 - Essay: import/detection/preview/save guard; forced-save-failure test kept editor visible; successful leave paused session; reopening restored draft. Existing essay E2E legacy pause/list test still needs manual re-check.
 - OCR: attach/detach route no stale task state; cancel/retry/multi-draft/tree checks from earlier rounds retained.
