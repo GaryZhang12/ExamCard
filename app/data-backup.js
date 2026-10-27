@@ -241,6 +241,19 @@
     }
   }
 
+  async function assertBackupStoreCompatibility(backup) {
+    var db = await openDb();
+    try {
+      var currentStores = Array.prototype.slice.call(db.objectStoreNames);
+      var backupStoreNames = Object.keys(backup.stores || {});
+      var unknownStores = backupStoreNames.filter(function (name) { return currentStores.indexOf(name) < 0; });
+      if (unknownStores.length) throw BackupError('备份包含当前版本未知的数据表：' + unknownStores.join('、') + '。已拒绝恢复，当前数据未修改。', { unknownStores: unknownStores });
+      var missingStores = currentStores.filter(function (name) { return !Object.prototype.hasOwnProperty.call(backup.stores, name); });
+      if (missingStores.length) throw BackupError('备份不完整：缺少当前版本的数据表 ' + missingStores.join('、') + '。没有执行任何写入，当前数据未修改。', { missingStores: missingStores, currentDbVersion: db.version, backupDbVersion: backup.dbVersion });
+      return { currentStores: currentStores, dbVersion: db.version };
+    } finally { db.close(); }
+  }
+
   async function verifyBackupIntegrity(backup) {
     if (!backup || typeof backup !== 'object') throw BackupError('不是有效的备份对象');
     if (backup.format !== FORMAT) throw BackupError('不是 ExamCard 备份文件');
@@ -249,6 +262,7 @@
     if (!backup.counts || !backup.checksums || !backup.recordChecksums) throw BackupError('备份缺少完整性信息');
     if (!Number.isInteger(backup.dbVersion) || backup.dbVersion < 1) throw BackupError('备份缺少有效的 IndexedDB 版本');
     if (typeof backup.integrity !== 'string' || !backup.integrity.length) throw BackupError('备份缺少整体校验值');
+    await assertBackupStoreCompatibility(backup);
 
     var digest = await sha256Text(canonical({
       format: backup.format,
@@ -266,9 +280,16 @@
     try {
       if (backup.dbVersion > db.version) throw BackupError('备份来自更新版本（v' + backup.dbVersion + '），当前应用仅支持升级到 v' + db.version);
       var currentStores = Array.prototype.slice.call(db.objectStoreNames);
-      Object.keys(backup.stores).forEach(function (name) {
-        if (currentStores.indexOf(name) < 0) throw BackupError('备份包含当前版本未知的数据表：' + name);
-      });
+      var backupStoreNames = Object.keys(backup.stores);
+      var unknownStores = backupStoreNames.filter(function (name) { return currentStores.indexOf(name) < 0; });
+      if (unknownStores.length) throw BackupError('备份包含当前版本未知的数据表：' + unknownStores.join('、') + '。已拒绝恢复，当前数据未修改。', { unknownStores: unknownStores });
+      // A backup must contain every current table. Older/incomplete backups are rejected
+      // before any readwrite transaction; no table is cleared and no partial restore occurs.
+      var missingStores = currentStores.filter(function (name) { return !Object.prototype.hasOwnProperty.call(backup.stores, name); });
+      if (missingStores.length) throw BackupError('备份不完整：缺少当前版本的数据表 ' + missingStores.join('、') + '。没有执行任何写入，当前数据未修改。', { missingStores: missingStores, currentDbVersion: db.version, backupDbVersion: backup.dbVersion });
+      var schemaNames = (backup.schema || []).map(function (x) { return x && x.name; }).filter(Boolean);
+      var schemaMissing = backupStoreNames.filter(function (name) { return schemaNames.indexOf(name) < 0; });
+      if (schemaMissing.length) throw BackupError('备份缺少数据表结构元数据：' + schemaMissing.join('、') + '。已拒绝恢复。', { missingStores: schemaMissing });
       var summary = {};
       for (var i = 0; i < Object.keys(backup.stores).length; i++) {
         var name = Object.keys(backup.stores)[i];

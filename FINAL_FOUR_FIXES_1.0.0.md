@@ -203,16 +203,52 @@
 - 诊断有数据：8 行真实事件，导出 enabled，`form=0`。
 - 清空：输入“清空”后执行，弹窗关闭并触发页面重新载入；清空后 22 表用户数据为 0。
 
-## 六、构建与 Git
+
+## 六、数据一致性、备份兼容与会话恢复补充
+
+### 清空 localStorage 会话镜像
+
+- `app.js` 新增 `beforeDataClear()` / `afterDataClear()` / `clearSessionMirrors()`。
+- 清空前停止 ticker、置空会话、阻止 `beforeunload`/自动保存/可见性写入，等待已发起写入，仅删除 `gd_v2_session_mirror_` 前缀，保留其他 localStorage。
+- `ExamStore.clearUserData()` 在事务前后调用会话生命周期；OCR `stopForClear()` 仍在清空前等待。
+- 测试：2 个自有镜像键被清除、`unrelated_app_key` 保留、`state.session=null`、`tickTimer=null`、清空后 `beforeunload` 不再写入；重新启动后镜像 0、22 表用户数据 0。
+
+### 备份完整性保护
+
+- `app/data-backup.js` 在写入前校验备份表集合与当前 22 表兼容：缺少表明确拒绝并列出表名；未知表拒绝；schema 元数据缺失拒绝。
+- 老 15 表备份被拒绝，当前数据计数不变；构造的缺 1 表但整体校验有效的备份同样被拒绝。
+- 当前 22 表完整备份验证/恢复成功，恢复前后 counts 一致。
+
+### 行测会话统一恢复路由
+
+- `enterExamView()` 统一在入口调用 `AppShell.enterExam()`；新建、继续、结果、启动恢复均走此路径。
+- AppShell 初始化若检测到已显示考试页，不再执行 `showHome()` 覆盖；恢复时隐藏 home/library/data/about 并进入 exam-mode。
+- 测试：暂停会话重启后考试页可见、PDF canvas 758px、暂停层显示、ticker 运行；返回试卷库 rail 恢复；再次“继续”正常进入。
+
+### 保存取消/失败区分
+
+- `gd:save-file`：对话框取消返回 `canceled:true, reason:'canceled'`；写盘失败返回 `canceled:false, ok:false, error`；成功返回 `ok:true,path`。
+- 备份页/通用下载拦截分别显示“已取消导出/已取消保存”“导出失败/保存失败”“备份已导出/已保存”。
+- 测试：无效自动保存目录实际返回 EEXIST，界面显示“导出失败：EEXIST…”；有效目录生成备份文件。
+
+### 学习计划与申论补充
+
+- 通用 `confirmBox()` 成功后关闭弹窗，失败保留并展示错误，操作中禁用重复提交；覆盖任务/教材/章节/课程删除。
+- 顺延使用原日期和原截止日分别 +1 天：无截止任务只顺延 1 天。
+- 优先级按 high→normal→low 排序。
+- 申论分值/字数为空保存为 `null`，界面显示“未填写/—”，不强制编造；年份无法推断时留空并提示确认。
+- `EssayStore.deleteExam()` 改为单事务删除试卷、材料、会话、版本和批改。
+
+## 七、构建与 Git
 
 最终产物 SHA-256：
 
 | 文件 | SHA-256 |
 | --- | --- |
-| `ExamCard-1.0.0-win-portable.exe` | `DDC0A8462EB0B8EC12B46F14DA5CD3FB541BA2A7128320691B724CC5650475C5` |
-| `ExamCard-1.0.0-win-setup.exe` | `9844CBEC359AC3F95AC9E2D1B91D8409325BFF2D7FFBA40750654794F316015E` |
+| `ExamCard-1.0.0-win-portable.exe` | `676032F55DA9396C6F608318780E698B31F9CBA98CE9BBBAB8212BBC8DFABB44` |
+| `ExamCard-1.0.0-win-setup.exe` | `DDEFD4ED6A7FB2D3F3B198550F04E7F4CB99EFB6FDB31E1C0A0572AE17E53AE6` |
 
-- Portable 175,720,895 B；setup 202,665,293 B。
+- Portable 175,721,405 B；setup 202,666,030 B。
 - Portable/setup 主 EXE 均为 `asInvoker`，无 `requireAdministrator`。
 - 私有仓库最终 HEAD 见交付回复。
 - 独立公开仓库快照已同步本轮源码；首个提交不继承原私人历史，未 push、未 Public、未 Release。

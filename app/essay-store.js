@@ -111,16 +111,28 @@
     },
     async getMaterialInfo(examId) { return get('essayMaterials', examId); },
     async deleteExam(examId) {
+      // Read IDs first, then remove all dependent rows in one readwrite transaction.
+      // A failure aborts the whole transaction instead of leaving a partially deleted exam.
       var sessions = await byIndex('essaySessions', 'examId', examId);
       var reviews = await byIndex('essayReviews', 'examId', examId);
+      var versions = [];
       for (var i = 0; i < sessions.length; i++) {
         var vs = await byIndex('essayAnswerVersions', 'sessionId', sessions[i].id);
-        for (var j = 0; j < vs.length; j++) await del('essayAnswerVersions', vs[j].id);
-        await del('essaySessions', sessions[i].id);
+        versions = versions.concat(vs);
       }
-      for (var k = 0; k < reviews.length; k++) await del('essayReviews', reviews[k].id);
-      await del('essayExams', examId);
-      await del('essayMaterials', examId);
+      await withDb(function (db) {
+        return new Promise(function (resolve, reject) {
+          var tx = db.transaction(['essayExams', 'essayMaterials', 'essaySessions', 'essayAnswerVersions', 'essayReviews'], 'readwrite');
+          versions.forEach(function (v) { tx.objectStore('essayAnswerVersions').delete(v.id); });
+          sessions.forEach(function (s) { tx.objectStore('essaySessions').delete(s.id); });
+          reviews.forEach(function (r) { tx.objectStore('essayReviews').delete(r.id); });
+          tx.objectStore('essayExams').delete(examId);
+          tx.objectStore('essayMaterials').delete(examId);
+          tx.oncomplete = function () { resolve(); };
+          tx.onerror = function () { reject(tx.error || new Error('删除申论试卷失败')); };
+          tx.onabort = function () { reject(tx.error || new Error('删除申论试卷事务已中止，数据未修改')); };
+        });
+      });
     },
 
     async putSession(session) { return put('essaySessions', clone(session)); },

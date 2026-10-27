@@ -647,7 +647,13 @@
 
     /* 全量清空用户学习数据：保留考试类型配置与升级元数据，其他 store 在同一事务中清空。 */
     async clearUserData() {
-      if (root.TextbookImport && root.TextbookImport.stopForClear) await root.TextbookImport.stopForClear();
+      try {
+        if (root.__GD_V2__ && root.__GD_V2__.beforeDataClear) await root.__GD_V2__.beforeDataClear();
+        if (root.TextbookImport && root.TextbookImport.stopForClear) await root.TextbookImport.stopForClear();
+      } catch (e) {
+        if (root.__GD_V2__ && root.__GD_V2__.afterDataClear) await root.__GD_V2__.afterDataClear(false);
+        throw e;
+      }
       return withDb(async function (db) {
         var stores = Array.prototype.slice.call(db.objectStoreNames);
         if (stores.indexOf('examProfiles') < 0 || stores.indexOf('meta') < 0) throw new Error('数据库结构不完整，无法安全清空');
@@ -658,7 +664,13 @@
           tx.objectStore(name).clear();
         });
         if (migration) tx.objectStore('meta').put(migration);
-        await txDone(tx);
+        try {
+          await txDone(tx);
+        } catch (e) {
+          if (root.__GD_V2__ && root.__GD_V2__.afterDataClear) await root.__GD_V2__.afterDataClear(false);
+          throw e;
+        }
+        if (root.__GD_V2__ && root.__GD_V2__.afterDataClear) await root.__GD_V2__.afterDataClear(true);
         return {
           stores: stores,
           preserved: ['examProfiles', 'meta:migration.v2'],

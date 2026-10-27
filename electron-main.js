@@ -91,14 +91,14 @@ function setupSaveIpc() {
           defaultPath: path.join(app.getPath('downloads'), defaultName),
           filters: filtersFor(defaultName)
         });
-        if (!result) return { canceled: true };
+        if (!result) return { canceled: true, reason: 'canceled' };
         savePath = result;
       }
       fs.writeFileSync(savePath, buf);
-      return { canceled: false, path: savePath, bytes: buf.length };
+      return { canceled: false, ok: true, path: savePath, bytes: buf.length };
     } catch (err) {
       console.error('保存文件失败：', err);
-      return { canceled: true, error: err.message };
+      return { canceled: false, ok: false, error: err.message };
     }
   });
   ipcMain.handle('gd:get-info', () => ({

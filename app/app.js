@@ -24,7 +24,9 @@
     pendingImport: null,
     draftQuestions: null,
     draftPages: null,
-    modalSize: 'mid'
+    modalSize: 'mid',
+    writeBlocked: false,
+    pendingWrites: []
   };
 
   var ui = {};
@@ -207,9 +209,10 @@
     document.addEventListener('keydown', onKeydown);
     document.addEventListener('visibilitychange', onVisibilityChange);
     window.addEventListener('beforeunload', function () {
+      if (state.writeBlocked) return;
       flushTime();
       saveMirror();
-      if (state.session) ExamStore.putSession(state.session);
+      if (state.session) trackWrite(ExamStore.putSession(state.session).catch(function () {}));
     });
     window.addEventListener('resize', function () {
       if (state.viewer && state.view) {
@@ -226,8 +229,45 @@
     } catch (e) { return null; }
   }
   function saveMirror() {
-    if (!state.session) return;
+    if (state.writeBlocked || !state.session) return;
     try { localStorage.setItem(mirrorPrefix + state.session.id, JSON.stringify(state.session)); } catch (e) { /* ignore */ }
+  }
+
+  function trackWrite(p) {
+    if (!p || !p.then) return p;
+    state.pendingWrites.push(p);
+    p.then(function () { removePending(p); }, function () { removePending(p); });
+    return p;
+  }
+  function removePending(p) {
+    var i = state.pendingWrites.indexOf(p);
+    if (i >= 0) state.pendingWrites.splice(i, 1);
+  }
+  function clearSessionMirrors() {
+    try {
+      var keys = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf(mirrorPrefix) === 0) keys.push(k);
+      }
+      keys.forEach(function (k) { localStorage.removeItem(k); });
+      return keys;
+    } catch (e) { return []; }
+  }
+  async function beforeDataClear() {
+    state.writeBlocked = true;
+    stopTicker();
+    state.session = null;
+    state.exam = null;
+    state.view = 'library';
+    var pending = state.pendingWrites.slice();
+    await Promise.all(pending.map(function (p) { return Promise.resolve(p).catch(function () {}); }));
+    clearSessionMirrors();
+    if (ui.examView) ui.examView.classList.add('hidden');
+    if (ui.libraryView) ui.libraryView.classList.remove('hidden');
+  }
+  function afterDataClear(success) {
+    if (!success) state.writeBlocked = false;
   }
 
   /* ============================ 试卷库 ============================ */
@@ -736,7 +776,7 @@
   }
 
   async function startNewSession(exam, config) {
-    if (window.AppShell && AppShell.enterExam) AppShell.enterExam();
+    state.writeBlocked = false;
     var qs;
     if (Array.isArray(config.questionIds) && config.questionIds.length) {
       var wanted = {};
@@ -797,6 +837,7 @@
   /* ============================ 考试视图 ============================ */
 
   async function enterExamView(exam, session) {
+    if (window.AppShell && AppShell.enterExam) AppShell.enterExam();
     state.exam = exam;
     state.session = session;
     state.view = 'exam';
@@ -1133,9 +1174,9 @@
     } else if (session.status === 'paused') {
       renderTimer();
     }
-    if (now - state.tickSaveAt > 3000) {
+    if (!state.writeBlocked && now - state.tickSaveAt > 3000) {
       state.tickSaveAt = now;
-      ExamStore.putSession(session).catch(function () {});
+      trackWrite(ExamStore.putSession(session).catch(function () {}));
       saveMirror();
     }
   }
@@ -1206,7 +1247,7 @@
   }
 
   function onVisibilityChange() {
-    if (!state.session) return;
+    if (state.writeBlocked || !state.session) return;
     if (document.hidden) {
       flushTime();
       if (state.session.status === 'running') pauseSession('visibility');
@@ -1220,14 +1261,20 @@
   }
 
   async function saveSessionNow() {
-    if (!state.session) return;
-    state.session.updatedAt = Date.now();
+    if (state.writeBlocked || !state.session) return;
+    var session = state.session;
+    var exam = state.exam;
+    session.updatedAt = Date.now();
     saveMirror();
-    try {
-      await ExamStore.putSession(state.session);
-      await ExamStore.setMeta('lastExamId', state.exam.id);
-      await ExamStore.setMeta('lastSessionId', state.session.id);
-    } catch (e) { console.warn(e); }
+    var p = (async function () {
+      try {
+        await ExamStore.putSession(session);
+        if (exam) await ExamStore.setMeta('lastExamId', exam.id);
+        await ExamStore.setMeta('lastSessionId', session.id);
+      } catch (e) { console.warn(e); }
+    })();
+    trackWrite(p);
+    return p;
   }
 
   /* ============================ 作答交互 ============================ */
@@ -1853,6 +1900,6 @@
     return true;
   }
 
-  window.__GD_V2__ = { state: state, startRetest: startRetest };
+  window.__GD_V2__ = { state: state, startRetest: startRetest, beforeDataClear: beforeDataClear, afterDataClear: afterDataClear, clearSessionMirrors: clearSessionMirrors };
   window.__GD_APP__ = { backToLibrary: backToLibrary, showLibrary: showLibrary, openModal: openModal, confirmModal: confirmModal };
 })();

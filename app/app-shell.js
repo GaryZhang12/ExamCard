@@ -269,8 +269,24 @@
     if (!root.__GD_APP__ || !__GD_APP__.openModal) return;
     var counts;
     try { counts = await ExamBackup.getStoreCounts(); } catch (e) { counts = null; }
-    __GD_APP__.openModal('<h3>清空全部学习数据</h3><div class="modal-body"><p class="data-warn"><b>此操作会永久删除本机全部学习记录，且无法撤销。</b></p>' + clearCategories() + '<p>将保留：数据库结构（v5 / 22 表）、广东省考/深圳市考/自定义考试类型配置、软件资源与许可证。</p><p>软件外的 PDF、JSON、CSV 或备份文件不会被删除。</p>' + (counts ? '<details><summary>查看清空前各表数量</summary><table class="data-count-table"><thead><tr><th>数据表</th><th>条数</th></tr></thead><tbody>' + clearCountRows(counts) + '</tbody></table></details>' : '') + '</div><div class="modal-actions"><button class="btn" data-close>取消</button><button class="btn" id="dataClearBackup">先导出完整备份</button><button class="btn danger" id="dataClearContinue">继续</button></div>', 'mid');
-    if ($('dataClearBackup')) $('dataClearBackup').addEventListener('click', function () { exportData(); });
+    __GD_APP__.openModal('<h3>清空全部学习数据</h3><div class="modal-body"><p class="data-warn"><b>此操作会永久删除本机全部学习记录，且无法撤销。</b></p>' + clearCategories() + '<p>将保留：数据库结构（v5 / 22 表）、广东省考/深圳市考/自定义考试类型配置、软件资源与许可证。</p><p>软件外的 PDF、JSON、CSV 或备份文件不会被删除。</p>' + (counts ? '<details><summary>查看清空前各表数量</summary><table class="data-count-table"><thead><tr><th>数据表</th><th>条数</th></tr></thead><tbody>' + clearCountRows(counts) + '</tbody></table></details>' : '') + '</div><div id="dataClearBackupNote" class="data-status"></div><div class="modal-actions"><button class="btn" data-close>取消</button><button class="btn" id="dataClearBackup">先导出完整备份</button><button class="btn danger" id="dataClearContinue">继续</button></div>', 'mid');
+    if ($('dataClearBackup')) $('dataClearBackup').addEventListener('click', async function () {
+      var bb = $('dataClearBackup'), cb = $('dataClearContinue'), note = $('dataClearBackupNote');
+      if (!bb || bb.disabled) return;
+      bb.disabled = true; if (cb) cb.disabled = true; bb.textContent = '正在备份…';
+      var r = await exportData();
+      bb.disabled = false; bb.textContent = '先导出完整备份';
+      if (r && r.ok) {
+        if (note) { note.textContent = '完整备份已保存' + (r.path ? '：' + r.path : '') + '。现在可以继续清空。'; note.style.color = '#166534'; }
+        if (cb) cb.disabled = false;
+      } else if (r && r.canceled) {
+        if (note) { note.textContent = '已取消备份，未保存备份文件。继续清空将无法从本次备份恢复。'; note.style.color = '#b45309'; }
+        if (cb) cb.disabled = false;
+      } else {
+        if (note) { note.textContent = '备份失败：' + (r && r.error ? r.error : '未知错误') + '。请重试或取消，避免在未备份时继续。'; note.style.color = '#b91c1c'; }
+        if (cb) cb.disabled = true;
+      }
+    });
     if ($('dataClearContinue')) $('dataClearContinue').addEventListener('click', function () { showClearConfirm(counts); });
   }
   function showClearConfirm(counts) {
@@ -303,7 +319,9 @@
       if (window.gdDesktop && gdDesktop.saveFile) {
         var bytes = new TextEncoder().encode(text).buffer;
         var saved = await gdDesktop.saveFile(filename, bytes);
-        if (saved && saved.canceled) { if (st) st.textContent = '已取消导出'; return; }
+        if (saved && saved.canceled) { if (st) st.textContent = '已取消导出'; return { ok: false, canceled: true }; }
+        if (saved && saved.error) throw new Error(saved.error);
+        var savePath = saved && saved.path || '';
       } else {
         var blob = new Blob([text], { type: 'application/json' });
         var a = document.createElement('a');
@@ -314,7 +332,8 @@
       await ExamStore.setMeta('lastBackupAt', new Date().toISOString());
       await ExamStore.setMeta('lastBackupCounts', backup.counts || {});
       if (st) st.textContent = '备份已导出。请将文件保存到安全位置。';
-    } catch (e) { if (st) st.textContent = '导出失败：' + (e.message || e); }
+      return { ok: true, path: savePath || null };
+    } catch (e) { if (st) st.textContent = '导出失败：' + (e.message || e); return { ok: false, error: e.message || String(e) }; }
   }
   function onRestoreFile(e) {
     var f = e.target.files && e.target.files[0]; e.target.value = '';
@@ -444,5 +463,5 @@
     showHome();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-  root.AppShell = { showHome: showHome, showLibrary: showLibrary, showData: showData, showAboutPage: showAboutPage, attachToc: attachToc, detachToc: detachToc, enterExam: function () { state.view = 'library'; document.body.classList.remove('shell-home'); document.body.classList.add('exam-mode'); }, isHome: function () { return state.view === 'home'; } };
+  root.AppShell = { showHome: showHome, showLibrary: showLibrary, showData: showData, showAboutPage: showAboutPage, attachToc: attachToc, detachToc: detachToc, enterExam: function () { state.view = 'library'; state.currentModule = null; hideModules(); ['homeView', 'libraryView', 'dataView', 'aboutView'].forEach(function (id) { var e = $(id); if (e) e.classList.add('hidden'); }); document.body.classList.add('shell-mode'); document.body.classList.remove('shell-home'); document.body.classList.add('exam-mode'); }, isHome: function () { return state.view === 'home'; } };
 })(typeof window !== 'undefined' ? window : globalThis);

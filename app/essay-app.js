@@ -280,6 +280,7 @@
         var sessions = await EssayStore.listSessionsForExam(ex.id);
         var latest = sessions[0];
         var totalScore = (ex.prompts || []).reduce(function (a, p) { return a + (Number(p.score) || 0); }, 0);
+          var hasScore = (ex.prompts || []).some(function (p) { return p.score != null; });
         var status = '未开始';
         var action = '<button class="essay-btn primary" data-act="start" data-id="' + esc(ex.id) + '">开始练习</button>';
         if (latest) {
@@ -288,7 +289,7 @@
           else action = '<button class="essay-btn primary" data-act="continue" data-id="' + esc(ex.id) + '" data-session="' + esc(latest.id) + '">继续作答</button>';
         }
         htmls.push('<div class="essay-card"><h3>' + esc(ex.title || '未命名申论试卷') + '</h3>' +
-          '<div class="meta">' + esc(ex.year || '年份未填') + ' · ' + esc(ex.examTypeLabel || '未识别考试') + ' · ' + (ex.prompts || []).length + ' 题 · 总分 ' + totalScore + ' 分 · ' + (ex.pageCount || '?') + ' 页</div>' +
+          '<div class="meta">' + esc(ex.year || '年份未填') + ' · ' + esc(ex.examTypeLabel || '未识别考试') + ' · ' + (ex.prompts || []).length + ' 题 · 总分 ' + (hasScore ? totalScore + ' 分' : '未填写') + ' · ' + (ex.pageCount || '?') + ' 页</div>' +
           '<div class="meta">' + (ex.prompts || []).map(function (p) { return '第' + p.number + '题 ' + typeLabel(p.type); }).join(' / ') + '</div>' +
           '<div class="status">' + esc(status) + '</div><div class="card-actions">' + action +
           '<button class="essay-btn" data-act="delete" data-id="' + esc(ex.id) + '">删除</button></div></div>');
@@ -374,9 +375,10 @@
     openModal('<h3>导入申论 PDF · 核对题目</h3>' +
       '<div class="hint">PDF 共 ' + pageCount + ' 页。' + summary + '识别不到的分值或字数会留空，请以原文为准补充，不会自动编造。</div>' +
       '<div class="row"><label>试卷名称<input id="essayCfgTitle" type="text" value="' + esc(defaultTitle) + '" style="min-width:300px"></label>' +
-      '<label>年份<input id="essayCfgYear" type="number" min="2000" max="2100" value="' + (detection.year || new Date().getFullYear()) + '"></label>' +
+      '<label>年份<input id="essayCfgYear" type="number" min="2000" max="2100" value="' + (detection.year || '') + '" placeholder="未识别，请确认"></label>' +
       '<label>考试类型<select id="essayCfgType"><option value="unknown"' + ((detection.examType || 'unknown') === 'unknown' ? ' selected' : '') + '>未识别/自定义</option><option value="gd"' + (detection.examType === 'gd' ? ' selected' : '') + '>广东省考</option><option value="sz"' + (detection.examType === 'sz' ? ' selected' : '') + '>深圳市考</option></select></label>' +
       '<label>默认时长（分钟）<input id="essayCfgDuration" type="number" min="10" max="600" value="150"></label></div>' +
+      (detection.year ? '' : '<div class="hint" style="color:#b45309">未能从 PDF/文件名识别年份，请确认年份或留空；不会自动填入当前年份。</div>') +
       '<div class="hint">题目列表（页码从 1 开始，需在 PDF 范围内；题型不确定请选“待确认/其他”）</div>' +
       '<table id="essayCfgTable"><thead><tr><th>题号</th><th>题型</th><th>分值</th><th>字数限制</th><th>题目所在页</th><th>题干</th><th></th></tr></thead><tbody id="essayCfgRows">' + rows.join('') + '</tbody></table>' +
       '<div class="row"><button id="essayCfgAddRow" class="essay-btn">＋ 添加题目</button><button id="essayCfgPreviewBtn" class="essay-btn">查看题目 PDF 页</button><span class="hint">原始文字可在下方展开核对</span></div>' +
@@ -414,8 +416,8 @@
     var pv = page || 1;
     return '<tr data-row="' + n + '"><td><input class="c-num" type="number" min="1" value="' + n + '" style="width:64px"></td>' +
       '<td><select class="c-type">' + TYPES.map(function (t) { return '<option value="' + t.id + '"' + (t.id === type ? ' selected' : '') + '>' + t.label + '</option>'; }).join('') + '</select></td>' +
-      '<td><input class="c-score" type="number" min="1" value="' + sv + '" placeholder="原文分" style="width:70px"></td>' +
-      '<td><input class="c-limit" type="number" min="50" value="' + lv + '" placeholder="原文字数" style="width:80px"></td>' +
+      '<td><input class="c-score" type="number" min="0" value="' + sv + '" placeholder="未识别可留空" style="width:90px"></td>' +
+      '<td><input class="c-limit" type="number" min="1" value="' + lv + '" placeholder="未识别可留空" style="width:90px"></td>' +
       '<td><input class="c-page" type="number" min="1" max="' + pageCount + '" value="' + pv + '" style="width:70px"></td>' +
       '<td><textarea class="c-title" rows="3" placeholder="题干与作答要求原文" style="min-width:320px;min-height:66px">' + esc(title) + '</textarea></td>' +
       '<td><button class="essay-btn c-del" type="button">删除</button></td></tr>';
@@ -429,14 +431,16 @@
       var tr = rows[i];
       var number = parseInt(tr.querySelector('.c-num').value, 10);
       var page = parseInt(tr.querySelector('.c-page').value, 10);
-      var score = Number(tr.querySelector('.c-score').value);
-      var limit = parseInt(tr.querySelector('.c-limit').value, 10);
+      var scoreRaw = tr.querySelector('.c-score').value.trim();
+      var limitRaw = tr.querySelector('.c-limit').value.trim();
+      var score = scoreRaw === '' ? null : Number(scoreRaw);
+      var limit = limitRaw === '' ? null : parseInt(limitRaw, 10);
       var type = tr.querySelector('.c-type').value;
       var title = tr.querySelector('.c-title').value.trim();
       if (!number || number < 1 || seen[number]) { toast('题号无效或重复'); return; }
       if (!page || page < 1 || page > pageCount) { toast('第 ' + number + ' 题页码应在 1~' + pageCount + ' 之间'); return; }
-      if (!isFinite(score) || score <= 0) { toast('第 ' + number + ' 题分值无效'); return; }
-      if (!limit || limit < 50) { toast('第 ' + number + ' 题字数限制无效，请按原文填写'); return; }
+      if (score !== null && (!isFinite(score) || score <= 0)) { toast('第 ' + number + ' 题分值无效；未识别可留空'); return; }
+      if (limit !== null && (!isFinite(limit) || limit < 1)) { toast('第 ' + number + ' 题字数限制无效；未识别可留空'); return; }
       seen[number] = true;
       prompts.push({ number: number, page: page, score: score, wordLimit: limit, type: type, title: title || ('第' + number + '题') });
     }
@@ -553,7 +557,7 @@
   function renderTabs() {
     var exam = state.exam;
     $('essayPromptTabs').innerHTML = (exam.prompts || []).map(function (p) {
-      return '<button class="essay-prompt-tab' + (p.id === state.currentPromptId ? ' active' : '') + '" data-pid="' + esc(p.id) + '">第' + p.number + '题 · ' + typeLabel(p.type) + '<span class="score">' + p.score + '分</span></button>';
+      return '<button class="essay-prompt-tab' + (p.id === state.currentPromptId ? ' active' : '') + '" data-pid="' + esc(p.id) + '">第' + p.number + '题 · ' + typeLabel(p.type) + '<span class="score">' + (p.score == null ? '分值未填' : p.score + '分') + '</span></button>';
     }).join('');
     $('essayPromptTabs').querySelectorAll('[data-pid]').forEach(function (b) {
       b.addEventListener('click', function () { selectPrompt(b.getAttribute('data-pid')); });
@@ -580,7 +584,7 @@
       if (versions.length) text = versions[0].text;
     }
     $('essayPromptTitle').textContent = '第' + prompt.number + '题 · ' + typeLabel(prompt.type) + (prompt.title ? ' · ' + prompt.title : '');
-    $('essayPromptMeta').textContent = '分值 ' + prompt.score + ' 分 · 字数限制 ' + prompt.wordLimit + ' 字 · 材料第 ' + prompt.page + ' 页';
+    $('essayPromptMeta').textContent = '分值 ' + (prompt.score == null ? '未填写' : prompt.score + ' 分') + ' · 字数限制 ' + (prompt.wordLimit == null ? '未填写' : prompt.wordLimit + ' 字') + ' · 材料第 ' + prompt.page + ' 页';
     $('essayText').value = text;
     state.page = prompt.page;
     updateWord();
@@ -722,14 +726,15 @@
   function updateWord() {
     var prompt = currentPrompt();
     var n = wordCount($('essayText').value);
-    var limit = prompt ? prompt.wordLimit : 0;
-    var over = !!(prompt && n > limit);
+    var limit = prompt ? prompt.wordLimit : null;
+    var hasLimit = limit != null;
+    var over = !!(hasLimit && n > limit);
     $('essayWord').textContent = n;
     $('essayWord').classList.toggle('over', over);
-    $('essayWordLimit').textContent = prompt ? limit : '—';
+    $('essayWordLimit').textContent = hasLimit ? limit : '—';
     var hint = $('essayWordHint');
     if (hint) {
-      hint.textContent = prompt ? (over ? '已超出 ' + (n - limit) + ' 字，请精简' : '剩余 ' + (limit - n) + ' 字') : '';
+      hint.textContent = !prompt ? '' : (!hasLimit ? '未设置字数限制，请按原文要求作答' : (over ? '已超出 ' + (n - limit) + ' 字，请精简' : '剩余 ' + (limit - n) + ' 字'));
       hint.classList.toggle('over', over);
     }
   }
@@ -950,7 +955,7 @@
       '<div class="essay-stat"><div class="k">题目数</div><div class="v">' + (exam.prompts || []).length + '</div></div>' +
       '<div class="essay-stat"><div class="k">已作答</div><div class="v">' + answers.filter(function (x) { return x.words > 0; }).length + '</div></div>' +
       '<div class="essay-stat"><div class="k">总字数</div><div class="v">' + totalWords + '</div></div>' +
-      '<div class="essay-stat"><div class="k">总分</div><div class="v">' + totalScore + '</div></div>';
+      '<div class="essay-stat"><div class="k">总分</div><div class="v">' + (hasScore ? totalScore : '未填写') + '</div></div>';
     var reviews = await EssayStore.listReviews(session.id);
     state.reviews = reviews;
     renderReviews(reviews);
