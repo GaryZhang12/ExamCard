@@ -198,9 +198,27 @@
         '<div><span>Copyright</span><b>© 2026 ExamCard contributors</b></div>' +
         '<div><span>License</span><b><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">Apache License 2.0</a></b></div>' +
         '<div><span>GitHub Repository</span><b><a href="https://github.com/GaryZhang12/ExamCard" target="_blank" rel="noopener">github.com/GaryZhang12/ExamCard</a></b></div>' +
-        '<div><span>Third-party Licenses</span><b><code>THIRD_PARTY_NOTICES.md</code></b></div></div>' +
-        '<div class="data-card about-note"><p>ExamCard is provided for personal study. Exam papers, textbooks, courses, the ExamCard name and logo are not included in the Apache-2.0 grant unless separately authorized. Backups may contain personal learning data; keep them safe.</p></div>' +
+        '<div><span>Third-party Licenses</span><b><a href="#" id="aboutThirdParty" class="about-link">查看组件与许可证</a></b></div></div>' +
+        '<div class="data-card about-note"><p>ExamCard source code is licensed under the Apache License 2.0. The license permits commercial use and redistribution subject to its terms. Exam papers, textbooks, courses, the ExamCard name and logo are not included in the Apache-2.0 grant unless separately authorized. Backups may contain personal learning data; keep them safe.</p></div>' +
         '<details class="about-tech"><summary>Technical information</summary><div>Database v' + esc(s.dbVersion || '?') + ' / ' + esc((s.stores || []).length || '?') + ' tables · Schema v' + esc(s.schemaVersion || '?') + ' · Backup format v' + esc((root.ExamBackup && ExamBackup.FORMAT_VERSION) || '?') + ' · Offline build · Unsigned</div></details>';
+      var tp = $('aboutThirdParty');
+      if (tp) tp.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (!root.__GD_APP__ || !root.__GD_APP__.openModal) return;
+        var rows = [
+          ['Electron 43.3.0', 'MIT', 'https://github.com/electron/electron/blob/main/LICENSE'],
+          ['Chromium (Electron bundle)', 'BSD-3-Clause and other notices', 'https://www.chromium.org/'],
+          ['PDF.js 3.11.174', 'Apache-2.0', 'https://github.com/mozilla/pdf.js/blob/master/LICENSE'],
+          ['SheetJS CE 0.18.5', 'Apache-2.0', 'https://github.com/SheetJS/sheetjs/blob/master/LICENSE'],
+          ['fflate 0.8.2', 'MIT', 'https://github.com/101arrowz/fflate/blob/master/LICENSE'],
+          ['Tesseract.js 7.0.0', 'Apache-2.0', 'https://github.com/naptha/tesseract.js/blob/master/LICENSE.md'],
+          ['tesseract.js-core 7.0.0', 'Apache-2.0', 'https://github.com/naptha/tesseract.js-core'],
+          ['chi_sim / eng traineddata 1.0.0 (tessdata 4.0.0)', 'Apache-2.0 (upstream tessdata_fast); npm package metadata: MIT', 'https://github.com/tesseract-ocr/tessdata_fast/blob/main/LICENSE'],
+          ['electron-builder 26.18.0 (build tool)', 'MIT', 'https://github.com/electron-userland/electron-builder/blob/master/LICENSE']
+        ];
+        var h = '<h3>Third-party Licenses</h3><div class="modal-body about-license-body"><p>Full notices are bundled as <code>THIRD_PARTY_NOTICES.md</code> and <code>licenses/</code>. Upstream links:</p><ul>' + rows.map(function (r) { return '<li><b>' + esc(r[0]) + '</b> — ' + esc(r[1]) + ' — <a href="' + esc(r[2]) + '" target="_blank" rel="noopener">upstream license</a></li>'; }).join('') + '</ul><p><a href="https://github.com/GaryZhang12/ExamCard/blob/main/THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">Open the full THIRD_PARTY_NOTICES.md on GitHub</a></p></div><div class="modal-actions"><button class="btn" data-close>Close</button></div>';
+        root.__GD_APP__.openModal(h, 'mid');
+      });
     }).catch(function (e) { box.innerHTML = '<div class="home-empty">Unable to read version information: ' + esc(e.message || e) + '</div>'; });
   }
   async function attachToc() {

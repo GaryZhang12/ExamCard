@@ -226,3 +226,9 @@ body.shell-mode:not(.exam-mode) #examActions { display: none !important; }
 .about-tech summary { cursor: pointer; color: #475569; }
 .about-tech div { margin-top: 8px; line-height: 1.7; }
 @media (max-width: 960px) { .about-meta { grid-template-columns: 1fr; } }
+
+/* ExamCard 1.0.0 license modal */
+.about-license-body { max-height: 55vh; overflow: auto; }
+.about-license-body ul { margin: 8px 0 12px; padding-left: 20px; }
+.about-license-body li { margin: 7px 0; line-height: 1.55; }
+.about-license-body a { color: #2563eb; }

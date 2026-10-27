@@ -1,7 +1,9 @@
-﻿Tesseract.js-data chi_sim / eng package 1.0.0
+Tesseract.js-data chi_sim / eng package 1.0.0
 License declared by npm package: MIT
 Repository: https://github.com/naptha/tessdata
 Files used: 4.0.0/chi_sim.traineddata.gz, 4.0.0/eng.traineddata.gz
 The traineddata originates from the Tesseract tessdata project; verify upstream
 data license/attribution before public redistribution. This file is not a
 substitute for the upstream NOTICE.
+Upstream model license: Apache-2.0 (tesseract-ocr/tessdata_fast).
+See licenses/tessdata-fast-LICENSE.txt and licenses/OCR-MODELS.md.
