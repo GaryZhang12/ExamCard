@@ -3,7 +3,7 @@
 /* ExamCard V5.0-rc2 · 教材目录 PDF 批量导入 + 离线 OCR + 人工校正 */
 (function (root) {
   'use strict';
-  var state = { open: false, tasks: [], active: 0, range: '1-10', busy: false, error: '', draft: null, drafts: [], runningTask: null };
+  var state = { open: false, tasks: [], active: 0, range: '1-10', busy: false, error: '', draft: null, drafts: [], runningTask: null, stopEpoch: 0, activeRun: null, queueCount: 0 };
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function toast(m) { var e = document.createElement('div'); e.className = 'learn-toast'; e.textContent = m; document.body.appendChild(e); setTimeout(function () { e.remove(); }, 3000); }
@@ -141,13 +141,15 @@
       state.drafts = Array.isArray(list) ? list : [];
     } catch (e) { state.drafts = []; }
   }
-  async function persistDraft(task) {
+  async function persistDraft(task, force) {
+    if (!force && (task.cancelled || task.epoch !== state.stopEpoch)) return false;
     var snap = draftSnapshot(task);
     var list = state.drafts.slice().filter(function (d) { return d.key !== snap.key; });
     list.unshift(snap);
     state.drafts = list.slice(0, 8);
     await ExamStore.setMeta('ocrDrafts', state.drafts);
     await ExamStore.setMeta('ocrDraft:last', snap);
+    return true;
   }
   async function removeDraft(task) {
     var key = draftKey(task);
@@ -156,22 +158,27 @@
     var last = await ExamStore.getMeta('ocrDraft:last');
     if (last && last.key === key) await ExamStore.removeMeta('ocrDraft:last');
   }
+  function isStale(task) { return task.cancelled || task.epoch !== state.stopEpoch; }
   async function processTask(task) {
     if (task.running) return;
     if (task.cancelled) { task.status = 'cancelled'; task.message = '已取消，未保存结果'; render(); return; }
+    task.epoch = state.stopEpoch;
     task.running = true; task.cancelled = false; task.status = 'loading'; task.message = '读取 PDF…'; task.entries = []; task.progress = 0; state.error = ''; state.runningTask = task; render();
     try {
       task.hash = task.hash || await sha256(task.buf);
+      if (isStale(task)) throw new Error('已取消');
       var doc = await pdfjsLib.getDocument({ data: new Uint8Array(task.buf).slice() }).promise;
+      if (isStale(task)) throw new Error('已取消');
       task.pages = doc.numPages;
       var selected = parseRanges(task.range, doc.numPages);
       task.message = '提取目录文字…'; render();
       var allLines = [];
       for (var i = 0; i < selected.length; i++) {
-        if (task.cancelled) throw new Error('已取消');
+        if (isStale(task)) throw new Error('已取消');
         allLines = allLines.concat(await textLinesForPage(doc, selected[i]));
+        if (isStale(task)) throw new Error('已取消');
       }
-      if (task.cancelled) throw new Error('已取消');
+      if (isStale(task)) throw new Error('已取消');
       var reliable = detectReliableText(allLines);
       task.textInfo = reliable;
       if (reliable.reliable) {
@@ -180,28 +187,29 @@
         if (!root.OcrEngine || !OcrEngine.isAvailable()) throw new Error('扫描识别不可用，请重新安装或选择文字版 PDF');
         task.method = 'ocr'; task.entries = []; var ocrTexts = [];
         for (var j = 0; j < selected.length; j++) {
-          if (task.cancelled) throw new Error('已取消');
+          if (isStale(task)) throw new Error('已取消');
           task.message = '识别第 ' + (j + 1) + '/' + selected.length + ' 页'; task.progress = Math.round((j / selected.length) * 100); render();
-          var r = await OcrEngine.recognizePdfPage(doc, selected[j], { scale: 2, onProgress: function (m) { if (m.status === 'recognizing text' && !task.cancelled) { task.message = '识别第 ' + (j + 1) + '/' + selected.length + ' 页 ' + Math.round((m.progress || 0) * 100) + '%'; render(); } } });
-          if (task.cancelled) throw new Error('已取消');
+          var r = await OcrEngine.recognizePdfPage(doc, selected[j], { scale: 2, onProgress: function (m) { if (m.status === 'recognizing text' && !isStale(task)) { task.message = '识别第 ' + (j + 1) + '/' + selected.length + ' 页 ' + Math.round((m.progress || 0) * 100) + '%'; render(); } } });
+          if (isStale(task)) throw new Error('已取消');
           ocrTexts.push(r.text || '');
           task.entries = task.entries.concat(parseDirectory(ocrLines(r, selected[j]), 'ocr'));
         }
-        if (task.cancelled) throw new Error('已取消');
+        if (isStale(task)) throw new Error('已取消');
         task.entries.forEach(function (e) { e.method = 'ocr'; if (e.issues.indexOf('请核对识别结果') < 0) e.issues.push('请核对识别结果'); });
         allLines = ocrTexts.join('\n').split(/\n+/).map(function (x) { return { text: x, page: null }; });
       }
-      if (task.cancelled) throw new Error('已取消');
+      if (isStale(task)) throw new Error('已取消');
       task.rawText = allLines.map(function (x) { return x.text; }).join('\n');
       task.entries = task.entries.map(function (e, idx) { e.order = idx; return e; });
-      if (task.cancelled) throw new Error('已取消');
+      if (isStale(task)) throw new Error('已取消');
       task.status = 'ready'; task.message = '识别完成，请核对'; task.progress = 100;
+      if (isStale(task)) throw new Error('已取消');
       try { var books = await LearningStore.listTextbooks(); task.duplicates = books.filter(function (b) { return task.hash && b.sourcePdfHash === task.hash; }).slice(0, 5); } catch (e) { task.duplicates = []; }
-      if (task.cancelled) throw new Error('已取消');
+      if (isStale(task)) throw new Error('已取消');
       await persistDraft(task);
       render();
     } catch (e) {
-      if (task.cancelled) { task.status = 'cancelled'; task.message = '已取消，未保存结果'; task.progress = 0; }
+      if (task.cancelled || task.epoch !== state.stopEpoch) { task.cancelled = true; task.status = 'cancelled'; task.message = '已取消，未保存结果'; task.progress = 0; }
       else { task.status = 'error'; task.message = e.message || String(e); }
       render();
     } finally {
@@ -209,22 +217,80 @@
       if (state.runningTask === task) state.runningTask = null;
     }
   }
-  async function processFiles(files) {
-    if (state.busy) { toast('正在处理其他文件，请稍候'); return; }
-    state.busy = true;
-    try {
-      for (var i = 0; i < files.length; i++) {
-        var f = files[i];
-        var buf = await f.arrayBuffer();
-        var task = { id: uid('job'), name: f.name, size: f.size, buf: buf, range: state.range, status: 'queued', message: '等待处理', progress: 0, entries: [], method: '', cancelled: false, running: false };
-        state.tasks.push(task); state.active = state.tasks.length - 1; render();
-        await processTask(task);
+  function processFiles(files) {
+    if (state.busy) { toast('正在处理其他文件，请稍候'); return Promise.resolve(); }
+    var epoch = state.stopEpoch;
+    state.busy = true; state.queueCount = files.length;
+    var run = (async function () {
+      try {
+        for (var i = 0; i < files.length; i++) {
+          if (epoch !== state.stopEpoch) break;
+          var f = files[i];
+          var buf = await f.arrayBuffer();
+          if (epoch !== state.stopEpoch) break;
+          var task = { id: uid('job'), name: f.name, size: f.size, buf: buf, range: state.range, status: 'queued', message: '等待处理', progress: 0, entries: [], method: '', cancelled: false, running: false, epoch: epoch };
+          state.tasks.push(task); state.active = state.tasks.length - 1; render();
+          await processTask(task);
+          if (epoch !== state.stopEpoch) break;
+        }
+      } finally {
+        if (epoch === state.stopEpoch) state.busy = false;
+        state.queueCount = 0;
+        if (state.activeRun === run) state.activeRun = null;
+        if (root.OcrEngine) { try { await OcrEngine.terminate(); } catch (e) {} }
+        render();
       }
-    } finally {
-      state.busy = false;
-      if (root.OcrEngine) { try { await OcrEngine.terminate(); } catch (e) {} }
-      render();
+    })();
+    state.activeRun = run;
+    return run;
+  }
+
+  function stopAll() {
+    state.stopEpoch++;
+    if (state.runningTask) state.runningTask.cancelled = true;
+    var p = state.activeRun;
+    try { if (root.OcrEngine && OcrEngine.terminate) { var term = OcrEngine.terminate(); if (term && term.catch) term.catch(function () {}); } } catch (e) {}
+    return Promise.resolve(p).catch(function () {}).then(function () {
+      state.busy = false; state.runningTask = null; state.activeRun = null; state.queueCount = 0;
+    });
+  }
+
+  async function beforeLeave() {
+    var active = state.tasks[state.active];
+    var hasWork = state.busy || state.queueCount > 0 || (active && active.entries && active.entries.length > 0);
+    if (!hasWork) return true;
+    var msg = state.busy
+      ? '正在识别教材目录。离开会取消当前识别和后续教材队列，未完成的识别结果不会写入。确定离开？'
+      : '当前目录草稿尚未确认。离开前会按现有机制保存草稿，然后返回教材列表。确定离开？';
+    if (!window.confirm(msg)) return false; // cancel: keep page and state unchanged
+    if (active && active.status === 'ready' && active.entries && active.entries.length) {
+      try {
+        var saved = await persistDraft(active, true);
+        if (!saved) { toast('草稿保存失败，已保留当前页面'); return false; }
+      } catch (e) { toast('草稿保存失败：' + (e.message || e)); return false; }
     }
+    await stopAll();
+    return true;
+  }
+
+  async function stopForClear() {
+    await stopAll();
+    state.tasks = []; state.active = 0; state.draft = null; state.drafts = [];
+    state.busy = false; state.runningTask = null; state.activeRun = null; state.queueCount = 0;
+    state.open = false;
+    var r = $('tocRoot'); if (r) r.classList.add('hidden');
+  }
+
+  function finishLeave() {
+    state.open = false;
+    var r = $('tocRoot'); if (r) r.classList.add('hidden');
+  }
+
+  async function requestLeave() {
+    if (!(await beforeLeave())) return;
+    state.open = false;
+    var r = $('tocRoot'); if (r) r.classList.add('hidden');
+    if (root.AppShell && AppShell.detachToc) AppShell.detachToc();
   }
 
   function build() {
@@ -232,7 +298,7 @@
     var w = document.createElement('div'); w.id = 'tocRoot'; w.className = 'toc-root hidden';
     w.innerHTML = '<header class="learn-top"><div class="learn-brand"><img src="assets/examcard-wordmark.png"><span class="t">教材目录导入</span><span class="v">OCR</span></div><div class="learn-actions"><button id="tocClose" class="learn-btn ghost">返回教材</button></div></header><main id="tocBody" class="learn-body"></main>';
     document.body.appendChild(w);
-    $('tocClose').addEventListener('click', close);
+    $('tocClose').addEventListener('click', requestLeave);
   }
   function open() {
     build(); state.open = true; $('tocRoot').classList.remove('hidden');
@@ -241,7 +307,7 @@
       state.draft = r[0]; state.textbooks = r[1] || []; state.drafts = Array.isArray(r[2]) ? r[2] : []; render();
     }).catch(function () { render(); });
   }
-  function close() { if (state.runningTask && state.runningTask.running) state.runningTask.cancelled = true; state.open = false; var r = $('tocRoot'); if (r) r.classList.add('hidden'); if (root.AppShell && AppShell.detachToc) AppShell.detachToc(); }
+  function close() { state.open = false; var r = $('tocRoot'); if (r) r.classList.add('hidden'); if (root.AppShell && AppShell.detachToc) AppShell.detachToc(); }
 
   function methodLabel(m) { return m === 'text' ? '文字目录' : m === 'ocr' ? '扫描识别' : '待识别'; }
   function statusLabel(s) { return { queued: '等待', loading: '处理中', ready: '待核对', error: '失败', cancelled: '已取消' }[s] || s; }
@@ -336,5 +402,5 @@
     state.tasks.push(t); state.active = state.tasks.length - 1; render();
   }
 
-  root.TextbookImport = { open: open, close: close };
+  root.TextbookImport = { open: open, close: close, beforeLeave: beforeLeave, finishLeave: finishLeave, requestLeave: requestLeave, stopForClear: stopForClear };
 })(typeof window !== 'undefined' ? window : globalThis);

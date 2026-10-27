@@ -364,7 +364,31 @@
   }
   function closeModal() { $('learnModalRoot').innerHTML = ''; }
   function wireModal(onOk) { var r = $('learnModalRoot'); var c = r.querySelector('[data-cancel]'); if (c) c.addEventListener('click', closeModal); var o = r.querySelector('[data-ok]'); if (o) o.addEventListener('click', function () { onOk(o); }); }
-  function confirmBox(title, msg, fn) { openModal('<h3>' + esc(title) + '</h3><div class="learn-warn">' + esc(msg) + '</div><div class="actions"><button class="learn-btn" data-cancel>取消</button><button class="learn-btn danger" data-ok>确认</button></div>'); wireModal(fn); }
+  function confirmBox(title, msg, fn) {
+    openModal('<h3>' + esc(title) + '</h3><div class="learn-warn">' + esc(msg) + '</div><div id="learnConfirmError" class="learn-warn hidden"></div><div class="actions"><button class="learn-btn" data-cancel>取消</button><button class="learn-btn danger" data-ok>确认</button></div>');
+    wireModal(async function (okBtn) {
+      if (!okBtn || okBtn.getAttribute('data-busy')) return;
+      var rootM = $('learnModalRoot');
+      var cancelBtn = rootM.querySelector('[data-cancel]');
+      okBtn.setAttribute('data-busy', '1');
+      okBtn.disabled = true;
+      if (cancelBtn) cancelBtn.disabled = true;
+      var originalText = okBtn.textContent;
+      okBtn.textContent = '处理中…';
+      try {
+        await fn();
+        closeModal();
+      } catch (e) {
+        okBtn.removeAttribute('data-busy');
+        okBtn.disabled = false;
+        if (cancelBtn) cancelBtn.disabled = false;
+        okBtn.textContent = originalText;
+        var err = $('learnConfirmError');
+        if (err) { err.textContent = '操作失败：' + (e && e.message ? e.message : e) + '。数据未确认删除，请重试。'; err.classList.remove('hidden'); }
+        toast('操作失败，请重试');
+      }
+    });
+  }
   function init() { var b = document.getElementById('learnBtn'); if (b) b.addEventListener('click', open); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   root.LearningApp = { open: open, close: close, reloadIfOpen: async function () { if (state.open) await load(); } };

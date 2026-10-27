@@ -647,6 +647,7 @@
 
     /* 全量清空用户学习数据：保留考试类型配置与升级元数据，其他 store 在同一事务中清空。 */
     async clearUserData() {
+      if (root.TextbookImport && root.TextbookImport.stopForClear) await root.TextbookImport.stopForClear();
       return withDb(async function (db) {
         var stores = Array.prototype.slice.call(db.objectStoreNames);
         if (stores.indexOf('examProfiles') < 0 || stores.indexOf('meta') < 0) throw new Error('数据库结构不完整，无法安全清空');

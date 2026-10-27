@@ -12,11 +12,11 @@
 
 | File | SHA-256 |
 | --- | --- |
-| `ExamCard-1.0.0-win-portable.exe` | `547F84F9B59CD0EC57C1D3C629D691219345AA906B094271F16E07B091F360AD` |
-| `ExamCard-1.0.0-win-setup.exe` | `1EC9FCD2ABB7B5F42C992147436C03B0AADE65ACC38D6212B81D644FAC74E159` |
+| `ExamCard-1.0.0-win-portable.exe` | `FF466EE7F5DBAC3DE92A8DA7749D50F5A207538F552C832F056CA0F10040B73D` |
+| `ExamCard-1.0.0-win-setup.exe` | `EA88C1C9D031CDA87EB0EA74258E520CCED9126687151691C0715681E0B6F12F` |
 | `ExamCard-1.0.0-source.zip` | Listed in `SHA256SUMS.txt` |
 
-Portable 175,721,156 bytes; setup 202,664,546 bytes. The workspace build directory carries a Low Integrity label; delivery copies in a normal user Documents folder were created by copying into a normal user folder and show no Low Mandatory Level label. No ACL/UAC/Defender settings were changed.
+Portable 175,721,706 bytes; setup 202,665,504 bytes. The workspace build directory carries a Low Integrity label; delivery copies in a normal user Documents folder were created by copying into a normal user folder and show no Low Mandatory Level label. No ACL/UAC/Defender settings were changed.
 
 ## Built-in exam removal
 
@@ -29,7 +29,7 @@ Portable 175,721,156 bytes; setup 202,664,546 bytes. The workspace build directo
 ## Function checks
 
 - Unified workspace: all ordinary modules mount inside `workspaceHost`; sidebar remains visible; no fixed/z-index page emulation; module duplicate brand/title/close controls removed.
-- Four-fix report: see `FINAL_FOUR_FIXES_1.0.0.md` (essay PDF detection, clear-all, diagnosis logs, OCR navigation).
+- Final fix report: see `FINAL_FOUR_FIXES_1.0.0.md` (includes OCR background lifecycle/clear race and learning-plan delete modal). (essay PDF detection, clear-all, diagnosis logs, OCR navigation).
 - About: independent page; one main title; product intro; Version 1.0.0; Copyright; Apache License 2.0 link; real GitHub URL; **clickable Third-party Licenses opens an in-app component/license list**; no "personal study" limitation wording; industry/commercial use explicitly permitted by Apache-2.0; technical DB/backup information folded.
 - Essay: import/detection/preview/save guard; forced-save-failure test kept editor visible; successful leave paused session; reopening restored draft. Existing essay E2E legacy pause/list test still needs manual re-check.
 - OCR: attach/detach route no stale task state; cancel/retry/multi-draft/tree checks from earlier rounds retained.

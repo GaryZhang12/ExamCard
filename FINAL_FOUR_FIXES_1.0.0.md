@@ -117,16 +117,61 @@
 | OCR → 页面“返回教材” | 列表显示，OCR 隐藏 |
 | 左侧高亮 | 始终为“教材目录” |
 
+
+## 四A、OCR 后台生命周期与全量清空竞态（本轮阻断修复）
+
+### 根因
+
+- `guardLeavingModule()` 只有 EssayApp 离开守卫；OCR 页面点击侧栏直接隐藏 DOM。
+- `processFiles()` 的 `for` 循环不会因离开停止，可能继续启动下一本教材。
+- `processTask()` 在延迟 OCR Promise 返回后仍可能调用 `persistDraft()`，把草稿写回刚清空的 IndexedDB。
+
+### 修改
+
+- `app/textbook-import.js`：新增 `stopEpoch` 运行代次、`beforeLeave()`、`finishLeave()`、`requestLeave()`、`stopForClear()`；任务/队列在离开后不再启动下一本；`persistDraft` 与 `processTask` 在代次失效后拒绝写入；返回按钮和侧栏统一走离开守卫。
+- `app/app-shell.js`：`guardLeavingModule()` 接入 OCR `beforeLeave()`；取消离开保持页面与状态；清空按钮先调用 `stopForClear()`。
+- `app/exam-store.js`：`clearUserData()` 自身也先调用 OCR `stopForClear()`，避免绕过 UI 的调用发生竞态。
+- 清空后重新进入 OCR 可正常打开；正在识别的任务不会误报完成。
+
+### 定向竞态测试（受控延迟 OCR Promise）
+
+- 启动两本教材队列，第一本 OCR Promise 延迟 1200ms。
+- 识别中点击“学习 · 课程”：先取消当前任务、等待运行结束，再进入课程页；`tasks` 仅为 1，未启动第二本。
+- 清空全部数据；再等待 1800ms（超过原延迟 Promise），22 表用户数据仍为 0（仅保留 `examProfiles=3`、`meta=1`），`ocrDrafts` / `ocrDraft:last` 均为 `null`。
+- 重新进入 OCR：`tocRoot` 正常显示，返回按钮存在，任务列表已清空。
+- 取消离开：`window.confirm` 返回 false 时 `tocRoot` 仍显示、标题保持“学习 · 教材目录导入”，状态不丢。
+- 打包后的最终 1.0.0 可执行文件同样通过。
+
+## 四B、学习计划删除弹窗不关闭
+
+### 根因
+
+`confirmBox()` 只把异步删除函数交给 `wireModal()`，删除成功后没有调用 `closeModal()`；删除最后一个任务并重绘列表后，弹窗仍停留在 `learnModalRoot`。
+
+### 修改
+
+- `app/learning-app.js`：`confirmBox()` 统一管理异步生命周期：成功后关闭弹窗；失败保留弹窗、显示错误、恢复按钮；操作中禁用重复提交；取消只关闭不删除。
+- 删除成功由 `load()` 刷新任务数、完成率、未完成数和空状态。
+
+### 实际 Electron 点击验证
+
+- 删除普通任务：`modal.innerHTML.length=0`，任务行减少，页面仍为“学习 · 学习计划”。
+- 删除最后一个任务：`rows=0`，显示“暂无计划任务”，弹窗关闭。
+- 取消：弹窗关闭，任务保留。
+- 模拟 `LearningStore.deleteTask` 抛错：弹窗保留，显示“操作失败：模拟数据库失败”，任务保留，按钮恢复可用。
+- 删除前后 `answers=1`、`attempts=3`、`gradingRecords=3` 未变化。
+- 连续删除多任务无残留遮罩；最终打包版同样通过。
+
 ## 五、构建与 Git
 
 最终产物 SHA-256：
 
 | 文件 | SHA-256 |
 | --- | --- |
-| `ExamCard-1.0.0-win-portable.exe` | `547F84F9B59CD0EC57C1D3C629D691219345AA906B094271F16E07B091F360AD` |
-| `ExamCard-1.0.0-win-setup.exe` | `1EC9FCD2ABB7B5F42C992147436C03B0AADE65ACC38D6212B81D644FAC74E159` |
+| `ExamCard-1.0.0-win-portable.exe` | `FF466EE7F5DBAC3DE92A8DA7749D50F5A207538F552C832F056CA0F10040B73D` |
+| `ExamCard-1.0.0-win-setup.exe` | `EA88C1C9D031CDA87EB0EA74258E520CCED9126687151691C0715681E0B6F12F` |
 
-- Portable 175,721,156 B；setup 202,664,546 B。
+- Portable 175,721,706 B；setup 202,665,504 B。
 - Portable/setup 主 EXE 均为 `asInvoker`，无 `requireAdministrator`。
 - 私有仓库最终 HEAD 见交付回复。
 - 独立公开仓库快照已同步本轮源码；首个提交不继承原私人历史，未 push、未 Public、未 Release。

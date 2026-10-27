@@ -141,6 +141,14 @@
       try { return await EssayApp.beforeLeave(); }
       catch (e) { console.error(e); return false; }
     }
+    if (state.currentModule === 'toc-import' && target !== 'toc-import' && root.TextbookImport && TextbookImport.beforeLeave) {
+      try {
+        var ok = await TextbookImport.beforeLeave();
+        if (!ok) return false;
+        if (TextbookImport.finishLeave) TextbookImport.finishLeave();
+        return true;
+      } catch (e) { console.error(e); return false; }
+    }
     return true;
   }
   function showHome() {
@@ -288,6 +296,7 @@
       btn.disabled = true; btn.textContent = '正在清空…';
       var st = $('dataClearConfirmStatus'); if (st) st.textContent = '正在清空全部学习数据，请勿关闭软件…';
       try {
+        if (root.TextbookImport && TextbookImport.stopForClear) await TextbookImport.stopForClear();
         var before = await ExamBackup.getStoreCounts();
         await ExamStore.clearUserData();
         var after = await ExamBackup.getStoreCounts();
@@ -354,7 +363,7 @@
     var rail = $('appRail'); if (rail) rail.classList.add('routing');
     try {
       var ok = await guardLeavingModule(a);
-      if (!ok) { setPage('申论训练', '保存失败，已保留当前编辑器'); return; }
+      if (!ok) { if (state.currentModule === 'essay') setPage('申论训练', '保存失败，已保留当前编辑器'); return; }
       if (a === 'home') { showHome(); return; }
       if (a === 'library') { showLibrary(); return; }
       if (a === 'data') { showData(); return; }
