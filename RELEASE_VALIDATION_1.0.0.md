@@ -14,7 +14,7 @@
 | --- | --- |
 | `ExamCard-1.0.0-win-portable.exe` | `9700918EC74684A74FF05A5EE98D03EC56A49CFACE4104CDF9B4F45BC62D6557` |
 | `ExamCard-1.0.0-win-setup.exe` | `35532970883733B548884B1DAC288C304451626305D7546B16E8FE4FFB011202` |
-| `ExamCard-1.0.0-source.zip` | Listed in `SHA256SUMS.txt` |
+| `ExamCard-1.0.0-source.zip` | `36DC3CD9F426A490472EEE501967ED36A63E5E17A34D1748EF950661F6AD295F` |
 
 Portable 175,517,157 bytes; setup 202,663,384 bytes. The workspace build directory carries a Low Integrity label; delivery copies in a normal user Documents folder were created by copying into a normal user folder and show no Low Mandatory Level label. No ACL/UAC/Defender settings were changed.
 
@@ -52,6 +52,10 @@ Portable 175,517,157 bytes; setup 202,663,384 bytes. The workspace build directo
 - Portable low-integrity source vs normal-delivery copy behavior on the target Windows machine.
 - Real ChatGPT daily-plan file, real textbook/essay PDF, and existing real user profile acceptance.
 - Owner authorization to push, switch repository visibility, and create GitHub Release.
+
+## Public snapshot
+
+Clean public repository snapshot initial commit: `239293e3a6e50d6a0bd0a0954bfeb6487c274adb` (new history, no built-in exam resources, no tests/profiles/backups/logs/private paths). No push, Public switch or Release.
 
 ## Stop condition
 
