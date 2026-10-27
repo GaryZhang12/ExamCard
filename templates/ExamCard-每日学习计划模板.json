@@ -1,0 +1,62 @@
+{
+  "schema_version": "examcard.daily-plan/v1",
+  "plan_id": "demo-20261027",
+  "date": "2026-10-27",
+  "timezone": "Asia/Shanghai",
+  "exam_type": "gd",
+  "status": "planned",
+  "title": "每日学习计划示例",
+  "goal": "示例计划，可修改日期和内容后导入；不代表真实完成记录。",
+  "mem_suspended": false,
+  "schedule": [],
+  "tasks": [
+    {
+      "task_id": "demo-01",
+      "subject": "资料分析",
+      "topic": "增长率与比重综合练习",
+      "priority": "high",
+      "start": "09:00",
+      "end": "10:30",
+      "planned_minutes": 90,
+      "learning_mode": "course_first",
+      "course": {
+        "topic": "资料分析基础",
+        "provider": "示例课程平台",
+        "video_title": "增长率与比重",
+        "url": "https://example.com/course/demo",
+        "verified": false
+      },
+      "material": {
+        "name": "示例教材",
+        "chapter": "第一章 资料分析",
+        "pages": null
+      },
+      "stages": [
+        {
+          "type": "video",
+          "minutes": 15
+        },
+        {
+          "type": "examples",
+          "minutes": 20,
+          "count": 5
+        },
+        {
+          "type": "practice",
+          "minutes": 40,
+          "count": 20,
+          "question_set_id": null
+        },
+        {
+          "type": "review",
+          "minutes": 15
+        }
+      ],
+      "acceptance": {
+        "target_correct": 16,
+        "target_total": 20,
+        "require_error_review": true
+      }
+    }
+  ]
+}

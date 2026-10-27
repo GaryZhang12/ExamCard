@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ExamCard · 智能考试训练系统</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="essay.css">
+<link rel="stylesheet" href="diagnosis.css">
+<link rel="stylesheet" href="bank.css">
+<link rel="stylesheet" href="learning.css">
+<link rel="stylesheet" href="app-shell.css">
+<link rel="icon" href="assets/examcard-icon.png">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img class="brand-logo" src="assets/examcard-wordmark.png" alt="ExamCard">
+    <div class="brand-sub">行测 × 申论 · 本地离线学习诊断</div>
+  </div>
+  <button id="railToggle" class="btn ghost hidden" aria-label="打开导航">☰</button>
+  <button id="libraryBtn" class="btn ghost hidden">← 试卷库</button>
+  <div class="exam-head">
+    <div id="examTitle" class="exam-title">试卷库</div>
+    <div id="examMeta" class="exam-sub"></div>
+  </div>
+  <div class="timer-box">
+    <span id="timerLabel" class="timer-label">剩余时间</span>
+    <span id="timer" class="timer">--:--</span>
+    <span id="timerSub" class="timer-sub"></span>
+  </div>
+  <div class="actions" id="examActions">
+    <button id="pauseBtn" class="btn hidden">暂停</button>
+    <button id="statsBtn" class="btn hidden">统计</button>
+    <button id="stdBtn" class="btn hidden">标准答案</button>
+    <button id="submitBtn" class="btn danger hidden">交卷</button>
+  </div>
+</header>
+
+<nav id="appRail" class="app-rail" aria-label="主导航"></nav>
+
+<main id="homeView" class="home-view hidden"><div id="homeBody"></div></main>
+
+<main id="dataView" class="data-view hidden"><div id="dataBody"></div></main>
+
+<main id="workspaceHost" class="workspace-host hidden"></main>
+
+<main id="aboutView" class="about-view hidden"><div id="aboutBody"></div></main>
+
+<main id="libraryView" class="library-view">
+  <div class="library-head">
+    <div>
+      <h1>试卷库</h1>
+      <p class="library-desc">本地离线运行。上传任意 PDF 试卷 → 自动识别题号/题型/模块/页码 → 人工确认 → 限时答题 → 上传标准答案 → 自动批改 → 导出 GPT 诊断包。</p>
+    </div>
+    <div class="library-actions">
+      <button id="importPdfBtn" class="btn primary">＋ 导入试卷 PDF</button>
+      <input id="importPdfInput" type="file" accept="application/pdf,.pdf" class="hidden">
+    </div>
+  </div>
+  <div id="examList" class="exam-list"></div>
+  <div class="library-tip">
+    <b>说明：</b>参考答案并非官方答案，请使用你信任的标准答案文件；未导入或未核对的题目显示“未核对”，不会被算错。所有文件只在浏览器本地处理，不上传服务器。
+  </div>
+</main>
+
+<main id="examView" class="main hidden">
+  <section class="pdf-panel">
+    <div class="pdf-toolbar">
+      <button id="pdfPrev" class="mini-btn" title="上一页">‹</button>
+      <span id="pdfPageInfo" class="page-info">第 1 / 1 页</span>
+      <button id="pdfNext" class="mini-btn" title="下一页">›</button>
+      <input id="pdfPageInput" class="page-input" type="number" min="1" placeholder="页码">
+      <button id="pdfJump" class="mini-btn">跳转</button>
+      <span class="tool-sep"></span>
+      <button id="zoomOut" class="mini-btn">−</button>
+      <span id="zoomLabel" class="zoom-label">100%</span>
+      <button id="zoomIn" class="mini-btn">+</button>
+      <button id="zoomFit" class="mini-btn">适应宽度</button>
+      <span class="tool-sep"></span>
+      <button id="gotoQPage" class="mini-btn strong">定位当前题</button>
+      <button id="fixLocBtn" class="mini-btn">修正定位</button>
+      <span class="tool-spacer"></span>
+      <span id="pdfStatus" class="pdf-status"></span>
+    </div>
+    <div id="pdfViewport" class="pdf-viewport">
+      <div id="pdfPageWrap" class="pdf-page-wrap">
+        <canvas id="pdfCanvas"></canvas>
+        <div id="pdfMarker" class="pdf-marker"></div>
+      </div>
+    </div>
+    <div class="pdf-foot">PDF.js 本地按需渲染（不预生成页面图片）。点击「定位当前题」跳转到题目；若定位不准，点「修正定位」后在 PDF 上单击题目实际位置。</div>
+  </section>
+
+  <section class="answer-panel">
+    <div class="status-strip">
+      <span class="stat">已答 <b id="ansCount">0</b><span class="muted">/<b id="totalCount">0</b></span></span>
+      <span class="stat">未答 <b id="unansCount">0</b></span>
+      <span class="stat">标记 <b id="markCount">0</b></span>
+      <span id="statusPill" class="pill">未开始</span>
+      <span class="tool-spacer"></span>
+      <span id="stdStatus" class="std-status muted">未导入标准答案</span>
+    </div>
+
+    <div class="current-card">
+      <div class="q-head">
+        <span class="q-title">第 <b id="curNo">1</b> 题</span>
+        <span id="curModule" class="tag">未分类</span>
+        <span id="curType" class="tag tag-light">单选题</span>
+        <span class="tool-spacer"></span>
+        <span id="curPage" class="muted small">第 1 页</span>
+        <button id="prevBtn" class="mini-btn">上一题</button>
+        <button id="nextBtn" class="mini-btn">下一题</button>
+      </div>
+      <div id="options" class="options"></div>
+      <div class="q-foot">
+        <label class="mark-toggle"><input type="checkbox" id="markChk"> 标记疑问</label>
+        <button id="clearBtn" class="mini-btn">清除本题</button>
+        <span class="jump-wrap">跳至
+          <input id="jumpInput" class="jump-input" type="number" min="1" placeholder="题号">
+          <button id="jumpBtn" class="mini-btn">跳转</button>
+        </span>
+        <span class="tool-spacer"></span>
+        <span id="curAnswer" class="muted">未作答</span>
+        <span class="kbd-hint muted small">快捷键：A/B/C/D，←/→</span>
+      </div>
+      <div id="pauseOverlay" class="pause-overlay hidden">
+        <div class="pause-box">
+          <div class="pause-title">⏸ 已暂停</div>
+          <div id="pauseReason" class="pause-reason">计时与作答已暂停</div>
+          <button id="resumeBtn" class="btn primary">继续作答</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="answerGrid" class="answer-grid"></div>
+  </section>
+</main>
+
+<div id="legacyModuleButtons" class="hidden" aria-hidden="true"><button id="essayBtn"></button><button id="diagnosisBtn"></button><button id="bankBtn"></button><button id="learnBtn"></button></div>
+<div id="modalRoot"></div>
+<div id="toast" class="toast hidden"></div>
+
+<script src="libs/xlsx.full.min.js"></script>
+<script src="libs/fflate.umd.js"></script>
+<script src="pdf-libs/pdf.min.js"></script>
+<script src="pdf-worker-data.js"></script>
+<script src="pdf-detect.js"></script>
+<script src="exam-store.js"></script>
+<script src="essay-store.js"></script>
+<script src="essay-detect.js"></script>
+<script src="data-backup.js"></script>
+<script src="pdf-viewer.js"></script>
+<script src="answer-io.js"></script>
+<script src="grade-export.js"></script>
+<script src="attempt-snapshot.js"></script>
+<script src="attempt-history.js"></script>
+<script src="essay-app.js"></script>
+<script src="diagnosis-store.js"></script>
+<script src="diagnosis-engine.js"></script>
+<script src="diagnosis-app.js"></script>
+<script src="bank-app.js"></script>
+<script src="learning-store.js"></script>
+<script src="daily-plan-import.js"></script>
+<script src="learning-engine.js"></script>
+<script src="learning-app.js"></script>
+<script src="ocr/tesseract.min.js"></script>
+<script src="ocr-engine.js"></script>
+<script src="textbook-import.js"></script>
+<script src="app.js"></script>
+<script src="app-shell.js"></script>
+</body>
+</html>

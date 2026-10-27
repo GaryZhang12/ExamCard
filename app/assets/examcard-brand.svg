@@ -1,0 +1,4 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 200" role="img" aria-label="ExamCard">
+  <image href="examcard-icon.svg" x="0" y="12" width="176" height="176"/>
+  <text x="216" y="137" font-family="Segoe UI, Arial, sans-serif" font-size="108" font-weight="700" fill="#08204B">Exam<tspan fill="#0A7BFF">Card</tspan></text>
+</svg>

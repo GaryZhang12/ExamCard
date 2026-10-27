@@ -1,0 +1,93 @@
+{
+  "name": "gd-exam-card-v3",
+  "productName": "ExamCard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ExamCard - offline-first exam training and study management for Guangdong and Shenzhen civil service exams",
+  "author": "Gary",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GaryZhang12/ExamCard"
+  },
+  "main": "electron-main.js",
+  "scripts": {
+    "copy-app": "node scripts/copy-app.mjs",
+    "start": "electron .",
+    "build": "electron-builder --win portable",
+    "build:dir": "electron-builder --win dir",
+    "build:installer": "electron-builder --win nsis",
+    "build:public": "node scripts/build-public.mjs"
+  },
+  "devDependencies": {
+    "electron": "43.3.0",
+    "electron-builder": "26.18.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "electron-builder"
+    ]
+  },
+  "build": {
+    "appId": "com.gary.gdexam.v3",
+    "productName": "ExamCard",
+    "asar": true,
+    "compression": "normal",
+    "directories": {
+      "output": "dist",
+      "buildResources": "."
+    },
+    "files": [
+      "electron-main.js",
+      "preload.js",
+      "desktop-enhance.js",
+      "app/**",
+      "icon.ico",
+      "使用说明.md",
+      "package.json",
+      "THIRD_PARTY_NOTICES.md",
+      "LICENSE",
+      "OPEN_SOURCE_AUDIT.md",
+      "NOTICE",
+      "licenses/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icon.ico",
+      "requestedExecutionLevel": "asInvoker",
+      "artifactName": "ExamCard-${version}-win-portable.${ext}"
+    },
+    "portable": {
+      "artifactName": "ExamCard-${version}-win-portable.${ext}",
+      "requestExecutionLevel": "user"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "allowToChangeInstallationDirectory": false,
+      "packElevateHelper": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "artifactName": "ExamCard-${version}-win-setup.${ext}",
+      "shortcutName": "ExamCard"
+    },
+    "publish": null,
+    "asarUnpack": [
+      "app/ocr/**"
+    ]
+  },
+  "dependencies": {
+    "@tesseract.js-data/chi_sim": "1.0.0",
+    "@tesseract.js-data/eng": "1.0.0",
+    "tesseract.js": "7.0.0"
+  }
+}

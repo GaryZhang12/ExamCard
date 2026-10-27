@@ -1,0 +1,16 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="ExamCard">
+  <rect x="36" y="36" width="952" height="952" rx="226" fill="#0A7BFF"/>
+  <rect x="261" y="230" width="502" height="564" rx="46" fill="#FFFFFF"/>
+  <g fill="#9DCBFF">
+    <rect x="435" y="332" width="246" height="35" rx="17"/>
+    <rect x="435" y="454" width="246" height="35" rx="17"/>
+    <rect x="435" y="576" width="246" height="35" rx="17"/>
+    <rect x="435" y="698" width="246" height="35" rx="17"/>
+  </g>
+  <g fill="none" stroke="#0A7BFF" stroke-width="12">
+    <circle cx="343" cy="349" r="40"/><circle cx="343" cy="593" r="40"/><circle cx="343" cy="715" r="40"/>
+  </g>
+  <circle cx="343" cy="471" r="40" fill="#0A7BFF"/>
+  <path d="M323 471 l14 15 l27 -30" fill="none" stroke="#FFFFFF" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="307" y="820" width="410" height="26" rx="13" fill="#E2EEFF"/>
+</svg>

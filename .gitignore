@@ -1,0 +1,5 @@
+﻿node_modules/
+dist/
+*.log
+app/桌面版使用说明.md
+.public-build/
