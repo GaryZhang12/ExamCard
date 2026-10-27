@@ -264,7 +264,7 @@
     $('essayLibraryBtn').classList.add('hidden');
     $('essayImportBtn').classList.remove('hidden');
     $('essaySaveStatus').textContent = '';
-    $('essayTopTitle').textContent = '申论 · 本地离线';
+    var tt = $('essayTopTitle'); if (tt) tt.textContent = '申论 · 本地离线';
     await renderCards();
   }
 
@@ -543,7 +543,7 @@
     $('essayTimer').classList.remove('hidden');
     $('essayPauseBtn').classList.remove('hidden');
     $('essaySubmitBtn').classList.remove('hidden');
-    $('essayTopTitle').textContent = exam.title || '申论练习';
+    var tt2 = $('essayTopTitle'); if (tt2) tt2.textContent = exam.title || '申论练习';
     $('essayPauseBtn').textContent = session.status === 'paused' ? '继续' : '暂停';
     renderTabs();
     await selectPrompt(state.currentPromptId, true, true);
@@ -940,7 +940,7 @@
     $('essaySubmitBtn').classList.add('hidden');
     $('essayImportBtn').classList.add('hidden');
     $('essayLibraryBtn').classList.add('hidden');
-    $('essayTopTitle').textContent = exam.title || '申论结果';
+    var tt3 = $('essayTopTitle'); if (tt3) tt3.textContent = exam.title || '申论结果';
     var answers = (exam.prompts || []).map(function (p) {
       var d = session.drafts && session.drafts[p.id];
       return { p: p, text: d ? d.text : '', words: d ? wordCount(d.text) : 0 };

@@ -98,6 +98,7 @@
     if (!rootEl) return;
     rootEl.querySelectorAll('.essay-brand,.diag-brand,.bank-brand,.learn-brand,.essay-top-title,.diag-title').forEach(function (el) { el.remove(); });
     ['essayCloseBtn', 'diagClose', 'bankClose', 'learnClose', 'tocClose'].forEach(function (id) {
+      if (id === 'tocClose') return;
       var el = rootEl.querySelector('#' + id); if (el) el.remove();
     });
   }

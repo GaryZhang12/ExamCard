@@ -230,7 +230,7 @@
   function build() {
     if ($('tocRoot')) return;
     var w = document.createElement('div'); w.id = 'tocRoot'; w.className = 'toc-root hidden';
-    w.innerHTML = '<header class="learn-top"><div class="learn-brand"><img src="assets/examcard-wordmark.png"><span class="t">教材目录导入</span><span class="v">OCR</span></div><div class="learn-actions"><button id="tocClose" class="learn-btn ghost">关闭</button></div></header><main id="tocBody" class="learn-body"></main>';
+    w.innerHTML = '<header class="learn-top"><div class="learn-brand"><img src="assets/examcard-wordmark.png"><span class="t">教材目录导入</span><span class="v">OCR</span></div><div class="learn-actions"><button id="tocClose" class="learn-btn ghost">返回教材</button></div></header><main id="tocBody" class="learn-body"></main>';
     document.body.appendChild(w);
     $('tocClose').addEventListener('click', close);
   }
