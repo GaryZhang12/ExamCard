@@ -14,7 +14,7 @@
 | --- | --- |
 | `ExamCard-1.0.0-win-portable.exe` | `9700918EC74684A74FF05A5EE98D03EC56A49CFACE4104CDF9B4F45BC62D6557` |
 | `ExamCard-1.0.0-win-setup.exe` | `35532970883733B548884B1DAC288C304451626305D7546B16E8FE4FFB011202` |
-| `ExamCard-1.0.0-source.zip` | `36DC3CD9F426A490472EEE501967ED36A63E5E17A34D1748EF950661F6AD295F` |
+| `ExamCard-1.0.0-source.zip` | Listed in `SHA256SUMS.txt` |
 
 Portable 175,517,157 bytes; setup 202,663,384 bytes. The workspace build directory carries a Low Integrity label; delivery copies in a normal user Documents folder were created by copying into a normal user folder and show no Low Mandatory Level label. No ACL/UAC/Defender settings were changed.
 
