@@ -22,7 +22,7 @@ ExamCard 是一款开源、离线优先的桌面考试训练与学习管理工�
 
 ## Download
 
-Release assets (when published):
+Release assets: [ExamCard 1.0.0](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.0)
 
 - `ExamCard-1.0.0-win-portable.exe`
 - `ExamCard-1.0.0-win-setup.exe`
@@ -49,7 +49,7 @@ The Electron app loads local static files from `app/`; it does not require a ser
 - App data: `%APPDATA%\gd-exam-card-v3\`
 - IndexedDB database name unchanged; schema v5 with 22 tables.
 - Upgrading from earlier ExamCard builds keeps existing papers, sessions, essays, learning records and backups.
-- Full backups use the existing format and include all 22 tables.
+- Restore requires a complete backup containing all current 22 tables and valid schema/integrity metadata. Older backups missing tables (including the legacy 15-table format) are rejected before any data is cleared or written.
 
 No automatic deletion of user papers or history is performed. New installations start with an empty paper library.
 
@@ -78,4 +78,6 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md). Contributions are accepted under the A
 
 ## Status
 
-This is the 1.0.0 release candidate. Publishing, repository publicization and GitHub Release require explicit owner approval; this source tree itself is the clean public snapshot candidate.
+Version 1.0.0 is authorized by the owner for public release. The previous ChatGPT targeted source review passed conditionally. Full standard-user Windows acceptance of the final portable and installer artifacts has not been completely demonstrated. Earlier successful manual checks must not be treated as proof for every final artifact.
+
+The release binaries and source ZIP are the original hash-verified delivery artifacts; they have not been rebuilt. The source ZIP corresponds to application code at `b17cabbd6102607c83f19baeb903f4c8a2983308`; repository changes after that commit clarify release documentation only. Historical audit and validation reports describe their original pre-publication state. See the GitHub Release for current publication status and verification limits.
