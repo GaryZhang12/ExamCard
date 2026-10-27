@@ -95,7 +95,7 @@
 - 左侧“诊断日志”高亮，主标题“诊断日志”，内容标题“诊断事件日志”。
 - 页面 `input[type=date]=0`、`textarea=0`；不再出现学习记录表单。
 - 显示真实事件：行测练习诊断、错题复测诊断、错题诊断；无事件时显示明确空状态。
-- 截图：`v3_test/final_four/diagnosis_logs.png`（最终构建、Electron 实际截图）。
+- 截图：`Screenshots/diagnosis_empty.png`、`Screenshots/diagnosis_data.png`（最终打包版 Electron 实际截图）。
 
 ## 四、P1 教材 OCR 导航边界
 
