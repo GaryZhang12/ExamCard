@@ -37,7 +37,7 @@
       '<div class="rail-group"><div class="rail-cap">学习</div>' +
       nav('chapters', '教材目录', 'learn-textbooks') + nav('courses', '课程', 'learn-courses') + nav('plan', '学习计划', 'learn-plans') + nav('clock', '学习记录', 'learn-records') + nav('chart', '学习反馈', 'learn-feedback') + '</div>' +
       '<div class="rail-group"><div class="rail-cap">复盘与资源</div>' +
-      nav('activity', '学习诊断', 'diagnosis-overview') + nav('refresh', '错题本与复测', 'diagnosis-wrong') + nav('trend', '历史趋势', 'diagnosis-trends') + nav('grid', '题库管理', 'bank-questions') + nav('sliders', '考试与导入质量', 'bank-profiles') + '</div>' +
+      nav('activity', '学习诊断', 'diagnosis-overview') + nav('chapters', '知识点诊断', 'diagnosis-knowledge') + nav('refresh', '错题本与复测', 'diagnosis-wrong') + nav('trend', '历史趋势', 'diagnosis-trends') + nav('clock', '诊断日志', 'diagnosis-logs') + nav('grid', '题库管理', 'bank-questions') + nav('sliders', '考试配置', 'bank-profiles') + nav('download', '导入质量', 'bank-quality') + '</div>' +
       '<div class="rail-group"><div class="rail-cap">数据</div>' + nav('download', '备份与恢复', 'data') + nav('info', '关于 ExamCard', 'about') + '</div></div>' +
       '<div class="rail-foot">本地离线 · 数据保存在本机</div>';
     rail.querySelectorAll('[data-nav]').forEach(function (b) { b.addEventListener('click', function () { act(b.getAttribute('data-nav')); }); });
@@ -48,8 +48,8 @@
   var MODULE_ROOTS = ['essayRoot', 'diagRoot', 'bankRoot', 'learnRoot', 'tocRoot'];
   var MODULE_IDS = { 'essay': 'essayRoot' };
   ['learn-textbooks','learn-courses','learn-plans','learn-records','learn-feedback'].forEach(function (k) { MODULE_IDS[k] = 'learnRoot'; });
-  ['diagnosis-overview','diagnosis-wrong','diagnosis-trends'].forEach(function (k) { MODULE_IDS[k] = 'diagRoot'; });
-  ['bank-questions','bank-profiles'].forEach(function (k) { MODULE_IDS[k] = 'bankRoot'; });
+  ['diagnosis-overview','diagnosis-knowledge','diagnosis-wrong','diagnosis-trends','diagnosis-logs'].forEach(function (k) { MODULE_IDS[k] = 'diagRoot'; });
+  ['bank-questions','bank-profiles','bank-quality'].forEach(function (k) { MODULE_IDS[k] = 'bankRoot'; });
   var MODULE_TITLES = {
     'essay': ['申论训练', '申论试卷 · 作答 · 版本'],
     'learn-textbooks': ['学习 · 教材目录', '教材 · 章节 · 目录识别'],
@@ -58,10 +58,13 @@
     'learn-records': ['学习 · 学习记录', '手动记录与导出'],
     'learn-feedback': ['学习 · 学习反馈', '计划 vs 实际 · 正确率'],
     'diagnosis-overview': ['学习诊断', '真实作答 · 知识点 · 建议'],
+    'diagnosis-knowledge': ['知识点诊断', '薄弱知识点 · 标签'],
     'diagnosis-wrong': ['错题本与复测', '错题筛选 · 原题定位 · 复测'],
     'diagnosis-trends': ['历史趋势', '练习与复测变化'],
+    'diagnosis-logs': ['诊断日志', '手动学习记录'],
     'bank-questions': ['题库管理', '题目 · 标签 · 原题定位'],
-    'bank-profiles': ['考试与导入质量', '考试配置 · 导入检查']
+    'bank-profiles': ['考试配置', '考试类型与评分规则'],
+    'bank-quality': ['导入质量', '重复风险 · 题目质量']
   };
   function setPage(title, meta) {
     var a = $('examTitle'), b = $('examMeta');
@@ -96,6 +99,9 @@
   }
   function cleanEmbeddedChrome(rootEl) {
     if (!rootEl) return;
+    if (rootEl.id === 'learnRoot') { var lt = rootEl.querySelector('.learn-top'); if (lt) lt.remove(); }
+    if (rootEl.id === 'diagRoot') { var dt = rootEl.querySelector('.diag-tabs'); if (dt) dt.remove(); }
+    if (rootEl.id === 'bankRoot') { var bt = rootEl.querySelector('.bank-top'); if (bt) bt.remove(); }
     rootEl.querySelectorAll('.essay-brand,.diag-brand,.bank-brand,.learn-brand,.essay-top-title,.diag-title').forEach(function (el) { el.remove(); });
     ['essayCloseBtn', 'diagClose', 'bankClose', 'learnClose', 'tocClose'].forEach(function (id) {
       if (id === 'tocClose') return;
@@ -306,10 +312,13 @@
       if (a === 'learn-records' && window.LearningApp) { openModule(a, function () { LearningApp.open('records'); }); return; }
       if (a === 'learn-feedback' && window.LearningApp) { openModule(a, function () { LearningApp.open('feedback'); }); return; }
       if (a === 'diagnosis-overview' && window.DiagnosisApp) { openModule(a, function () { DiagnosisApp.open('overview'); }); return; }
+      if (a === 'diagnosis-knowledge' && window.DiagnosisApp) { openModule(a, function () { DiagnosisApp.open('knowledge'); }); return; }
       if (a === 'diagnosis-wrong' && window.DiagnosisApp) { openModule(a, function () { DiagnosisApp.open('wrong'); }); return; }
       if (a === 'diagnosis-trends' && window.DiagnosisApp) { openModule(a, function () { DiagnosisApp.open('trends'); }); return; }
+      if (a === 'diagnosis-logs' && window.DiagnosisApp) { openModule(a, function () { DiagnosisApp.open('logs'); }); return; }
       if (a === 'bank-questions' && window.QuestionBank) { openModule(a, function () { QuestionBank.open('questions'); }); return; }
       if (a === 'bank-profiles' && window.QuestionBank) { openModule(a, function () { QuestionBank.open('profiles'); }); return; }
+      if (a === 'bank-quality' && window.QuestionBank) { openModule(a, function () { QuestionBank.open('quality'); }); return; }
     } finally {
       state.routing = false;
       if (rail) rail.classList.remove('routing');

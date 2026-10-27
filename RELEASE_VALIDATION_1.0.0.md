@@ -12,11 +12,11 @@
 
 | File | SHA-256 |
 | --- | --- |
-| `ExamCard-1.0.0-win-portable.exe` | `7F48AFA629878F4E1B6109BF9C16ADC7A80AD83546CF926C0C93E473D0D9F8C3` |
-| `ExamCard-1.0.0-win-setup.exe` | `47E590959CA5BA5140CDAA343757C924C50A3A5914B8DECE580469984AF871DD` |
+| `ExamCard-1.0.0-win-portable.exe` | `5008A654B1778ED1C591F6CE18AABBB7A2AB4527BFAFBCC030928EA42B5086F8` |
+| `ExamCard-1.0.0-win-setup.exe` | `4801DBEE685D02E5B49DA7FD9E42D231240CC4DCCDFCB3AC60B6BA53FDBA07FF` |
 | `ExamCard-1.0.0-source.zip` | Listed in `SHA256SUMS.txt` |
 
-Portable 175,522,719 bytes; setup 202,663,662 bytes. The workspace build directory carries a Low Integrity label; delivery copies in a normal user Documents folder were created by copying into a normal user folder and show no Low Mandatory Level label. No ACL/UAC/Defender settings were changed.
+Portable 175,523,440 bytes; setup 202,663,780 bytes. The workspace build directory carries a Low Integrity label; delivery copies in a normal user Documents folder were created by copying into a normal user folder and show no Low Mandatory Level label. No ACL/UAC/Defender settings were changed.
 
 ## Built-in exam removal
 
