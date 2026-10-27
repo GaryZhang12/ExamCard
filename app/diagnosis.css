@@ -63,3 +63,13 @@
   .diag-tabs { padding: 8px 10px 0; }
   .diag-tab { padding: 7px 10px; }
 }
+
+/* ExamCard 1.0.0: diagnosis log page */
+.diag-log-toolbar { display: flex; justify-content: flex-end; align-items: center; margin: 0 0 12px; }
+.diag-log-toolbar .diag-btn { min-width: 132px; }
+.diag-log-card { margin-top: 0; }
+.diag-empty-state { min-height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: #fff; border: 1px solid #dbe3ef; border-radius: 12px; padding: 42px 24px; color: #64748b; }
+.diag-empty-icon { width: 60px; height: 60px; border-radius: 16px; background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+.diag-empty-state h3 { margin: 0 0 8px; color: #0f172a; font-size: 18px; }
+.diag-empty-state p { margin: 0 0 18px; font-size: 13px; line-height: 1.7; }
+.diag-empty-state .diag-btn { min-width: 132px; }

@@ -325,15 +325,26 @@
   }
   function renderLogs() {
     var events = diagnosisEvents();
-    var html = '<div class="diag-card"><div class="diag-actions-row"><div><h3 style="margin:0">诊断事件日志</h3><div class="diag-note" style="margin:4px 0 0">来自真实作答快照、批改结果与错题统计；不包含手动学习时长表单。</div></div><button id="diagExportEvents" class="diag-btn">导出诊断日志 JSON</button></div>' +
-      (events.length ? '<table class="diag-table"><thead><tr><th>时间</th><th>事件</th><th>试卷 / 范围</th><th>诊断摘要</th></tr></thead><tbody>' + events.slice(0, 200).map(function (ev) {
-        return '<tr><td>' + esc(ev.date || '—') + '</td><td><span class="diag-badge tag">' + esc(ev.type) + '</span></td><td>' + esc(ev.scope) + '</td><td>' + esc(ev.summary) + '</td></tr>';
-      }).join('') + '</tbody></table>' : '<div class="diag-empty">暂无可诊断的真实作答事件。完成行测练习并交卷后，这里会显示诊断事件；手动学习记录请到左侧“学习记录”。</div>') + '</div>';
+    var html = '<div class="diag-log-toolbar"><button id="diagExportEvents" class="diag-btn"' + (events.length ? '' : ' disabled') + '>导出诊断日志</button></div>';
+    if (!events.length) {
+      html += '<div class="diag-empty-state"><div class="diag-empty-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h11l5 5v11H4z"/><path d="M15 4v5h5"/><path d="M8 13h8M8 17h5"/></svg></div><h3>暂无诊断记录</h3><p>完成练习并提交批改后，诊断结果将显示在这里。</p><button id="diagStartPractice" class="diag-btn primary">开始行测训练</button></div>';
+    } else {
+      html += '<div class="diag-card diag-log-card"><table class="diag-table"><thead><tr><th>日期</th><th>来源试卷 / 练习</th><th>诊断类别</th><th>关键诊断结果</th></tr></thead><tbody>' + events.slice(0, 200).map(function (ev) {
+        return '<tr><td>' + esc(ev.date || '—') + '</td><td>' + esc(ev.scope || '—') + '</td><td><span class="diag-badge tag">' + esc(ev.type || '—') + '</span></td><td>' + esc(ev.summary || '—') + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+    }
     $('diagBody').innerHTML = html;
-    var ex = $('diagExportEvents');
-    if (ex) ex.addEventListener('click', function () {
-      download('ExamCard_诊断日志_' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify({ schema: 'examcard.diagnosis-events/v1', generatedAt: new Date().toISOString(), events: events }, null, 2));
-      toast('诊断日志已导出');
+    if (events.length) {
+      var ex = $('diagExportEvents');
+      if (ex) ex.addEventListener('click', function () {
+        download('ExamCard_诊断日志_' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify({ schema: 'examcard.diagnosis-events/v1', generatedAt: new Date().toISOString(), events: events }, null, 2));
+        toast('诊断日志已导出');
+      });
+    }
+    var start = $('diagStartPractice');
+    if (start) start.addEventListener('click', function () {
+      var b = document.querySelector('#appRail [data-nav="library"]');
+      if (b) b.click();
     });
   }
 

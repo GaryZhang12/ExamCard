@@ -162,16 +162,57 @@
 - 删除前后 `answers=1`、`attempts=3`、`gradingRecords=3` 未变化。
 - 连续删除多任务无残留遮罩；最终打包版同样通过。
 
-## 五、构建与 Git
+
+## 五、备份/关于/诊断日志三页 UI 收口
+
+### 备份与恢复
+
+- 删除标题区重复按钮、统计卡片、上层与下层重复的导出/恢复入口。
+- 保留每个操作一个入口：导出完整备份、选择备份文件并恢复。
+- 危险操作改为页面底部默认折叠的 `<details>`；展开后仅显示简短范围、清空按钮、不可撤销提示；删除六个输入框样式分类。
+- 清空成功后关闭弹窗并重新载入页面；二次输入“清空”与取消路径保留。
+
+### 关于 ExamCard
+
+- 删除整个 Technical information 卡片及相关 CSS。
+- 保留 Logo、产品介绍、Version、Copyright、Apache License 2.0、GitHub Repository、Third-party Licenses。
+- 许可/隐私说明改为中文，明确 Apache-2.0 允许商业使用，品牌/用户导入内容不在授权范围。
+- 第三方许可证弹窗保持可用。
+
+### 诊断日志
+
+- 顶栏主标题“诊断日志”，副标题“查看历次练习诊断与复测记录”。
+- 删除“来自真实作答快照…”开发技术说明。
+- 页面右上角单一“导出诊断日志”按钮；无数据时禁用。
+- 空状态：图标 + “暂无诊断记录” + 说明 + “开始行测训练”按钮，经 AppShell 跳转行测训练。
+- 有数据时使用真实诊断事件表格；不恢复学习记录表单。
+
+### 截图（最终打包版 Electron）
+
+- `Screenshots/backup_default.png`
+- `Screenshots/backup_danger.png`
+- `Screenshots/about.png`
+- `Screenshots/diagnosis_empty.png`
+- `Screenshots/diagnosis_data.png`
+
+### 交互验收
+
+- 备份页：导出 1 个入口、恢复 1 个入口；危险区默认折叠；展开可见清空按钮。
+- 关于：`about-tech=0`、Version=1.0.0、中文许可说明、GitHub/第三方链接可用。
+- 诊断空：导出 disabled、空状态标题/说明/按钮齐全、`form=0`；“开始行测训练”跳转至试卷库。
+- 诊断有数据：8 行真实事件，导出 enabled，`form=0`。
+- 清空：输入“清空”后执行，弹窗关闭并触发页面重新载入；清空后 22 表用户数据为 0。
+
+## 六、构建与 Git
 
 最终产物 SHA-256：
 
 | 文件 | SHA-256 |
 | --- | --- |
-| `ExamCard-1.0.0-win-portable.exe` | `FF466EE7F5DBAC3DE92A8DA7749D50F5A207538F552C832F056CA0F10040B73D` |
-| `ExamCard-1.0.0-win-setup.exe` | `EA88C1C9D031CDA87EB0EA74258E520CCED9126687151691C0715681E0B6F12F` |
+| `ExamCard-1.0.0-win-portable.exe` | `DDC0A8462EB0B8EC12B46F14DA5CD3FB541BA2A7128320691B724CC5650475C5` |
+| `ExamCard-1.0.0-win-setup.exe` | `9844CBEC359AC3F95AC9E2D1B91D8409325BFF2D7FFBA40750654794F316015E` |
 
-- Portable 175,721,706 B；setup 202,665,504 B。
+- Portable 175,720,895 B；setup 202,665,293 B。
 - Portable/setup 主 EXE 均为 `asInvoker`，无 `requireAdministrator`。
 - 私有仓库最终 HEAD 见交付回复。
 - 独立公开仓库快照已同步本轮源码；首个提交不继承原私人历史，未 push、未 Public、未 Release。

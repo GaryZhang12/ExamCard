@@ -222,9 +222,6 @@ body.shell-mode:not(.exam-mode) #examActions { display: none !important; }
 .about-meta b { display: block; font-size: 14px; margin-top: 2px; font-weight: 600; }
 .about-meta a { color: #2563eb; text-decoration: none; }
 .about-meta a:hover { text-decoration: underline; }
-.about-tech { margin-top: 14px; background: #fff; border: 1px solid #dbe3ef; border-radius: 12px; padding: 12px 16px; color: #64748b; font-size: 12px; }
-.about-tech summary { cursor: pointer; color: #475569; }
-.about-tech div { margin-top: 8px; line-height: 1.7; }
 @media (max-width: 960px) { .about-meta { grid-template-columns: 1fr; } }
 
 /* ExamCard 1.0.0 license modal */
@@ -243,3 +240,15 @@ body.shell-mode:not(.exam-mode) #examActions { display: none !important; }
 .data-count-table th, .data-count-table td { border-bottom: 1px solid #e2e8f0; padding: 5px 8px; text-align: left; }
 .data-count-table th { background: #f8fafc; }
 .data-input { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
+
+/* ExamCard 1.0.0: simplified backup page */
+.data-actions-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 18px 0; }
+.data-action-card { background: #fff; border: 1px solid #dbe3ef; border-radius: 12px; padding: 18px; }
+.data-action-card h2 { margin: 0 0 8px; font-size: 17px; color: #0f172a; }
+.data-action-card p { margin: 0 0 14px; color: #64748b; font-size: 13px; line-height: 1.7; }
+.data-danger { margin-top: 18px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; }
+.data-danger summary { cursor: pointer; padding: 14px 18px; color: #475569; font-weight: 600; }
+.data-danger-body { padding: 0 18px 16px; color: #64748b; font-size: 13px; line-height: 1.7; }
+.data-danger-body p { margin: 8px 0; }
+.data-danger-body .data-warn { color: #b45309; }
+@media (max-width: 960px) { .data-actions-grid { grid-template-columns: 1fr; } }

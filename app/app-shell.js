@@ -61,7 +61,7 @@
     'diagnosis-knowledge': ['知识点诊断', '薄弱知识点 · 标签'],
     'diagnosis-wrong': ['错题本与复测', '错题筛选 · 原题定位 · 复测'],
     'diagnosis-trends': ['历史趋势', '练习与复测变化'],
-    'diagnosis-logs': ['诊断日志', '诊断事件 · 分析结果'],
+    'diagnosis-logs': ['诊断日志', '查看历次练习诊断与复测记录'],
     'bank-questions': ['题库管理', '题目 · 标签 · 原题定位'],
     'bank-profiles': ['考试配置', '考试类型与评分规则'],
     'bank-quality': ['导入质量', '重复风险 · 题目质量']
@@ -74,7 +74,7 @@
   function baseTitle() {
     if (state.view === 'home') setPage('工作台', '');
     else if (state.view === 'library') setPage('行测训练', '试卷库 · 导入 · 练习 · 批改');
-    else if (state.view === 'data') setPage('备份与恢复', '完整数据备份 · 恢复 · 校验');
+    else if (state.view === 'data') setPage('备份与恢复', '管理本地学习数据，支持完整备份与恢复。');
     else setPage('ExamCard', '');
   }
   function hideModules() {
@@ -180,7 +180,7 @@
     $('aboutView').classList.add('hidden'); $('dataView').classList.remove('hidden');
     document.body.classList.remove('exam-mode');
     $('railToggle').classList.remove('hidden');
-    setPage('备份与恢复', '完整数据备份 · 恢复 · 校验');
+    setPage('备份与恢复', '管理本地学习数据，支持完整备份与恢复。');
     setActive('data');
     renderData();
   }
@@ -192,42 +192,37 @@
     $('dataView').classList.add('hidden'); $('aboutView').classList.remove('hidden');
     $('examView').classList.add('hidden'); document.body.classList.remove('exam-mode');
     $('railToggle').classList.remove('hidden');
-    setPage('About ExamCard', '');
+    setPage('关于 ExamCard', '');
     setActive('about');
     var box = $('aboutBody');
-    box.innerHTML = '<div class="home-loading">读取版本信息…</div>';
-    ExamStore.getSchemaInfo().then(function (s) {
-      s = s || {};
-      var ver = (root.ExamBackup && ExamBackup.APP_VERSION) || '1.0.0';
-      box.innerHTML = '<div class="data-head about-head"><div><div class="home-kicker">ExamCard</div><h1>ExamCard</h1>' +
-        '<p>ExamCard 是一款开源、离线优先的桌面考试训练与学习管理工具，面向广东省考和深圳市考备考，提供行测与申论训练、PDF 试卷导入、题库管理、学习计划及错题复盘等功能。学习数据默认保存在本机，不会自动上传。</p></div>' +
-        '<div class="about-logo"><img src="assets/examcard-icon.png" alt="ExamCard"></div></div>' +
-        '<div class="data-card about-meta"><div><span>Version</span><b>' + esc(ver) + '</b></div>' +
-        '<div><span>Copyright</span><b>© 2026 ExamCard contributors</b></div>' +
-        '<div><span>License</span><b><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">Apache License 2.0</a></b></div>' +
-        '<div><span>GitHub Repository</span><b><a href="https://github.com/GaryZhang12/ExamCard" target="_blank" rel="noopener">github.com/GaryZhang12/ExamCard</a></b></div>' +
-        '<div><span>Third-party Licenses</span><b><a href="#" id="aboutThirdParty" class="about-link">查看组件与许可证</a></b></div></div>' +
-        '<div class="data-card about-note"><p>ExamCard source code is licensed under the Apache License 2.0. The license permits commercial use and redistribution subject to its terms. Exam papers, textbooks, courses, the ExamCard name and logo are not included in the Apache-2.0 grant unless separately authorized. Backups may contain personal learning data; keep them safe.</p></div>' +
-        '<details class="about-tech"><summary>Technical information</summary><div>Database v' + esc(s.dbVersion || '?') + ' / ' + esc((s.stores || []).length || '?') + ' tables · Schema v' + esc(s.schemaVersion || '?') + ' · Backup format v' + esc((root.ExamBackup && ExamBackup.FORMAT_VERSION) || '?') + ' · Offline build · Unsigned</div></details>';
-      var tp = $('aboutThirdParty');
-      if (tp) tp.addEventListener('click', function (e) {
-        e.preventDefault();
-        if (!root.__GD_APP__ || !root.__GD_APP__.openModal) return;
-        var rows = [
-          ['Electron 43.3.0', 'MIT', 'https://github.com/electron/electron/blob/main/LICENSE'],
-          ['Chromium (Electron bundle)', 'BSD-3-Clause and other notices', 'https://www.chromium.org/'],
-          ['PDF.js 3.11.174', 'Apache-2.0', 'https://github.com/mozilla/pdf.js/blob/master/LICENSE'],
-          ['SheetJS CE 0.18.5', 'Apache-2.0', 'https://github.com/SheetJS/sheetjs/blob/master/LICENSE'],
-          ['fflate 0.8.2', 'MIT', 'https://github.com/101arrowz/fflate/blob/master/LICENSE'],
-          ['Tesseract.js 7.0.0', 'Apache-2.0', 'https://github.com/naptha/tesseract.js/blob/master/LICENSE.md'],
-          ['tesseract.js-core 7.0.0', 'Apache-2.0', 'https://github.com/naptha/tesseract.js-core'],
-          ['chi_sim / eng traineddata 1.0.0 (tessdata 4.0.0)', 'Apache-2.0 (upstream tessdata_fast); npm package metadata: MIT', 'https://github.com/tesseract-ocr/tessdata_fast/blob/main/LICENSE'],
-          ['electron-builder 26.18.0 (build tool)', 'MIT', 'https://github.com/electron-userland/electron-builder/blob/master/LICENSE']
-        ];
-        var h = '<h3>Third-party Licenses</h3><div class="modal-body about-license-body"><p>Full notices are bundled as <code>THIRD_PARTY_NOTICES.md</code> and <code>licenses/</code>. Upstream links:</p><ul>' + rows.map(function (r) { return '<li><b>' + esc(r[0]) + '</b> — ' + esc(r[1]) + ' — <a href="' + esc(r[2]) + '" target="_blank" rel="noopener">upstream license</a></li>'; }).join('') + '</ul><p><a href="https://github.com/GaryZhang12/ExamCard/blob/main/THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">Open the full THIRD_PARTY_NOTICES.md on GitHub</a></p></div><div class="modal-actions"><button class="btn" data-close>Close</button></div>';
-        root.__GD_APP__.openModal(h, 'mid');
-      });
-    }).catch(function (e) { box.innerHTML = '<div class="home-empty">Unable to read version information: ' + esc(e.message || e) + '</div>'; });
+    var ver = (root.ExamBackup && ExamBackup.APP_VERSION) || '1.0.0';
+    box.innerHTML = '<div class="data-head about-head"><div><div class="home-kicker">ExamCard</div><h1>ExamCard</h1>' +
+      '<p>ExamCard 是一款开源、离线优先的桌面考试训练与学习管理工具，面向广东省考和深圳市考备考，提供行测与申论训练、PDF 试卷导入、题库管理、学习计划及错题复盘等功能。学习数据默认保存在本机，不会自动上传。</p></div>' +
+      '<div class="about-logo"><img src="assets/examcard-icon.png" alt="ExamCard"></div></div>' +
+      '<div class="data-card about-meta"><div><span>Version</span><b>' + esc(ver) + '</b></div>' +
+      '<div><span>Copyright</span><b>© 2026 ExamCard contributors</b></div>' +
+      '<div><span>License</span><b><a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">Apache License 2.0</a></b></div>' +
+      '<div><span>GitHub Repository</span><b><a href="https://github.com/GaryZhang12/ExamCard" target="_blank" rel="noopener">github.com/GaryZhang12/ExamCard</a></b></div>' +
+      '<div><span>Third-party Licenses</span><b><a href="#" id="aboutThirdParty" class="about-link">查看组件与许可证</a></b></div></div>' +
+      '<div class="data-card about-note"><p>ExamCard 源代码采用 Apache License 2.0 开源许可，允许在遵守许可证条款的前提下使用、修改和再分发，包括商业用途。ExamCard 名称、Logo 等品牌资产及用户自行导入的试卷、教材和课程不属于该代码授权范围。学习数据默认保存在本机，备份文件可能包含个人信息，请妥善保管。</p></div>';
+    var tp = $('aboutThirdParty');
+    if (tp) tp.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (!root.__GD_APP__ || !root.__GD_APP__.openModal) return;
+      var rows = [
+        ['Electron 43.3.0', 'MIT', 'https://github.com/electron/electron/blob/main/LICENSE'],
+        ['Chromium (Electron bundle)', 'BSD-3-Clause and other notices', 'https://www.chromium.org/'],
+        ['PDF.js 3.11.174', 'Apache-2.0', 'https://github.com/mozilla/pdf.js/blob/master/LICENSE'],
+        ['SheetJS CE 0.18.5', 'Apache-2.0', 'https://github.com/SheetJS/sheetjs/blob/master/LICENSE'],
+        ['fflate 0.8.2', 'MIT', 'https://github.com/101arrowz/fflate/blob/master/LICENSE'],
+        ['Tesseract.js 7.0.0', 'Apache-2.0', 'https://github.com/naptha/tesseract.js/blob/master/LICENSE.md'],
+        ['tesseract.js-core 7.0.0', 'Apache-2.0', 'https://github.com/naptha/tesseract.js-core'],
+        ['chi_sim / eng traineddata 1.0.0 (tessdata 4.0.0)', 'Apache-2.0 (upstream tessdata_fast); npm package metadata: MIT', 'https://github.com/tesseract-ocr/tessdata_fast/blob/main/LICENSE'],
+        ['electron-builder 26.18.0 (build tool)', 'MIT', 'https://github.com/electron-userland/electron-builder/blob/master/LICENSE']
+      ];
+      var h = '<h3>第三方许可证</h3><div class="modal-body about-license-body"><p>完整声明随软件提供于 <code>THIRD_PARTY_NOTICES.md</code> 和 <code>licenses/</code>。上游许可：</p><ul>' + rows.map(function (r) { return '<li><b>' + esc(r[0]) + '</b> — ' + esc(r[1]) + ' — <a href="' + esc(r[2]) + '" target="_blank" rel="noopener">上游许可证</a></li>'; }).join('') + '</ul><p><a href="https://github.com/GaryZhang12/ExamCard/blob/main/THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">在 GitHub 查看完整 THIRD_PARTY_NOTICES.md</a></p></div><div class="modal-actions"><button class="btn" data-close>关闭</button></div>';
+      root.__GD_APP__.openModal(h, 'mid');
+    });
   }
   async function attachToc() {
     if (state.view !== 'module') state.returnView = state.view;
@@ -252,26 +247,17 @@
   }
   function renderData() {
     var box = $('dataBody'); if (!box) return;
-    box.innerHTML = '<div class="home-loading">正在读取备份状态…</div>';
-    Promise.all([ExamStore.getMeta('lastBackupAt').catch(function () { return null; }), ExamStore.getMeta('lastBackupCounts').catch(function () { return null; })]).then(function (r) {
-      var at = r[0], counts = r[1] || {};
-      var total = 0; Object.keys(counts).forEach(function (k) { total += Number(counts[k]) || 0; });
-      box.innerHTML = '<div class="data-head"><div><div class="home-kicker">数据安全</div><h1>备份与恢复</h1><p>导出全部本机学习数据，或在需要时从备份恢复。备份文件仅保存在你选择的本地位置。</p></div><div class="data-actions"><button class="btn primary" id="dataExportBtn">导出完整备份</button><button class="btn" id="dataRestoreBtn">从备份恢复</button><input id="dataRestoreFile" type="file" accept="application/json,.json" class="hidden"></div></div>' +
-        '<div class="data-grid"><div class="data-card"><span>最近一次导出</span><b>' + fmtTime(at) + '</b><small>' + (total ? '包含约 ' + total + ' 条记录' : '尚未导出') + '</small></div>' +
-        '<div class="data-card"><span>备份范围</span><b>全部学习数据</b><small>试卷、练习、申论、题库、教材、课程、计划、错题与草稿</small></div>' +
-        '<div class="data-card"><span>文件格式</span><b>ExamCard 完整备份</b><small>JSON · 含完整性校验 · 可跨同版本恢复</small></div></div>' +
-        '<div class="data-sections"><div class="data-card data-section"><h2>导出完整备份</h2><p>生成一个包含全部本机数据的 JSON 文件。建议在更换电脑、重装软件或批量导入教材前保存。</p><button class="btn primary" id="dataExportBtn2">导出完整备份</button><div id="dataExportStatus" class="data-status"></div></div>' +
-        '<div class="data-card data-section"><h2>从备份恢复</h2><p class="data-warn">恢复会覆盖当前本机的全部学习数据。请先导出当前数据，并确认备份文件来源可靠。</p><button class="btn danger" id="dataRestoreBtn2">选择备份文件并恢复</button><div id="dataRestoreStatus" class="data-status"></div></div></div>' +
-        '<div class="data-section data-clear"><h2>清空全部学习数据</h2><p>删除本机 ExamCard 管理的全部试卷、作答、申论、错题、教材/课程、学习计划、学习记录、诊断/OCR 草稿与历史。保留数据库结构、考试类型配置和许可证。操作不可撤销。</p><div class="data-clear-grid"><span>试卷/PDF/题目</span><span>行测会话/答案/成绩</span><span>申论/草稿/批改</span><span>错题/复测/诊断</span><span>教材/课程/计划</span><span>学习记录/OCR 草稿</span></div><button class="btn danger" id="dataClearAllBtn">清空全部学习数据…</button><div id="dataClearStatus" class="data-status"></div></div>' +
-         '<div class="data-note">备份文件可能包含你的作答、草稿和学习记录，请妥善保管，不要上传到不可信位置。</div>';
-      var pick = function () { $('dataRestoreFile').click(); };
-      $('dataExportBtn').addEventListener('click', exportData);
-      $('dataExportBtn2').addEventListener('click', exportData);
-      $('dataRestoreBtn').addEventListener('click', pick);
-      $('dataRestoreBtn2').addEventListener('click', pick);
-      $('dataRestoreFile').addEventListener('change', onRestoreFile);
-      if ($('dataClearAllBtn')) $('dataClearAllBtn').addEventListener('click', showClearAllDialog);
-    }).catch(function (e) { box.innerHTML = '<div class="home-empty">读取备份状态失败：' + esc(e.message || e) + '</div>'; });
+    box.innerHTML = '<div class="data-actions-grid">' +
+        '<div class="data-action-card"><h2>导出完整备份</h2><p>将试卷、作答、申论、题库、教材、课程、学习计划、错题与诊断数据保存为一个本地备份文件。文件保存在你选择的位置。</p><button class="btn primary" id="dataExportBtn">导出完整备份</button><div id="dataExportStatus" class="data-status"></div></div>' +
+        '<div class="data-action-card"><h2>从备份恢复</h2><p>从本机备份文件恢复学习数据。恢复会覆盖当前学习数据，请先导出当前备份并确认文件来源可靠。</p><button class="btn" id="dataRestoreBtn">选择备份文件并恢复</button><input id="dataRestoreFile" type="file" accept="application/json,.json" class="hidden"><div id="dataRestoreStatus" class="data-status"></div></div>' +
+      '</div>' +
+      '<div class="data-note">备份文件可能包含你的作答、草稿和学习记录，请妥善保管，不要上传到不可信位置。</div>' +
+      '<details class="data-danger"><summary>危险操作</summary><div class="data-danger-body"><p>清空本机 ExamCard 管理的全部试卷、作答、申论、错题、教材/课程、学习计划、学习记录、诊断与 OCR 草稿。考试类型配置和数据库结构会保留，操作不可撤销。</p><button class="btn danger" id="dataClearAllBtn">清空全部学习数据…</button><p class="data-warn">清空前建议先导出完整备份。软件外的 PDF、JSON、CSV 或备份文件不会被删除。</p><div id="dataClearStatus" class="data-status"></div></div></details>';
+    var pick = function () { $('dataRestoreFile').click(); };
+    $('dataExportBtn').addEventListener('click', exportData);
+    $('dataRestoreBtn').addEventListener('click', pick);
+    $('dataRestoreFile').addEventListener('change', onRestoreFile);
+    if ($('dataClearAllBtn')) $('dataClearAllBtn').addEventListener('click', showClearAllDialog);
   }
   function clearCountRows(counts) {
     return Object.keys(counts).sort().map(function (k) { return '<tr><td>' + esc(k) + '</td><td>' + esc(counts[k]) + '</td></tr>'; }).join('');
@@ -297,11 +283,9 @@
       var st = $('dataClearConfirmStatus'); if (st) st.textContent = '正在清空全部学习数据，请勿关闭软件…';
       try {
         if (root.TextbookImport && TextbookImport.stopForClear) await TextbookImport.stopForClear();
-        var before = await ExamBackup.getStoreCounts();
         await ExamStore.clearUserData();
-        var after = await ExamBackup.getStoreCounts();
-        __GD_APP__.openModal('<h3>清空完成</h3><div class="modal-body"><p>全部用户学习数据已清空。保留考试类型配置与数据库结构。</p><details open><summary>清空前 / 后数量</summary><table class="data-count-table"><thead><tr><th>数据表</th><th>清空前</th><th>清空后</th></tr></thead><tbody>' + Object.keys(before).sort().map(function (k) { return '<tr><td>' + esc(k) + '</td><td>' + esc(before[k]) + '</td><td>' + esc(after[k] == null ? 0 : after[k]) + '</td></tr>'; }).join('') + '</tbody></table></details><p>请重新导入自己的 PDF/学习计划，或从备份恢复。</p></div><div class="modal-actions"><button class="btn primary" id="dataClearReload">重新载入应用</button></div>', 'mid');
-        if ($('dataClearReload')) $('dataClearReload').addEventListener('click', function () { location.reload(); });
+        var mr = document.getElementById('modalRoot'); if (mr) mr.innerHTML = '';
+        setTimeout(function () { location.reload(); }, 350);
       } catch (e) {
         btn.disabled = false; btn.textContent = '确认清空全部数据';
         if (st) st.textContent = '清空失败：' + (e.message || e) + '。未报告成功；请重试或先导出备份。';
