@@ -74,7 +74,9 @@
     }).then(function (out) {
       if (!out) return;
       if (out.canceled) {
-        flash(out.error ? ('保存失败：' + out.error) : '已取消保存');
+        flash('已取消保存');
+      } else if (out.error) {
+        flash('保存失败：' + out.error);
       } else {
         flash('已保存：' + out.path);
       }
