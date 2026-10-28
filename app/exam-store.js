@@ -12,9 +12,12 @@
 
   /* ---------------- IndexedDB 基础 ---------------- */
 
-  function openRaw() {
+  async function openRaw() {
+    var known = await indexedDB.databases();
+    var current = known.find(function(d){ return d.name === DB_NAME; });
+    var targetVersion = current && current.version === 6 ? 6 : DB_VERSION;
     return new Promise(function (resolve, reject) {
-      var req = indexedDB.open(DB_NAME, DB_VERSION);
+      var req = indexedDB.open(DB_NAME, targetVersion);
       var blocked = false;
       req.onupgradeneeded = function () {
         var db = req.result;
