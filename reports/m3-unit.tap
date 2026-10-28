@@ -1,0 +1,14 @@
+✔ fixed seed is immutable and reproducible across input order (7.2471ms)
+✔ all seeds preserve uniqueness and never fabricate shortage (3.3097ms)
+✔ unseen and random differ, no-done is hard exclusion (0.367ms)
+✔ latest wrong and measured weak knowledge only (0.2777ms)
+✔ material groups cannot be split or filtered partially (0.239ms)
+✔ unknown/conflicting/incomplete excluded; module shortage explicit (0.2025ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 90.0333
