@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "oldVersion": "1.0.1",
+  "newVersion": "1.1.0",
+  "profile": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-IfMYpx",
+  "checks": [
+    "no automatic v6 upgrade",
+    "native backup actual file is complete v5/22",
+    "all 21 non-meta legacy stores exactly retained",
+    "v6/28 additive upgrade",
+    "legacy session and completed actuals retained"
+  ]
+}

@@ -1,7 +1,7 @@
 # ExamCard
 
-> 本分支为 1.1.0 M4 开发候选，未正式发布。已完成备份保护的 v6 迁移、独立题库、固定 seed 随机组卷及独立作答/恢复；完整诊断和发行验收尚未完成。下方 v1.0.1 内容为已发布基线说明。
-> This branch is the unpublished 1.1.0 M4 development candidate. Backup-gated v6 migration, independent bank management, seeded assembly and independent practice/recovery are implemented; full diagnostics and release acceptance remain pending. The v1.0.1 sections below describe the released baseline.
+> 本分支为 1.1.0 M6 开发候选，未正式发布。已完成备份保护的 v6 迁移、独立题库、固定 seed 随机组卷及独立作答/恢复；题库诊断已实现，已完成本地自动化验收并生成 Windows 候选；实机安装、高 DPI 和正式发布仍待用户验收批准。下方 v1.0.1 内容为已发布基线说明。
+> This branch is the unpublished 1.1.0 M6 development candidate. Backup-gated v6 migration, independent bank management, seeded assembly and independent practice/recovery are implemented; bank diagnostics is implemented and local automated acceptance and Windows candidate builds are available; real installation/high-DPI acceptance and publication remain pending. The v1.0.1 sections below describe the released baseline.
 
 **简体中文** | **English**
 

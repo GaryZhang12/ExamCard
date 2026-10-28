@@ -143,6 +143,7 @@
   }
   async function guardLeavingModule(target) {
     if (state.view !== 'module') return true;
+    if(state.currentModule==='bank-practice' && target!=='bank-practice' && root.BankPracticeUI){try{return await BankPracticeUI.pauseForNavigation();}catch(e){console.error(e);return false;}}
     if (state.currentModule === 'essay' && target !== 'essay' && root.EssayApp && EssayApp.beforeLeave) {
       try { return await EssayApp.beforeLeave(); }
       catch (e) { console.error(e); return false; }

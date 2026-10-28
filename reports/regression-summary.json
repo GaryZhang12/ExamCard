@@ -79,6 +79,26 @@
       "name": "m4-ui",
       "status": "pass",
       "exitCode": 0
+    },
+    {
+      "name": "m5-electron",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m6-upgrade101",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m6-ui",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m6-navigation",
+      "status": "pass",
+      "exitCode": 0
     }
   ],
   "visual": "Requires human approved baseline; see ui-electron.json"
