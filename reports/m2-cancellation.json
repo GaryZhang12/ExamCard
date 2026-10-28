@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "checks": [
+    "delayed bitmap import cannot write after clear",
+    "delayed bitmap import cannot write after restore"
+  ]
+}

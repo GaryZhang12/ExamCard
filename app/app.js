@@ -584,6 +584,7 @@
       '<span class="muted small">共 ' + exam.pageCount + ' 页 · 识别到 <b id="impCount">' + state.draftQuestions.length + '</b> 题</span>' +
       '</div>' +
       importQualitySummary(state.draftQuestions) +
+      '<label class="help-text"><input type="checkbox" id="impAddBank"> 同时加入独立题库（需先启用 v6；识别题须再核对完整内容）</label>' +
       '<label class="help-text" id="impIssueAckWrap"><input type="checkbox" id="impIssueAck"> 我已逐题核对缺少选项/待确认题目，理解不会自动补齐选项；确认按当前识别/修正结果导入</label>' +
       '<div class="issue-box">' + issues + dupHtml + '</div>' +
       '<div class="review-wrap"><table class="review-table"><thead><tr>' +
@@ -695,7 +696,7 @@
         n: parseInt(q.n, 10), type: q.type || 'single', module: (q.module || '未分类').trim() || '未分类',
         page: clamp(parseInt(q.page, 10) || 1, 1, ctx.exam.pageCount || 1),
         yRatio: clamp(q.yRatio == null ? 0.1 : q.yRatio, 0, 1), xRatio: q.xRatio == null ? 0.1 : q.xRatio,
-        preview: q.preview || '', options: (q.options || []).slice(),
+        fullStem: q.fullStem || '', requiresAssets: !!q.requiresAssets, preview: q.preview || '', options: (q.options || []).slice(),
         optionStatus: q.optionStatus || 'n/a', issues: (q.issues || []).slice(),
         reviewStatus: q.reviewStatus || 'ok', manualEdited: !!q.manualEdited
       };
@@ -717,7 +718,10 @@
     var blob = new Blob([ctx.buf], { type: 'application/pdf' });
     state.importSaving = true;
     try {
+      var addToBank = $('impAddBank') && $('impAddBank').checked;
+      if (addToBank && (await ExamStore.open()).version !== 6) throw Error('请先在独立题库保存备份并启用 v6，再重新导入');
       await ExamStore.putExamBundle(exam, blob);
+      if (addToBank) { try { await BankStore.importExam(exam.id); } catch(bankError) { toast('原试卷已保存；题库事务未完成：'+bankError.message); throw Error('原试卷已保存，请从题库管理重试入库：'+bankError.message); } }
       state.pendingImport = null;
       state.draftQuestions = null;
       closeModal();

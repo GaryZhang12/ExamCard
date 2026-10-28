@@ -58,3 +58,14 @@
   .bank-body { padding: 10px; }
   .bank-preview { max-width: 220px; }
 }
+
+/* Independent bank reuses existing bank spacing, borders and controls. */
+.independent-bank { line-height:1.6; }
+.independent-bank .bank-filters { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.independent-bank input:not([type=checkbox]), .independent-bank select { min-height:34px; max-width:100%; padding:6px 8px; border:1px solid var(--line,#dbe3ef); border-radius:6px; background:#fff; color:inherit; font:inherit; font-size:13px; }
+.independent-bank .bank-card { margin-top:12px; }
+.bank-independent-dialog { width:min(900px,90vw); max-height:85vh; overflow:auto; border:1px solid var(--line,#dbe3ef); border-radius:12px; padding:20px; font:14px/1.6 'Microsoft YaHei',system-ui,sans-serif; color:var(--ink,#0f172a); }
+.bank-independent-dialog::backdrop { background:rgba(15,23,42,.45); }
+.bank-independent-dialog textarea { box-sizing:border-box; width:100%; min-height:280px; resize:vertical; padding:12px; font:13px/1.6 monospace; border:1px solid var(--line,#dbe3ef); border-radius:6px; }
+.bank-independent-dialog button { margin:8px 8px 0 0; }
+.bank-independent-dialog :focus-visible, .independent-bank :focus-visible { outline:2px solid #2563eb; outline-offset:2px; }

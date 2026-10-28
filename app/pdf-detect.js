@@ -343,7 +343,7 @@
       var nextStart2 = nextMarker ? nextMarker.start : text.length;
       var optionText2 = text.slice(marker2.end, nextStart2).replace(/\s+/g, ' ').trim();
       optionText2 = optionText2.replace(/^[、,，;；:：.．]+/, '').trim();
-      options.push({ key: marker2.letter, text: optionText2.slice(0, 500) });
+      options.push({ key: marker2.letter, text: optionText2 });
     }
     options.sort(function (a, b) { return a.key.localeCompare(b.key); });
     var firstMarker2 = selected.length ? selected[0].start : text.length;
@@ -654,6 +654,8 @@
         page: ac.page,
         yRatio: clamp01(ac.yRatio),
         xRatio: clamp01(ac.xRatio),
+        fullStem: stripTypeMarker(stemText),
+        requiresAssets: /(?:如下图|如图|下图|图表|见图)/.test(stemText),
         preview: preview,
         options: options,
         optionStatus: optionStatus,

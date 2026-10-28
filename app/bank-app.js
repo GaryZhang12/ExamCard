@@ -24,7 +24,7 @@
     if ($('bankRoot')) return;
     var w = document.createElement('div'); w.id = 'bankRoot'; w.className = 'bank-root hidden';
     w.innerHTML = '<header class="bank-top"><div class="bank-brand"><img src="assets/examcard-wordmark.png"><span class="t">题库管理</span></div>' +
-      '<div class="bank-tabs">' + [['questions', '题目管理'], ['profiles', '考试配置'], ['quality', '导入质量']].map(function (x) { return '<button data-btab="' + x[0] + '"' + (x[0] === 'questions' ? ' class="active"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="bank-tabs">' + [['independent', '独立题库'], ['questions', '原试卷题目'], ['profiles', '考试配置'], ['quality', '导入质量']].map(function (x) { return '<button data-btab="' + x[0] + '"' + (x[0] === 'questions' ? ' class="active"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div>' +
       '<div class="bank-actions"><button id="bankClose" class="bank-btn ghost">关闭</button></div></header>' +
       '<main id="bankBody" class="bank-body"></main><div id="bankModalRoot"></div>';
     document.body.appendChild(w);
@@ -77,7 +77,9 @@
 
   function render() {
     if (!state.engine && false) return;
-    if (state.tab === 'questions') renderQuestions();
+    if (state.tab !== 'independent') $('bankBody')._independentToken = null;
+    if (state.tab === 'independent') IndependentBankUI.render($('bankBody')).catch(function(e){if(state.tab==='independent')$('bankBody').textContent=e.message;});
+    else if (state.tab === 'questions') renderQuestions();
     else if (state.tab === 'profiles') renderProfiles();
     else renderQuality();
   }

@@ -5,6 +5,7 @@ const runs=[['unit',['--test','--test-reporter=tap','tests/reproductions.test.cj
  runs.push(['final-e2e',['tests/final-electron.cjs']]);
  runs.push(['workflows',['tests/workflows-electron.cjs']]);
  runs.push(['legacy',['tests/legacy-electron.cjs']]);
+runs.push(['m2-cancellation',['tests/m2-cancellation.cjs']],['m1-safety',['tests/m1-safety.cjs']],['m1-migration',['tests/m1-migration.cjs']],['m1-failures',['tests/m1-failures.cjs']],['m2-bank',['tests/m2-bank.cjs']],['m2-pdf-ui',['tests/m2-pdf-ui.cjs']]);
 const results=[];
 for(const [name,args] of runs){
  const r=spawnSync(process.execPath,args,{cwd:root,env:process.env,encoding:'utf8'});

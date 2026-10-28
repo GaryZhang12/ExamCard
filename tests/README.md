@@ -1,3 +1,7 @@
+# 1.1.0 M1/M2 regression
+
+The existing unified command now includes six new suites: m1-migration, m1-failures, m1-safety, m2-bank, m2-cancellation and m2-pdf-ui. Tests always create isolated Profiles. Read docs/M2_DELIVERY.md for current scope, migration and manual-review limitations. `node scripts/run-isolated.cjs` opens an isolated development session. Random assembly/practice is not implemented yet.
+
 # 1.0.1 regression tests
 
 Installed upgrade acceptance: `node tests/installed-upgrade.cjs seed` requires `EXAMCARD_PACKAGED=1` and `EXAMCARD_ELECTRON` pointing to the actual installed 1.0.0. The command creates a new safe temporary profile and snapshot. After an attended Setup upgrade, run `verify` against the installed 1.0.1. After uninstall, run `after-uninstall` against the unpacked candidate; after restoring the original installation, run `verify100` against installed 1.0.0. It checks all 21 non-meta stores by deep equality, including unchanged empty stores; it does not claim 21 categories of populated data. Installation, UAC and uninstallation require separate observed/human steps and system-state checks. This is not part of the unattended unified command. See reports/release-integration/WINDOWS_INSTALL_ACCEPTANCE.md for the unresolved ordinary-launch uninstall path.

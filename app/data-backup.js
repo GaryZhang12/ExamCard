@@ -352,6 +352,7 @@
 
   async function restoreBackup(backup, options) {
     var info = await verifyBackupIntegrity(backup, options);
+    if (root.BankStore) root.BankStore.stopForClear();
     var decoded = {};
     Object.keys(backup.stores).forEach(function (name) {
       decoded[name] = backup.stores[name].map(deserializeValue);

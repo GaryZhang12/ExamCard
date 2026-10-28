@@ -1,10 +1,13 @@
 # ExamCard
 
+> 本分支为 1.1.0 M2 开发候选，未正式发布。已完成备份保护的 v6 迁移及独立题库入库/编辑；随机组卷和独立练习尚未实现。下方 v1.0.1 内容为已发布基线说明。
+> This branch is the unpublished 1.1.0 M2 development candidate. Backup-gated v6 migration and independent bank import/editing are implemented; random assembly and practice sessions are not yet implemented. The v1.0.1 sections below describe the released baseline.
+
 **简体中文** | **English**
 
 [简体中文](#简体中文) · [English](#english)
 
-**Version:** 1.0.1 Stable / 正式版  
+**Version:** 1.1.0 development candidate / 开发候选  
 **Platform:** Windows 10 / 11 (x64)  
 **License:** Apache License 2.0  
 **Repository:** https://github.com/GaryZhang12/ExamCard  

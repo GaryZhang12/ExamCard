@@ -34,6 +34,36 @@
       "name": "legacy",
       "status": "pass",
       "exitCode": 0
+    },
+    {
+      "name": "m2-cancellation",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m1-safety",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m1-migration",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m1-failures",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m2-bank",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m2-pdf-ui",
+      "status": "pass",
+      "exitCode": 0
     }
   ],
   "visual": "Requires human approved baseline; see ui-electron.json"

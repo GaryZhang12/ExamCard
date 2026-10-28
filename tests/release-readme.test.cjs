@@ -2,11 +2,11 @@ const{test}=require('node:test'),assert=require('node:assert/strict'),fs=require
 const root=path.resolve(__dirname,'..'),readme=fs.readFileSync(path.join(root,'README.md'),'utf8'),original=fs.readFileSync(path.join(root,'reports/release-integration/public-README-at-832a3f3.md'),'utf8');
 test('public bilingual README content is preserved in order',()=>{
  const lines=original.split(/\r?\n/).filter(s=>s.trim());let at=0;
- for(let line of lines){line=line.replaceAll('1.0.0','1.0.1').replace('**Version:** 1.0.1','**Version:** 1.0.1 Stable / 正式版');
+ for(let line of lines){line=line.replaceAll('1.0.0','1.0.1').replace('**Version:** 1.0.1','**Version:** 1.1.0 development candidate / 开发候选');
  const index=readme.indexOf(line,at);assert.ok(index>=0,'Public text lost: '+line);at=index+line.length;}
 });
 test('stable documentation links to the authorized release and preserves previous release',()=>{
- assert.match(readme,/Version:\*\* 1\.0\.1 Stable/);assert.match(readme,/用户已亲自/);assert.match(readme,/owner reports/);
+ assert.match(readme,/Version:\*\* 1\.1\.0 development candidate/);assert.match(readme,/用户已亲自/);assert.match(readme,/owner reports/);
  assert.doesNotMatch(readme,/unpublished release candidate|尚未公开发布/);
  assert.match(readme,/https:\/\/github.com\/GaryZhang12\/ExamCard\/releases\/tag\/v1\.0\.1/);
  assert.match(readme,/https:\/\/github.com\/GaryZhang12\/ExamCard\/releases\/tag\/v1\.0\.0/);
