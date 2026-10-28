@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "checks": [
+    "failed native save leaves database v5",
+    "cancelled native save leaves database v5",
+    "actual 1.0.1 validator rejects v6 backup without writes",
+    "15-store backup rejected"
+  ]
+}
