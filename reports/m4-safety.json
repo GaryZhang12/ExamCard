@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "checks": [
+    "generated set owns actual image snapshot",
+    "missing live asset rejects atomically without a set",
+    "saved set survives removal of live bank image",
+    "invalid option cannot enter session",
+    "unknown answer is ungraded, not incorrect",
+    "28-store backup restores exact practice snapshots and completed session",
+    "practice clear removes new history while retaining question",
+    "multiple selections grade by exact unordered option set",
+    "single-choice multiple-standard answer rejected"
+  ]
+}

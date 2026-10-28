@@ -69,3 +69,7 @@
 .bank-independent-dialog textarea { box-sizing:border-box; width:100%; min-height:280px; resize:vertical; padding:12px; font:13px/1.6 monospace; border:1px solid var(--line,#dbe3ef); border-radius:6px; }
 .bank-independent-dialog button { margin:8px 8px 0 0; }
 .bank-independent-dialog :focus-visible, .independent-bank :focus-visible { outline:2px solid #2563eb; outline-offset:2px; }
+
+#practiceStem, #bankBody #practiceResult { overflow-wrap:anywhere; }
+#bankBody [data-practice-filter], #practiceSeed, #practiceCount, #practiceMode { max-width:100%; min-height:32px; padding:4px 8px; border:1px solid var(--line,#dbe3ef); border-radius:6px; font:inherit; }
+#practiceQuotas { display:block; box-sizing:border-box; width:min(100%,600px); min-height:64px; margin:8px 0; }

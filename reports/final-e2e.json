@@ -1,14 +1,21 @@
 {
   "environment": {
     "version": "1.1.0",
-    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-GameWg",
+    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-Jm955Z",
     "electron": "43.3.0",
     "sandbox": false,
     "displays": [
       {
         "size": {
-          "width": 1920,
-          "height": 1080
+          "width": 1080,
+          "height": 1920
+        },
+        "scaleFactor": 1
+      },
+      {
+        "size": {
+          "width": 2560,
+          "height": 1440
         },
         "scaleFactor": 1
       }
@@ -31,14 +38,14 @@
           "pdfPage": 1,
           "page": "3",
           "level": 2,
-          "parent": "toc-mvsefja3-vel6"
+          "parent": "toc-mvsr2sl4-4ibr"
         },
         {
           "title": "第二节 资料分析",
           "pdfPage": 1,
           "page": "8",
           "level": 2,
-          "parent": "toc-mvsefja3-vel6"
+          "parent": "toc-mvsr2sl4-4ibr"
         },
         {
           "title": "第二章 综合练习",
@@ -52,14 +59,14 @@
           "pdfPage": 2,
           "page": "22",
           "level": 2,
-          "parent": "toc-mvsefja3-isxq"
+          "parent": "toc-mvsr2sl4-q8on"
         },
         {
           "title": "第二节 错题复盘",
           "pdfPage": 2,
           "page": "30",
           "level": 2,
-          "parent": "toc-mvsefja3-isxq"
+          "parent": "toc-mvsr2sl4-q8on"
         }
       ]
     },
@@ -68,7 +75,7 @@
       "status": "pass",
       "detail": {
         "book": {
-          "id": "tb-mvsefk1k-l2nmnm",
+          "id": "tb-mvsr2t8j-3e0kta",
           "name": "toc-text",
           "publisher": "",
           "edition": "",
@@ -85,20 +92,20 @@
               "range": "1-2"
             }
           ],
-          "createdAt": 1793209155896,
-          "updatedAt": 1793209155896
+          "createdAt": 1793230396291,
+          "updatedAt": 1793230396291
         },
         "chapters": [
           {
-            "id": "ch-mvsefk1k-hylhyy",
-            "textbookId": "tb-mvsefk1k-l2nmnm",
-            "createdAt": 1793209155896,
+            "id": "ch-mvsr2t8k-w4xscw",
+            "textbookId": "tb-mvsr2t8j-3e0kta",
+            "createdAt": 1793230396291,
             "title": "第一章 基础知识",
             "order": 0,
             "progressPercent": 0,
             "progressNote": "",
             "tagIds": [],
-            "updatedAt": 1793209155896,
+            "updatedAt": 1793230396291,
             "level": 1,
             "printedPage": "1",
             "pdfPage": 1,
@@ -110,15 +117,15 @@
             "parentId": null
           },
           {
-            "id": "ch-mvsefk1k-dsuho1",
-            "textbookId": "tb-mvsefk1k-l2nmnm",
-            "createdAt": 1793209155896,
+            "id": "ch-mvsr2t8k-gyiidj",
+            "textbookId": "tb-mvsr2t8j-3e0kta",
+            "createdAt": 1793230396291,
             "title": "第一节 人工核对",
             "order": 1,
             "progressPercent": 0,
             "progressNote": "",
             "tagIds": [],
-            "updatedAt": 1793209155896,
+            "updatedAt": 1793230396291,
             "level": 2,
             "printedPage": "5",
             "pdfPage": 1,
@@ -127,18 +134,18 @@
             "confirmed": true,
             "rawText": "第一节 数量关系3",
             "sourcePdfHash": "f522d8bc94a8e7c85adc8d47e30a9df5258bc98223999ce9dd36a746216cac4e",
-            "parentId": "ch-mvsefk1k-hylhyy"
+            "parentId": "ch-mvsr2t8k-w4xscw"
           },
           {
-            "id": "ch-mvsefk1k-zrmpuw",
-            "textbookId": "tb-mvsefk1k-l2nmnm",
-            "createdAt": 1793209155896,
+            "id": "ch-mvsr2t8k-i1l8wj",
+            "textbookId": "tb-mvsr2t8j-3e0kta",
+            "createdAt": 1793230396291,
             "title": "第二节 资料分析",
             "order": 2,
             "progressPercent": 0,
             "progressNote": "",
             "tagIds": [],
-            "updatedAt": 1793209155896,
+            "updatedAt": 1793230396291,
             "level": 2,
             "printedPage": "8",
             "pdfPage": 1,
@@ -147,18 +154,18 @@
             "confirmed": true,
             "rawText": "第二节 资料分析8",
             "sourcePdfHash": "f522d8bc94a8e7c85adc8d47e30a9df5258bc98223999ce9dd36a746216cac4e",
-            "parentId": "ch-mvsefk1k-hylhyy"
+            "parentId": "ch-mvsr2t8k-w4xscw"
           },
           {
-            "id": "ch-mvsefk1l-jqybv6",
-            "textbookId": "tb-mvsefk1k-l2nmnm",
-            "createdAt": 1793209155896,
+            "id": "ch-mvsr2t8k-6gjogn",
+            "textbookId": "tb-mvsr2t8j-3e0kta",
+            "createdAt": 1793230396291,
             "title": "第二章 综合练习",
             "order": 3,
             "progressPercent": 0,
             "progressNote": "",
             "tagIds": [],
-            "updatedAt": 1793209155896,
+            "updatedAt": 1793230396291,
             "level": 1,
             "printedPage": "20",
             "pdfPage": 2,
@@ -170,15 +177,15 @@
             "parentId": null
           },
           {
-            "id": "ch-mvsefk1l-06c2mx",
-            "textbookId": "tb-mvsefk1k-l2nmnm",
-            "createdAt": 1793209155896,
+            "id": "ch-mvsr2t8k-kufkzp",
+            "textbookId": "tb-mvsr2t8j-3e0kta",
+            "createdAt": 1793230396291,
             "title": "第一节 阅读理解",
             "order": 4,
             "progressPercent": 0,
             "progressNote": "",
             "tagIds": [],
-            "updatedAt": 1793209155896,
+            "updatedAt": 1793230396291,
             "level": 2,
             "printedPage": "22",
             "pdfPage": 2,
@@ -187,18 +194,18 @@
             "confirmed": true,
             "rawText": "第一节 阅读理解22",
             "sourcePdfHash": "f522d8bc94a8e7c85adc8d47e30a9df5258bc98223999ce9dd36a746216cac4e",
-            "parentId": "ch-mvsefk1l-jqybv6"
+            "parentId": "ch-mvsr2t8k-6gjogn"
           },
           {
-            "id": "ch-mvsefk1l-7qj1p8",
-            "textbookId": "tb-mvsefk1k-l2nmnm",
-            "createdAt": 1793209155896,
+            "id": "ch-mvsr2t8k-t313gt",
+            "textbookId": "tb-mvsr2t8j-3e0kta",
+            "createdAt": 1793230396291,
             "title": "第二节 错题复盘",
             "order": 5,
             "progressPercent": 0,
             "progressNote": "",
             "tagIds": [],
-            "updatedAt": 1793209155896,
+            "updatedAt": 1793230396291,
             "level": 2,
             "printedPage": "30",
             "pdfPage": 2,
@@ -207,7 +214,7 @@
             "confirmed": true,
             "rawText": "第二节 错题复盘30",
             "sourcePdfHash": "f522d8bc94a8e7c85adc8d47e30a9df5258bc98223999ce9dd36a746216cac4e",
-            "parentId": "ch-mvsefk1l-jqybv6"
+            "parentId": "ch-mvsr2t8k-6gjogn"
           }
         ]
       }
@@ -254,14 +261,14 @@
             "pdfPage": 1,
             "page": "3",
             "level": 2,
-            "parent": "toc-mvseflc8-7sn6"
+            "parent": "toc-mvsr2uig-bc0l"
           },
           {
             "title": "第二节 资料分析",
             "pdfPage": 1,
             "page": "8",
             "level": 2,
-            "parent": "toc-mvseflc8-7sn6"
+            "parent": "toc-mvsr2uig-bc0l"
           },
           {
             "title": "第二章 综合练习",
@@ -275,14 +282,14 @@
             "pdfPage": 2,
             "page": "22",
             "level": 2,
-            "parent": "toc-mvseflc8-4pd4"
+            "parent": "toc-mvsr2uig-91l6"
           },
           {
             "title": "第二节 错题复盘",
             "pdfPage": 2,
             "page": "30",
             "level": 2,
-            "parent": "toc-mvseflc8-4pd4"
+            "parent": "toc-mvsr2uig-91l6"
           }
         ]
       }

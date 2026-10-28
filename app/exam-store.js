@@ -673,6 +673,7 @@
     /* 全量清空用户学习数据：保留考试类型配置与升级元数据，其他 store 在同一事务中清空。 */
     async clearUserData() {
       if (root.BankStore) root.BankStore.stopForClear();
+      if (root.BankPractice) root.BankPractice.stopForClear();
       try {
         if (root.__GD_V2__ && root.__GD_V2__.beforeDataClear) await root.__GD_V2__.beforeDataClear();
         if (root.TextbookImport && root.TextbookImport.stopForClear) await root.TextbookImport.stopForClear();

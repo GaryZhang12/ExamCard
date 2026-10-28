@@ -1,20 +1,27 @@
 {
   "environment": {
     "version": "1.1.0",
-    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-ZrnR6o",
+    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-mvUNWK",
     "electron": "43.3.0",
     "sandbox": false,
     "displays": [
       {
         "size": {
-          "width": 1920,
-          "height": 1080
+          "width": 1080,
+          "height": 1920
+        },
+        "scaleFactor": 1
+      },
+      {
+        "size": {
+          "width": 2560,
+          "height": 1440
         },
         "scaleFactor": 1
       }
     ]
   },
-  "profile": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-ZrnR6o",
+  "profile": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-mvUNWK",
   "target": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.1.0-work",
   "results": [
     {

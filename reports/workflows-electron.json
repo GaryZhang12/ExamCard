@@ -1,14 +1,21 @@
 {
   "environment": {
     "version": "1.1.0",
-    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-YWanQI",
+    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-DFkvXO",
     "electron": "43.3.0",
     "sandbox": false,
     "displays": [
       {
         "size": {
-          "width": 1920,
-          "height": 1080
+          "width": 1080,
+          "height": 1920
+        },
+        "scaleFactor": 1
+      },
+      {
+        "size": {
+          "width": 2560,
+          "height": 1440
         },
         "scaleFactor": 1
       }

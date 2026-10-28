@@ -64,6 +64,21 @@
       "name": "m2-pdf-ui",
       "status": "pass",
       "exitCode": 0
+    },
+    {
+      "name": "m4-practice",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m4-safety",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m4-ui",
+      "status": "pass",
+      "exitCode": 0
     }
   ],
   "visual": "Requires human approved baseline; see ui-electron.json"

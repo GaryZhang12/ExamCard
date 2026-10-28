@@ -1,3 +1,7 @@
+# M3 / M4 additions
+
+The unified command also runs seven seeded-assembly unit tests and m4-practice, m4-safety, m4-ui. All launches use isolated profiles. The M4 UI runs actual timing, pause stability, cross-question answering, marked navigation, exit/resume, submission and four-size layout checks. Snapshots include content/material/local image bytes independent of original PDFs. Explicit Exit waits for a saved checkpoint; active UI checkpoints every two seconds. Abrupt process termination may lose the final unsaved interval; it does not add offline time on resume. M5 diagnostics and M6 packaging are not implemented yet. Earlier M2 documentation below is historical scope.
+
 # 1.1.0 M1/M2 regression
 
 The existing unified command now includes six new suites: m1-migration, m1-failures, m1-safety, m2-bank, m2-cancellation and m2-pdf-ui. Tests always create isolated Profiles. Read docs/M2_DELIVERY.md for current scope, migration and manual-review limitations. `node scripts/run-isolated.cjs` opens an isolated development session. Random assembly/practice is not implemented yet.

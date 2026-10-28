@@ -1,11 +1,12 @@
 const fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:child_process');
 const root=path.resolve(__dirname,'..');fs.mkdirSync(path.join(root,'reports'),{recursive:true});
-const runs=[['unit',['--test','--test-reporter=tap','tests/reproductions.test.cjs','tests/invariants.test.cjs','tests/release-readme.test.cjs']],['data',['tests/data-electron.cjs']],['ui',['tests/ui-electron.cjs']]];
+const runs=[['unit',['--test','--test-reporter=tap','tests/reproductions.test.cjs','tests/invariants.test.cjs','tests/release-readme.test.cjs','tests/m3-assembly.test.cjs']],['data',['tests/data-electron.cjs']],['ui',['tests/ui-electron.cjs']]];
  runs.splice(2,0,['golden',['tests/golden-electron.cjs']]);
  runs.push(['final-e2e',['tests/final-electron.cjs']]);
  runs.push(['workflows',['tests/workflows-electron.cjs']]);
  runs.push(['legacy',['tests/legacy-electron.cjs']]);
 runs.push(['m2-cancellation',['tests/m2-cancellation.cjs']],['m1-safety',['tests/m1-safety.cjs']],['m1-migration',['tests/m1-migration.cjs']],['m1-failures',['tests/m1-failures.cjs']],['m2-bank',['tests/m2-bank.cjs']],['m2-pdf-ui',['tests/m2-pdf-ui.cjs']]);
+runs.push(['m4-practice',['tests/m4-practice.cjs']],['m4-safety',['tests/m4-safety.cjs']],['m4-ui',['tests/m4-ui.cjs']]);
 const results=[];
 for(const [name,args] of runs){
  const r=spawnSync(process.execPath,args,{cwd:root,env:process.env,encoding:'utf8'});
