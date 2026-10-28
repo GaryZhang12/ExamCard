@@ -1,0 +1,9 @@
+{
+  "DisplayName": "ExamCard 1.0.0",
+  "DisplayVersion": "1.0.0",
+  "UninstallString": "\"C:\\Program Files\\ExamCard\\Uninstall ExamCard.exe\" /allusers",
+  "appAsarSha256": "210D7A628E3B2FF69914BCD44C8C90C4DC6ABBF9DBEFDFD7A80A763DA95DC34B",
+  "matchesPreTestAsar": true,
+  "publicDesktopShortcutExists": true,
+  "allUsersStartMenuShortcutExists": true
+}

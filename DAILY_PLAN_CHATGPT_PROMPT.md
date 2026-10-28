@@ -56,6 +56,7 @@
 规则：
 - 日期用北京时间；任务时间同一天；结束时间晚于开始时间；任务不能重叠。
 - course_first 必须按 video → examples → practice → review 排列，四阶段分钟合计等于 planned_minutes。
+- 拆分任务时同步修改 learning_mode：仅 video 的任务输出 other；examples → practice → review 的完整练习块输出 practice；不能将 video → review 等不完整组合继续标为 course_first。不要增补不存在的阶段或分钟。保持原计划 plan_id 和已有任务 task_id 稳定；新增拆分任务使用不同且稳定的 task_id。
 - learning_mode 不是 course_first 时，不要虚构听课阶段；可按实际任务使用适合的阶段。
 - 不知道课程、教材章节、页码、题集时用 null，不要编造。
 - 未核实课程 verified=false；URL 只用 http/https。

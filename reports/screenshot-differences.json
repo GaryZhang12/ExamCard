@@ -1,0 +1,322 @@
+[
+  {
+    "name": "empty-960x720-home",
+    "differentPixelRatio": 0.10042715099927824,
+    "approved": false
+  },
+  {
+    "name": "empty-960x720-library",
+    "differentPixelRatio": 0.00015399835735085493,
+    "approved": false
+  },
+  {
+    "name": "empty-960x720-essay",
+    "differentPixelRatio": 0.02643171806167401,
+    "approved": false
+  },
+  {
+    "name": "empty-960x720-toc",
+    "differentPixelRatio": 0.13942917942208616,
+    "approved": false
+  },
+  {
+    "name": "empty-960x720-learn-plans",
+    "differentPixelRatio": 0.02643171806167401,
+    "approved": false
+  },
+  {
+    "name": "empty-960x720-data",
+    "differentPixelRatio": 0.02643171806167401,
+    "approved": false
+  },
+  {
+    "name": "empty-960x720-diagnosis-logs",
+    "differentPixelRatio": 0.02643171806167401,
+    "approved": false
+  },
+  {
+    "name": "empty-960x720-about",
+    "differentPixelRatio": 0.12309757584807984,
+    "approved": false
+  },
+  {
+    "name": "empty-1366x768-home",
+    "differentPixelRatio": 0.060075191789869434,
+    "approved": false
+  },
+  {
+    "name": "empty-1366x768-library",
+    "differentPixelRatio": 0.012604785855814662,
+    "approved": false
+  },
+  {
+    "name": "empty-1366x768-essay",
+    "differentPixelRatio": 0.06677132550932277,
+    "approved": false
+  },
+  {
+    "name": "empty-1366x768-toc",
+    "differentPixelRatio": 0.06059035716100188,
+    "approved": false
+  },
+  {
+    "name": "empty-1366x768-learn-plans",
+    "differentPixelRatio": 0.060182898948331044,
+    "approved": false
+  },
+  {
+    "name": "empty-1366x768-data",
+    "differentPixelRatio": 0.0667601483513692,
+    "approved": false
+  },
+  {
+    "name": "empty-1366x768-diagnosis-logs",
+    "differentPixelRatio": 0.060135142000711274,
+    "approved": false
+  },
+  {
+    "name": "empty-1366x768-about",
+    "differentPixelRatio": 0.0666717471930092,
+    "approved": false
+  },
+  {
+    "name": "empty-1920x1080-home",
+    "differentPixelRatio": 0.04324734216453152,
+    "approved": false
+  },
+  {
+    "name": "empty-1920x1080-library",
+    "differentPixelRatio": 0.0033238079093308795,
+    "approved": false
+  },
+  {
+    "name": "empty-1920x1080-essay",
+    "differentPixelRatio": 0.04680524947731254,
+    "approved": false
+  },
+  {
+    "name": "empty-1920x1080-toc",
+    "differentPixelRatio": 0.03985138724077527,
+    "approved": false
+  },
+  {
+    "name": "empty-1920x1080-learn-plans",
+    "differentPixelRatio": 0.04679818613324292,
+    "approved": false
+  },
+  {
+    "name": "empty-1920x1080-data",
+    "differentPixelRatio": 0.0435001089773085,
+    "approved": false
+  },
+  {
+    "name": "empty-1920x1080-diagnosis-logs",
+    "differentPixelRatio": 0.04676690560950605,
+    "approved": false
+  },
+  {
+    "name": "empty-1920x1080-about",
+    "differentPixelRatio": 0.043518776386635344,
+    "approved": false
+  },
+  {
+    "name": "empty-2560x1440-home",
+    "differentPixelRatio": 0.032494197765297925,
+    "approved": false
+  },
+  {
+    "name": "empty-2560x1440-library",
+    "differentPixelRatio": 0.0,
+    "approved": false
+  },
+  {
+    "name": "empty-2560x1440-essay",
+    "differentPixelRatio": 0.034468584883214595,
+    "approved": false
+  },
+  {
+    "name": "empty-2560x1440-toc",
+    "differentPixelRatio": 0.030593601156406698,
+    "approved": false
+  },
+  {
+    "name": "empty-2560x1440-learn-plans",
+    "differentPixelRatio": 0.030593601156406698,
+    "approved": false
+  },
+  {
+    "name": "empty-2560x1440-data",
+    "differentPixelRatio": 0.03446213172082834,
+    "approved": false
+  },
+  {
+    "name": "empty-2560x1440-diagnosis-logs",
+    "differentPixelRatio": 0.03253039158911649,
+    "approved": false
+  },
+  {
+    "name": "empty-2560x1440-about",
+    "differentPixelRatio": 0.0344593259980517,
+    "approved": false
+  },
+  {
+    "name": "long-content-960x720-home",
+    "differentPixelRatio": 0.1574127653749471,
+    "approved": false
+  },
+  {
+    "name": "long-content-960x720-library",
+    "differentPixelRatio": 0.0,
+    "approved": false
+  },
+  {
+    "name": "long-content-960x720-essay",
+    "differentPixelRatio": 0.02643794021752657,
+    "approved": false
+  },
+  {
+    "name": "long-content-960x720-toc",
+    "differentPixelRatio": 0.13942917942208616,
+    "approved": false
+  },
+  {
+    "name": "long-content-960x720-learn-plans",
+    "differentPixelRatio": 0.26219386993205407,
+    "approved": false
+  },
+  {
+    "name": "long-content-960x720-data",
+    "differentPixelRatio": 0.02643794021752657,
+    "approved": false
+  },
+  {
+    "name": "long-content-960x720-diagnosis-logs",
+    "differentPixelRatio": 0.02643794021752657,
+    "approved": false
+  },
+  {
+    "name": "long-content-960x720-about",
+    "differentPixelRatio": 0.12310535354289555,
+    "approved": false
+  },
+  {
+    "name": "long-content-1366x768-home",
+    "differentPixelRatio": 0.16454808718183203,
+    "approved": false
+  },
+  {
+    "name": "long-content-1366x768-library",
+    "differentPixelRatio": 0.006703246456332876,
+    "approved": false
+  },
+  {
+    "name": "long-content-1366x768-essay",
+    "differentPixelRatio": 0.06065843621399177,
+    "approved": false
+  },
+  {
+    "name": "long-content-1366x768-toc",
+    "differentPixelRatio": 0.06062388863486257,
+    "approved": false
+  },
+  {
+    "name": "long-content-1366x768-learn-plans",
+    "differentPixelRatio": 0.23351318396585885,
+    "approved": false
+  },
+  {
+    "name": "long-content-1366x768-data",
+    "differentPixelRatio": 0.06025097800132094,
+    "approved": false
+  },
+  {
+    "name": "long-content-1366x768-diagnosis-logs",
+    "differentPixelRatio": 0.05377432301986486,
+    "approved": false
+  },
+  {
+    "name": "long-content-1366x768-about",
+    "differentPixelRatio": 0.05999288726312046,
+    "approved": false
+  },
+  {
+    "name": "long-content-1920x1080-home",
+    "differentPixelRatio": 0.12247081829850096,
+    "approved": false
+  },
+  {
+    "name": "long-content-1920x1080-library",
+    "differentPixelRatio": 0.003438839512750345,
+    "approved": false
+  },
+  {
+    "name": "long-content-1920x1080-essay",
+    "differentPixelRatio": 0.04678355492052729,
+    "approved": false
+  },
+  {
+    "name": "long-content-1920x1080-toc",
+    "differentPixelRatio": 0.03983726055263604,
+    "approved": false
+  },
+  {
+    "name": "long-content-1920x1080-learn-plans",
+    "differentPixelRatio": 0.20796200324510208,
+    "approved": false
+  },
+  {
+    "name": "long-content-1920x1080-data",
+    "differentPixelRatio": 0.03983726055263604,
+    "approved": false
+  },
+  {
+    "name": "long-content-1920x1080-diagnosis-logs",
+    "differentPixelRatio": 0.04319991685434981,
+    "approved": false
+  },
+  {
+    "name": "long-content-1920x1080-about",
+    "differentPixelRatio": 0.04317620419925895,
+    "approved": false
+  },
+  {
+    "name": "long-content-2560x1440-home",
+    "differentPixelRatio": 0.03077457027549953,
+    "approved": false
+  },
+  {
+    "name": "long-content-2560x1440-library",
+    "differentPixelRatio": 0.0,
+    "approved": false
+  },
+  {
+    "name": "long-content-2560x1440-essay",
+    "differentPixelRatio": 0.03435523368303862,
+    "approved": false
+  },
+  {
+    "name": "long-content-2560x1440-toc",
+    "differentPixelRatio": 0.032468385115752896,
+    "approved": false
+  },
+  {
+    "name": "long-content-2560x1440-learn-plans",
+    "differentPixelRatio": 0.21505303938336948,
+    "approved": false
+  },
+  {
+    "name": "long-content-2560x1440-data",
+    "differentPixelRatio": 0.032445658761262174,
+    "approved": false
+  },
+  {
+    "name": "long-content-2560x1440-diagnosis-logs",
+    "differentPixelRatio": 0.0344570814198304,
+    "approved": false
+  },
+  {
+    "name": "long-content-2560x1440-about",
+    "differentPixelRatio": 0.034332507328547895,
+    "approved": false
+  }
+]

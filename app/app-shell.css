@@ -252,3 +252,29 @@ body.shell-mode:not(.exam-mode) #examActions { display: none !important; }
 .data-danger-body p { margin: 8px 0; }
 .data-danger-body .data-warn { color: #b45309; }
 @media (max-width: 960px) { .data-actions-grid { grid-template-columns: 1fr; } }
+
+/* 1.0.1 layout contract: the header takes its actual height; one ordinary page
+   owns the remaining height. Long content scrolls inside its existing region. */
+:root { --ec-page-inline: 28px; --ec-dialog-gutter: 18px; }
+body.shell-mode:not(.exam-mode) > :is(.home-view, .library-view, .data-view, .about-view, .workspace-host) {
+  flex: 1 1 0; min-height: 0; height: auto; overflow: auto; min-width: 0;
+}
+.workspace-host > :is(#essayRoot, #diagRoot, #bankRoot, #learnRoot, #tocRoot) { min-width: 0; }
+:is(.home-card, .home-stat, .data-card, .data-action-card, .learn-card, .learn-book, .essay-card) { min-width: 0; overflow-wrap: anywhere; }
+.home-two { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); }
+.home-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+:is(.modal, .learn-modal, .essay-modal, .diag-modal, .bank-modal) {
+  min-width: 0; max-width: calc(100vw - 2 * var(--ec-dialog-gutter)); max-height: calc(100vh - 2 * var(--ec-dialog-gutter)); overflow: auto; overflow-wrap: anywhere;
+}
+:is(.modal-actions, .learn-modal .actions, .essay-modal .actions, .diag-modal .actions, .bank-modal .actions) { flex-wrap: wrap; }
+.learn-table th { white-space: nowrap; }
+.learn-table td { overflow-wrap: anywhere; }
+.toc-root .learn-split, .toc-root .learn-book-detail, .toc-editor { min-width: 0; }
+.toc-root .learn-split { flex-wrap: wrap; }
+.toc-table-wrap { max-width: 100%; }
+@media (max-width: 1000px) {
+  .home-two { grid-template-columns: minmax(0, 1fr); }
+  .home-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .toc-root .learn-book-list { width: 100%; max-height: 28vh; }
+  .toc-root .learn-book-detail { flex-basis: 100%; }
+}

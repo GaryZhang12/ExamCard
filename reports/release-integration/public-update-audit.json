@@ -1,0 +1,26 @@
+{
+  "publicMain": "832a3f340b7fe4c0dbd56644547ed74b7c733953",
+  "publicTree": "db715e0410b41fe7be03deb6d193173720f3c90d",
+  "comparisonBase": "b17cabbd6102607c83f19baeb903f4c8a2983308",
+  "publicChanges": [
+    {
+      "path": "README.md",
+      "publicBlob": "ee12c3b32aab96a817dccbc478ea9276f030bc87",
+      "baselineBlob": "4a172138913bfe211a80e5340d2041053cff8d8c"
+    },
+    {
+      "path": "浣跨敤璇存槑.md",
+      "publicBlob": "167e35c300d14dfe665bfd1a060d47aa3fe932e2",
+      "baselineBlob": "4a51f1bf1f45829fa8aec6674533d9345372e6e0"
+    }
+  ],
+  "otherPublicChanges": 0,
+  "truncated": false,
+  "readmePublicBlob": "ee12c3b32aab96a817dccbc478ea9276f030bc87",
+  "readmePublicSha256": "1a05ef22e918aa5caac750a23f3fa8cfed9c9ffa5eafa09fc21f13d537c5c80f",
+  "strategy": "Preserve all public bilingual sections, targeted version/status substitutions and additive candidate fixes; carry public guide deletion forward",
+  "productionCodeOrBuildConfigChanged": true,
+  "finalRemoteRecheck": "2026-10-28: main remains 832a3f340b7fe4c0dbd56644547ed74b7c733953",
+  "productionCodeChanged": false,
+  "buildConfigChange": "User-requested NSIS allowElevation false -> true after documentation integration; rebuilt both EXEs"
+}

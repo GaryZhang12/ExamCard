@@ -1,0 +1,39 @@
+{
+  "profile": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-20LSWG",
+  "results": [
+    {
+      "phase": "seed",
+      "status": "pass",
+      "version": "1.0.0",
+      "profile": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-20LSWG",
+      "stores": 22,
+      "comparison": "snapshot"
+    },
+    {
+      "phase": "verify",
+      "status": "pass",
+      "version": "1.0.1",
+      "profile": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-20LSWG",
+      "stores": 22,
+      "comparison": "all 21 non-meta stores deeply equal; meta excluded as application metadata"
+    },
+    {
+      "phase": "after-uninstall",
+      "status": "pass",
+      "version": "1.0.1",
+      "executable": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\dist\\win-unpacked\\ExamCard.exe",
+      "profile": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-20LSWG",
+      "stores": 22,
+      "comparison": "all 21 non-meta stores deeply equal; meta excluded as application metadata"
+    },
+    {
+      "phase": "verify100",
+      "status": "pass",
+      "version": "1.0.0",
+      "executable": "C:\\Program Files\\ExamCard\\ExamCard.exe",
+      "profile": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-20LSWG",
+      "stores": 22,
+      "comparison": "all 21 non-meta stores deeply equal; meta excluded as application metadata"
+    }
+  ]
+}

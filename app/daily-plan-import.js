@@ -128,12 +128,12 @@
         });
         if (t.learning_mode === 'course_first') {
           var seq = t.stages.map(function (s) { return s.type; }).join(',');
-          if (seq !== 'video,examples,practice,review') err(errors, p + '.stages', 'course_first 阶段必须为 video → examples → practice → review');
-          if (isInt(t.planned_minutes) && sum !== t.planned_minutes) err(errors, p + '.stages', '四个阶段分钟合计必须等于 planned_minutes');
+          if (seq !== 'video,examples,practice,review') err(errors, p + '.stages', taskLabel(t, i) + ' 的 course_first 阶段顺序为“' + (seq || '空') + '”，必须为 video → examples → practice → review');
+          if (isInt(t.planned_minutes) && sum !== t.planned_minutes) err(errors, p + '.stages', taskLabel(t, i) + ' 的四个阶段分钟合计为 ' + sum + '，必须等于 planned_minutes ' + t.planned_minutes);
         } else if (isInt(t.planned_minutes) && sum !== t.planned_minutes && t.stages.length) {
-          err(errors, p + '.stages', '阶段分钟合计必须等于 planned_minutes');
+          err(errors, p + '.stages', taskLabel(t, i) + ' 的阶段分钟合计为 ' + sum + '，必须等于 planned_minutes ' + t.planned_minutes);
         }
-      } else if (t.learning_mode === 'course_first') err(errors, p + '.stages', 'course_first 需要四阶段');
+      } else if (t.learning_mode === 'course_first') err(errors, p + '.stages', taskLabel(t, i) + ' 的 course_first 需要四阶段');
       if (t.acceptance != null) {
         checkUnknown(t.acceptance, ['target_correct', 'target_total', 'require_error_review'], p + '.acceptance', errors);
         var tc = t.acceptance.target_correct, tt = t.acceptance.target_total;
@@ -159,7 +159,9 @@
 
   function normalizePlan(obj) {
     if (!obj || typeof obj !== 'object' || Array.isArray(obj)) throw new Error('计划顶层必须是对象');
+    var nw = obj && obj._normalizationWarnings;
     var plan = JSON.parse(JSON.stringify(obj));
+    if (nw) { try { Object.defineProperty(plan, '_normalizationWarnings', { value: nw, enumerable: false, configurable: true }); } catch (e) {} }
     plan.tasks = (plan.tasks || []).map(function (t) {
       var x = Object.assign({}, t);
       x.course = x.course == null ? null : Object.assign({}, x.course);
@@ -171,8 +173,32 @@
     return plan;
   }
 
+  function taskLabel(t, index) {
+    return 'tasks[' + index + '] “' + String((t && t.topic) || (t && t.task_id) || '未命名任务') + '”';
+  }
+  var COURSE_SEQUENCE = ['video', 'examples', 'practice', 'review'];
+  function splitCourseMode(stages) {
+    if (!Array.isArray(stages) || !stages.length) return null;
+    var seq = stages.map(function (s) { return s && s.type; });
+    if (seq.join(',') === COURSE_SEQUENCE.join(',')) return null;
+    var seen = {}, last = -1;
+    for (var i = 0; i < seq.length; i++) {
+      var idx = COURSE_SEQUENCE.indexOf(seq[i]);
+      if (idx < 0 || seen[seq[i]] || idx <= last) return null;
+      seen[seq[i]] = true; last = idx;
+    }
+    // A ChatGPT split plan can produce two real tasks: a video-only lesson and an
+    // examples/practice/review exercise block, both still labelled course_first.
+    // Only the two observed split shapes have sufficient evidence. Other subsets
+    // remain course_first and fail the normal four-stage validation.
+    if (seq.join(',') === 'video') return { mode: 'other', reason: '拆分后的听课任务仅含 video 阶段' };
+    if (seq.join(',') === 'examples,practice,review') return { mode: 'practice', reason: '拆分后的任务为例题 → 练习 → 复盘组合' };
+    return null;
+  }
+
   function normalizeLegacy(raw) {
     var p = JSON.parse(JSON.stringify(raw || {}));
+    var normalizationWarnings = [];
     if (p.schedule == null) p.schedule = [];
     if (p.schedule && !Array.isArray(p.schedule) && typeof p.schedule === 'object') {
       if (Array.isArray(p.schedule.items)) p.schedule = p.schedule.items;
@@ -196,6 +222,14 @@
         return out;
       });
     });
+    (p.tasks || []).forEach(function (task, ti) {
+      if (task.learning_mode !== 'course_first' || !Array.isArray(task.stages)) return;
+      var adjustment = splitCourseMode(task.stages);
+      if (!adjustment) return;
+      normalizationWarnings.push({ taskId: task.task_id || '', topic: task.topic || '', index: ti, from: 'course_first', to: adjustment.mode, stages: task.stages.map(function (s) { return s.type; }), reason: adjustment.reason });
+      task.learning_mode = adjustment.mode;
+    });
+    try { Object.defineProperty(p, '_normalizationWarnings', { value: normalizationWarnings, enumerable: false, configurable: true }); } catch (e) {}
     return p;
   }
 
@@ -278,11 +312,11 @@
       var vm = num(o.video_minutes), em = num(o.examples_minutes), pm = num(o.practice_minutes), rm = num(o.review_minutes);
       if ([vm, em, pm, rm].some(function (x) { return x != null; })) {
         t.stages = [
-          { type: 'video', minutes: vm || 0 },
-          { type: 'examples', minutes: em || 0, count: num(o.examples_count) },
-          { type: 'practice', minutes: pm || 0, count: num(o.practice_question_count), question_set_id: o.question_set_id || null },
-          { type: 'review', minutes: rm || 0 }
-        ];
+          { type: 'video', minutes: vm },
+          { type: 'examples', minutes: em, count: num(o.examples_count) },
+          { type: 'practice', minutes: pm, count: num(o.practice_question_count), question_set_id: o.question_set_id || null },
+          { type: 'review', minutes: rm }
+        ].filter(function (s) { return s.minutes != null; });
       } else if (t.learning_mode === 'course_first') {
         throw new Error('CSV 第 ' + (i + 2) + ' 行缺少四阶段分钟');
       }
@@ -292,7 +326,7 @@
     });
     plan = normalizeLegacy(plan);
     var errors = validatePlan(plan);
-    if (errors.length) { var ee = new Error('CSV 校验失败：' + errors[0].path + ' ' + errors[0].message); ee.details = errors; throw ee; }
+    if (errors.length) { var ee = new Error('CSV 校验失败：共 ' + errors.length + ' 项字段/阶段问题，请按下方列表修正'); ee.details = errors; throw ee; }
     return plan;
   }
 
@@ -302,7 +336,7 @@
     if (name.endsWith('.json') || (!name.endsWith('.csv') && trimmed[0] === '{')) {
       var plan = parseJson(text);
       var errors = validatePlan(plan);
-      if (errors.length) { var e = new Error('计划校验失败：' + errors[0].path + ' ' + errors[0].message); e.details = errors; throw e; }
+      if (errors.length) { var e = new Error('计划校验失败：共 ' + errors.length + ' 项字段/阶段问题，请按下方列表修正'); e.details = errors; throw e; }
       return plan;
     }
     return parseCsv(text);
@@ -408,7 +442,7 @@
       rec.completed = !!(existing && existing.status === 'completed');
       records.push(rec);
     });
-    return { plan: plan, records: records, warnings: warnings, planHash: planHash };
+    return { plan: plan, records: records, warnings: warnings, normalizationWarnings: plan._normalizationWarnings || [], planHash: planHash };
   }
 
   function jsonTemplate() {

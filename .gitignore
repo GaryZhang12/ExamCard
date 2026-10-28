@@ -3,3 +3,12 @@ dist/
 *.log
 app/桌面版使用说明.md
 .public-build/
+.test-runtime/
+.test-store/
+.test-runs/
+reports/ui-*/
+reports/smoke.png
+reports/final-e2e/
+reports/portable-running.png
+
+reports/release-integration/*.png

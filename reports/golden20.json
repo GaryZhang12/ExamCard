@@ -1,0 +1,106 @@
+{
+  "kind": "Original authored synthetic PDF; expected values read from authoring source, not detector output",
+  "pass": 20,
+  "details": [
+    {
+      "n": 1,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 2,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 3,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 4,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 5,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 6,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 7,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 8,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 9,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 10,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 11,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 12,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 13,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 14,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 15,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 16,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 17,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 18,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 19,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    },
+    {
+      "n": 20,
+      "optionsMatch": true,
+      "stemPrefixMatch": true
+    }
+  ]
+}

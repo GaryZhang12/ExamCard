@@ -1,0 +1,114 @@
+{
+  "environment": {
+    "version": "1.0.1",
+    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-3Qb4RB",
+    "electron": "43.3.0",
+    "sandbox": false,
+    "displays": [
+      {
+        "size": {
+          "width": 1080,
+          "height": 1920
+        },
+        "scaleFactor": 1
+      },
+      {
+        "size": {
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  },
+  "results": [
+    {
+      "name": "text catalog physical pages and independently authored tree",
+      "status": "pass",
+      "detail": [
+        {
+          "title": "第一章 基础知识",
+          "page": "1",
+          "level": 1,
+          "parent": ""
+        },
+        {
+          "title": "第一节 数量关系",
+          "page": "3",
+          "level": 2,
+          "parent": "toc-mvruxrgt-d5ig"
+        },
+        {
+          "title": "第二节 资料分析",
+          "page": "8",
+          "level": 2,
+          "parent": "toc-mvruxrgt-d5ig"
+        },
+        {
+          "title": "第二章 综合练习",
+          "page": "20",
+          "level": 1,
+          "parent": ""
+        },
+        {
+          "title": "第一节 阅读理解",
+          "page": "22",
+          "level": 2,
+          "parent": "toc-mvruxrgt-ve6n"
+        },
+        {
+          "title": "第二节 错题复盘",
+          "page": "30",
+          "level": 2,
+          "parent": "toc-mvruxrgt-ve6n"
+        }
+      ]
+    },
+    {
+      "name": "catalog edit E2E: title/page/level/parent, stale ack, cycle, deletion, persisted preview",
+      "status": "fail",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   '第一节 人工核对',\n    '第一章 基础知识',\n-   '第一节 人工核对',\n    '第二节 资料分析',\n+   '第二节 错题复盘',\n+   '第一节 阅读理解',\n    '第二章 综合练习',\n-   '第一节 阅读理解',\n-   '第二节 错题复盘'\n  ]\n\n    at C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\final-electron.cjs:37:11\n    at async check (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\final-electron.cjs:6:49)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\final-electron.cjs:20:3"
+    },
+    {
+      "name": "real local Tesseract Chinese scan pipeline",
+      "status": "fail",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n4 !== 6\n\n    at C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\final-electron.cjs:42:95\n    at async check (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\final-electron.cjs:6:49)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\final-electron.cjs:40:3"
+    },
+    {
+      "name": "real OCR cancellation settles; queued second PDF does not start",
+      "status": "fail",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 0\n\n    at C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\final-electron.cjs:54:87\n    at async check (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\final-electron.cjs:6:49)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\final-electron.cjs:47:3"
+    },
+    {
+      "name": "real OCR leave via navigation, no late write; reenter recognizes",
+      "status": "fail",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n4 !== 6\n\n    at C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\final-electron.cjs:61:66\n    at async check (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\final-electron.cjs:6:49)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\final-electron.cjs:56:3"
+    },
+    {
+      "name": "real OCR stop plus actual isolated clear blocks draft/session resurrection",
+      "status": "fail",
+      "error": "page.evaluate: TypeError: ExamBackup.clearAllLearningData is not a function\n    at eval (eval at evaluate (:311:30), <anonymous>:1:127)\n    at async <anonymous>:337:30\n    at C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\final-electron.cjs:65:15\n    at async check (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\final-electron.cjs:6:49)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\final-electron.cjs:63:3"
+    },
+    {
+      "name": "invalid PDF and illegal catalog range show failure, no success",
+      "status": "pass"
+    },
+    {
+      "name": "actual six-task private plan: parse/minutes/IDs/dedup/actuals",
+      "status": "pass",
+      "detail": {
+        "inputSha256": "ce8fb9eb55c42277fdb62c6dc600f737ce12d35fefc8f1cc3c43a2b9ce3656c5",
+        "parsed": 6,
+        "created": 6,
+        "unchanged": 6,
+        "completedSkipped": 1,
+        "idsAndMinutesMatch": true
+      }
+    }
+  ],
+  "pageErrors": [],
+  "totals": {
+    "pass": 3,
+    "fail": 5
+  }
+}

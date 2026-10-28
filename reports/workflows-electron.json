@@ -1,0 +1,66 @@
+{
+  "environment": {
+    "version": "1.0.1",
+    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-SJOUNp",
+    "electron": "43.3.0",
+    "sandbox": false,
+    "displays": [
+      {
+        "size": {
+          "width": 1080,
+          "height": 1920
+        },
+        "scaleFactor": 1
+      },
+      {
+        "size": {
+          "width": 2560,
+          "height": 1440
+        },
+        "scaleFactor": 1
+      }
+    ]
+  },
+  "results": [
+    {
+      "name": "PDF import UI current-content acknowledgement and duplicate-click guard",
+      "status": "pass"
+    },
+    {
+      "name": "objective exam enter pause resume exit and continue",
+      "status": "pass"
+    },
+    {
+      "name": "essay long text automatic save and navigation recovery",
+      "status": "pass"
+    },
+    {
+      "name": "actual native file-save failure shows error and retains data",
+      "status": "pass"
+    },
+    {
+      "name": "modal Tab cycles within dialog and Escape restores focus",
+      "status": "pass"
+    },
+    {
+      "name": "exam bundle asynchronous transaction abort rolls back",
+      "status": "pass"
+    },
+    {
+      "name": "restore synchronous failure preserves current data atomically",
+      "status": "pass"
+    },
+    {
+      "name": "application restart retains essay actual content and objective sessions",
+      "status": "pass",
+      "detail": {
+        "essayChars": 4200,
+        "objectiveSessions": 1
+      }
+    }
+  ],
+  "totals": {
+    "pass": 8,
+    "fail": 0
+  }
+}

@@ -1,0 +1,183 @@
+TAP version 13
+# Subtest: P1-1: unrelated metadata edit cannot clear missing-options gate
+not ok 1 - P1-1: unrelated metadata edit cannot clear missing-options gate
+  ---
+  duration_ms: 5.7955
+  type: 'test'
+  location: 'C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\reproductions.test.cjs:5:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /待人工确认 1/. Input:
+
+    '<div id="impQuality" class="issue-line warn">质量摘要：共 1 题；完整 0；缺少/不完整选项 1；页码异常 0；待人工确认 0；已人工修正 1</div>'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<div id="impQuality" class="issue-line warn">质量摘要：共 1 题；完整 0；缺少/不完整选项 1；页码异常 0；待人工确认 0；已人工修正 1</div>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\GaryZ\Documents\ChatGPT\EC答题卡开发\ExamCard-1.0.1-work\tests\reproductions.test.cjs:11:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.start (node:internal/test_runner/test:1262:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+  ...
+# Subtest: P1-2: prose A-D references are not answer options
+not ok 2 - P1-2: prose A-D references are not answer options
+  ---
+  duration_ms: 8.6822
+  type: 'test'
+  location: 'C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\reproductions.test.cjs:13:1'
+  failureType: 'testCodeFailure'
+  error: `Expected "actual" to be strictly unequal to: 'ok'`
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'ok'
+  actual: 'ok'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\GaryZ\Documents\ChatGPT\EC答题卡开发\ExamCard-1.0.1-work\tests\reproductions.test.cjs:18:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: P1-3: physical page reset does not force OCR
+not ok 3 - P1-3: physical page reset does not force OCR
+  ---
+  duration_ms: 1.4985
+  type: 'test'
+  location: 'C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\reproductions.test.cjs:20:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    false !== true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\GaryZ\Documents\ChatGPT\EC答题卡开发\ExamCard-1.0.1-work\tests\reproductions.test.cjs:23:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: P1-4: standalone printed page cannot attach across PDF pages
+not ok 4 - P1-4: standalone printed page cannot attach across PDF pages
+  ---
+  duration_ms: 1.6381
+  type: 'test'
+  location: 'C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\reproductions.test.cjs:25:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    '18' !== null
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ~
+  actual: '18'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\GaryZ\Documents\ChatGPT\EC答题卡开发\ExamCard-1.0.1-work\tests\reproductions.test.cjs:31:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: P1-5: render revalidates edited tree without rewriting manual parent
+not ok 5 - P1-5: render revalidates edited tree without rewriting manual parent
+  ---
+  duration_ms: 3.5599
+  type: 'test'
+  location: 'C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\reproductions.test.cjs:33:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+
+      assert.ok(t.quality.levelConflicts > 0)
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (C:\Users\GaryZ\Documents\ChatGPT\EC答题卡开发\ExamCard-1.0.1-work\tests\reproductions.test.cjs:40:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: P1-6: video→review is rejected instead of relabelled as video-only
+not ok 6 - P1-6: video→review is rejected instead of relabelled as video-only
+  ---
+  duration_ms: 1.6936
+  type: 'test'
+  location: 'C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\reproductions.test.cjs:43:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + 'other'
+    - 'course_first'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'course_first'
+  actual: 'other'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\GaryZ\Documents\ChatGPT\EC答题卡开发\ExamCard-1.0.1-work\tests\reproductions.test.cjs:48:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: P2-2: invalid ranges explicitly reject instead of falling back
+not ok 7 - P2-2: invalid ranges explicitly reject instead of falling back
+  ---
+  duration_ms: 1.3911
+  type: 'test'
+  location: 'C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\reproductions.test.cjs:51:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\GaryZ\Documents\ChatGPT\EC答题卡开发\ExamCard-1.0.1-work\tests\reproductions.test.cjs:54:12)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+    Test.postRun (node:internal/test_runner/test:1542:19)
+    Test.run (node:internal/test_runner/test:1467:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 0
+# fail 7
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 96.6043

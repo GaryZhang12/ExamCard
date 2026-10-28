@@ -1,0 +1,146 @@
+{
+  "environment": {
+    "version": "1.0.1",
+    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-oqNC96",
+    "electron": "43.3.0",
+    "sandbox": false,
+    "displays": [
+      {
+        "size": {
+          "width": 1080,
+          "height": 1920
+        },
+        "scaleFactor": 1
+      },
+      {
+        "size": {
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  },
+  "profile": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-oqNC96",
+  "target": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work",
+  "results": [
+    {
+      "name": "v5 schema: gd_exam_v2 / 22 stores",
+      "status": "pass",
+      "detail": {
+        "name": "gd_exam_v2",
+        "version": 5,
+        "stores": [
+          "answers",
+          "attempts",
+          "courses",
+          "essayAnswerVersions",
+          "essayExams",
+          "essayMaterials",
+          "essayReviews",
+          "essaySessions",
+          "examProfiles",
+          "exams",
+          "gradingRecords",
+          "knowledgeTags",
+          "learningTasks",
+          "meta",
+          "pdfs",
+          "questionTags",
+          "questions",
+          "sessions",
+          "standardAnswerSets",
+          "studyLogs",
+          "textbookChapters",
+          "textbooks"
+        ]
+      }
+    },
+    {
+      "name": "P2-1: new + merged PDF sources preserved, old scalar untouched",
+      "status": "pass",
+      "detail": {
+        "hashes": [
+          "hash-a",
+          "hash-b"
+        ],
+        "chapters": [
+          {
+            "title": "第一章 基础",
+            "page": "1"
+          },
+          {
+            "title": "第二章 进阶",
+            "page": "11"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Catalog invalid orphan/cycle rejects before writing",
+      "status": "pass"
+    },
+    {
+      "name": "Exam bundle failure injection rolls back exams/questions/pdfs",
+      "status": "fail",
+      "error": "page.evaluate: Error: Bundle rollback failed\n    at eval (eval at evaluate (:311:30), <anonymous>:13:109)\n    at async <anonymous>:337:30\n    at C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\data-electron.cjs:36:93\n    at check (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\data-electron.cjs:9:32)\n    at C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\data-electron.cjs:36:11"
+    },
+    {
+      "name": "Catalog failure injection rolls back books and chapters",
+      "status": "pass"
+    },
+    {
+      "name": "Plan duplicate / completed / concurrent stage actuals protection",
+      "status": "pass",
+      "detail": {
+        "repeat": {
+          "planId": "demo-20261028",
+          "created": 0,
+          "updated": 0,
+          "unchanged": 1,
+          "skippedCompleted": 0
+        },
+        "updated": {
+          "planId": "demo-20261028",
+          "created": 0,
+          "updated": 1,
+          "unchanged": 0,
+          "skippedCompleted": 0
+        },
+        "actualMinutes": 37,
+        "stageActuals": [
+          {
+            "type": "video",
+            "minutes": 12,
+            "completed": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "Plan revalidates edited preview before persistence",
+      "status": "pass"
+    },
+    {
+      "name": "Plan transaction failure rolls back tasks and plan meta",
+      "status": "pass"
+    },
+    {
+      "name": "22-store backup round trip and incomplete backup rejects without writes",
+      "status": "pass",
+      "detail": {
+        "stores": 22,
+        "actualMinutes": 37
+      }
+    },
+    {
+      "name": "Legacy v5 records without optional provenance remain readable",
+      "status": "pass"
+    }
+  ],
+  "totals": {
+    "pass": 9,
+    "fail": 1,
+    "skip": 0
+  }
+}

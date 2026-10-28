@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-28",
+  "installerConfigChange": {
+    "allowElevation": true,
+    "perMachine": false,
+    "requestedExecutionLevel": "asInvoker"
+  },
+  "automatedRegression": {
+    "suitesPass": 7,
+    "suitesFail": 0,
+    "unitPass": 38,
+    "indexedDbPass": 10,
+    "goldenQuestions": 20,
+    "goldenOptions": 80,
+    "uiPass": 71,
+    "visualBaselineSkip": 1,
+    "finalE2ePass": 9,
+    "workflowsPass": 8,
+    "legacyPass": 1
+  },
+  "newPackagedRecheck": {
+    "dataPass": 10,
+    "finalE2ePass": 9,
+    "workflowsPass": 8,
+    "portableSmoke": "pass"
+  },
+  "attendedWindows": {
+    "upgradeAndDataRetention": "pass",
+    "adminUninstallAndDataRetention": "pass",
+    "restoreOriginal100": "pass",
+    "ordinaryLaunchAutomaticUninstallElevation": "pass-user-confirmed",
+    "separateStandardUser": "skip",
+    "real125and150Dpi": "skip",
+    "currentUserInstallNormalUninstall": "pass-user-confirmed",
+    "allUsersInstallNormalUninstall": "pass-user-confirmed",
+    "programRemovalAndDataRetention": "pass-user-confirmed"
+  },
+  "releaseRecommendation": "APPROVED_BY_OWNER",
+  "push": false,
+  "releaseCreated": false,
+  "scope": "pre-publication acceptance snapshot; remote publication results are reported separately",
+  "userAcceptance": {
+    "date": "2026-10-28",
+    "source": "explicit human message in this chat",
+    "independentlyAutomated": false,
+    "supersedes": "previous unresolved ordinary-uninstall result",
+    "details": [
+      "current-user installation and normal uninstallation PASS",
+      "all-user installation and normal uninstallation PASS",
+      "program removed PASS",
+      "learning data retained after uninstall PASS"
+    ]
+  }
+}

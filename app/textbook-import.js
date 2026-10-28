@@ -11,12 +11,15 @@
   async function sha256(buf) { try { var d = await crypto.subtle.digest('SHA-256', buf); return Array.prototype.map.call(new Uint8Array(d), function (b) { return b.toString(16).padStart(2, '0'); }).join(''); } catch (e) { return null; } }
   function parseRanges(s, max) {
     var out = [], seen = {};
-    String(s || '').split(/[,，;；\s]+/).forEach(function (part) {
-      var m = /^(\d+)\s*-\s*(\d+)$/.exec(part);
-      if (m) { var a = +m[1], b = +m[2]; if (a > b) { var t = a; a = b; b = t; } for (var i = a; i <= Math.min(b, max); i++) if (!seen[i]) { seen[i] = 1; out.push(i); } return; }
-      var n = parseInt(part, 10); if (n >= 1 && n <= max && !seen[n]) { seen[n] = 1; out.push(n); }
+    var input = String(s || '').trim().replace(/\s*-\s*/g, '-');
+    if (!input) throw new Error('请填写目录 PDF 页范围（1-' + max + '）');
+    input.split(/[,，;；\s]+/).forEach(function (part) {
+      var m = /^(\d+)(?:-(\d+))?$/.exec(part);
+      var a = m ? Number(m[1]) : 0, b = m ? Number(m[2] || m[1]) : 0;
+      if (!m || !Number.isSafeInteger(a) || !Number.isSafeInteger(b) || a < 1 || b < a || b > max) throw new Error('无效 PDF 页范围“' + part + '”，请输入 1-' + max + ' 内递增页码');
+      for (var i = a; i <= b; i++) if (!seen[i]) { seen[i] = 1; out.push(i); }
     });
-    return out.length ? out : Array.from({ length: Math.min(10, max) }, function (_, i) { return i + 1; });
+    return out;
   }
   function cleanLine(s) {
     return String(s || '').replace(/\u00a0/g, ' ').replace(/[.．·…]{3,}/g, '  ').replace(/\s+/g, ' ').trim();
@@ -44,22 +47,47 @@
   function looksNoise(title) {
     var chars = title.replace(/[^\u4e00-\u9fff]/g, '');
     if (!chars.length) return true;
-    var freq = {}, max = 0;
-    for (var i = 0; i < chars.length; i++) { freq[chars[i]] = (freq[chars[i]] || 0) + 1; if (freq[chars[i]] > max) max = freq[chars[i]]; }
-    if (chars.length >= 5 && max / chars.length > 0.35) return true;
     if (/^(目录|目 录|前言|序言|附录|参考文献)$/.test(title)) return true;
     return false;
   }
+  function normTitle(s) { return cleanLine(s).replace(/\s+/g, '').toLowerCase(); }
+  function titleQuality(title) {
+    var s = String(title || '');
+    if (/[\uFFFD\u0000-\u001f]/.test(s)) return '含乱码/控制字符';
+    if (/(.)\1{4,}/.test(s)) return '重复字符异常';
+    if (s.length > 60) return '标题过长，疑似拆行或乱码';
+    var cjk = (s.match(/[\u4e00-\u9fff]/g) || []).length;
+    var latin = (s.match(/[A-Za-z]/g) || []).length;
+    if (!cjk) return '不含中文，疑似页眉/乱码';
+    if (/[A-Za-z]{6,}/.test(s) && latin > cjk * 0.6) return '中英混杂，疑似乱码';
+    return null;
+  }
+  function pageQuality(page) {
+    if (!page) return '页码未识别';
+    if (!/^(\d{1,4}|[ivxlcdm]{1,8})$/i.test(String(page))) return '页码格式异常';
+    return null;
+  }
+  function addIssue(e, message) { if (message && e.issues.indexOf(message) < 0) e.issues.push(message); }
   function parseDirectory(lines, method) {
     var entries = [], order = 0;
+    var textPages = {};
+    lines.forEach(function (ln) {
+      var k = normTitle(cleanLine(ln.text));
+      if (!k || k.length < 2) return;
+      if (!textPages[k]) textPages[k] = {};
+      textPages[k][ln.page || 0] = true;
+    });
     for (var li = 0; li < lines.length; li++) {
       var ln = lines[li];
       var title = cleanLine(ln.text);
       if (!title) continue;
-      // OCR dot leaders often produce a very wide, very short line
       if (ln.w && ln.w > 800 && (ln.h || 0) < 18) continue;
       if (/^[\d\s.．·…ivxlcdm]+$/i.test(title)) {
-        if (entries.length && !entries[entries.length - 1].printedPage) entries[entries.length - 1].printedPage = title.trim();
+        var prevEntry = entries[entries.length - 1];
+        if (prevEntry && !prevEntry.printedPage && prevEntry.pdfPage != null && prevEntry.pdfPage === ln.page &&
+            prevEntry.sourceLine === li - 1 && prevEntry.column === ln.column &&
+            Number.isFinite(ln.x) && ln.x > prevEntry.lineX && Math.abs((ln.y || 0) - prevEntry.lineY) <= 35 &&
+            /^(\d{1,4}|[ivxlcdm]{1,8})$/i.test(title)) prevEntry.printedPage = title.trim();
         continue;
       }
       if (/^[eE][eE\s]+$/.test(title)) continue;
@@ -67,30 +95,115 @@
       var hasPattern = /第[一二三四五六七八九十百\d]+[篇编章节]|^[一二三四五六七八九十]+[、.]|^（[一二三四五六七八九十]+）|^\d+(?:\.\d+)+|^\d+[、.]/.test(title);
       var hasCjk = /[\u4e00-\u9fff]/.test(title);
       if (!hasPattern && !hasCjk) continue;
+      // Drop a non-structural running header/footer repeated on 3+ pages; real
+      // repeated chapter titles still carry a chapter pattern and are deduped later.
+      var repeatKey = normTitle(title);
+      if (!hasPattern && textPages[repeatKey] && Object.keys(textPages[repeatKey]).length >= 3) continue;
       var p = extractPage(title);
       if (!p.title || p.title.length < 2) continue;
       if (!hasPattern && !p.page) continue;
-      var prev = entries[entries.length - 1];
-      var lv = levelOf(p.title, ln.x || 0, prev);
-      var e = { tmpId: uid('toc'), rawText: title, title: p.title, level: lv, parentTmpId: null, order: order++, printedPage: p.page, pdfPage: ln.page || null, method: method, confidence: method === 'ocr' ? (ln.confidence || null) : null, confidenceSource: method === 'ocr' ? 'tesseract.js' : 'text-layer', issues: [], confirmed: false, sourceLine: li };
-      if (!p.page) e.issues.push('页码未识别');
-      if (method === 'ocr') e.issues.push('OCR 结果需人工确认');
-      for (var i = entries.length - 1; i >= 0; i--) { if (entries[i].level < lv) { e.parentTmpId = entries[i].tmpId; break; } }
+      var lv = levelOf(p.title, ln.x || 0, entries[entries.length - 1]);
+      var e = { tmpId: uid('toc'), rawText: title, title: p.title, level: lv, parentTmpId: null, order: order++, printedPage: p.page, pdfPage: ln.page || null, lineY: ln.y || 0, lineX: ln.x || 0, column: ln.column, method: method, confidence: method === 'ocr' ? (ln.confidence || null) : null, confidenceSource: method === 'ocr' ? 'tesseract.js' : 'text-layer', issues: [], confirmed: false, sourceLine: li };
+      if (!p.page) addIssue(e, '页码未识别');
+      if (method === 'ocr') addIssue(e, 'OCR 结果需人工确认');
       entries.push(e);
     }
-    // attach a page number from the immediately following page-only line
-    var usedPageLine = {};
-    for (var j = 0; j < entries.length; j++) {
-      if (entries[j].printedPage) continue;
-      var src = entries[j].sourceLine;
-      for (var k = src + 1; k < Math.min(lines.length, src + 4); k++) {
-        if (usedPageLine[k]) continue;
-        var nx = cleanLine(lines[k].text);
-        if (/^([ivxlcdm]{1,8}|\d{1,4})$/i.test(nx)) { entries[j].printedPage = nx; usedPageLine[k] = 1; break; }
-      }
-    }
-    entries.forEach(function (e) { if (e.issues.length) e.confirmed = false; });
     return entries;
+  }
+
+  function finalizeDirectory(entries, method) {
+    // Physical reading order is evidence. Printed page OCR is an attribute,
+    // never a sorting key used to infer a different parent tree.
+    entries = entries.slice();
+    var kept = [], stack = [], strongSeen = {}, weakSeen = {};
+    var quality = { valid: 0, autoMerged: 0, weakDuplicates: 0, abnormalTitles: 0, levelConflicts: 0, pageIssues: 0, method: method };
+    var prevPage = null;
+    for (var i = 0; i < entries.length; i++) {
+      var e = entries[i];
+      var lv = Math.max(0, Math.min(4, Number(e.level) || 0));
+      while (stack.length > lv) stack.pop();
+      var parent = null;
+      for (var s = stack.length - 1; s >= 0; s--) { if (stack[s]) { parent = stack[s]; break; } }
+      var path = stack.filter(Boolean).map(function (x) { return normTitle(x.title); }).join('/');
+      var key = path + '|' + lv + '|' + normTitle(e.title) + '|' + (e.printedPage || '');
+      if (e.printedPage && strongSeen[key]) {
+        quality.autoMerged++;
+        e.duplicateOf = strongSeen[key].tmpId;
+        e.issues.push('重复条目（同路径/同标题/同印刷页/同层级），已合并');
+        continue;
+      }
+      if (e.printedPage) strongSeen[key] = e;
+      var weakKey = path + '|' + lv + '|' + normTitle(e.title);
+      if (weakSeen[weakKey]) {
+        quality.weakDuplicates++;
+        e.duplicateOf = weakSeen[weakKey].tmpId;
+        addIssue(e, '疑似重复（同父级/同标题），请确认');
+      } else {
+        weakSeen[weakKey] = e;
+      }
+      e.level = lv;
+      e.parentTmpId = parent ? parent.tmpId : null;
+      if (lv > 1 && !parent) { quality.levelConflicts++; addIssue(e, '层级缺少父章节，请确认'); }
+      if (parent && parent.level >= lv) { quality.levelConflicts++; addIssue(e, '层级冲突：父级不低于当前层级'); }
+      if (parent && lv > parent.level + 1) { quality.levelConflicts++; addIssue(e, '层级跳跃，请确认父子关系'); }
+      var tq = titleQuality(e.title);
+      if (tq) { quality.abnormalTitles++; addIssue(e, tq); }
+      var pq = pageQuality(e.printedPage);
+      if (pq) { quality.pageIssues++; addIssue(e, pq); }
+      if (!e.pdfPage) { quality.pageIssues++; addIssue(e, 'PDF 页码未记录'); }
+      if (e.printedPage && prevPage && /^\d+$/.test(e.printedPage) && /^\d+$/.test(prevPage) && Number(e.printedPage) < Number(prevPage)) { quality.pageIssues++; addIssue(e, '印刷页顺序异常'); }
+      if (e.printedPage && /^\d+$/.test(e.printedPage)) prevPage = e.printedPage;
+      if (e.issues.length) e.confirmed = false;
+      e.order = kept.length;
+      stack[lv] = e;
+      stack.length = lv + 1;
+      kept.push(e);
+    }
+    quality.valid = kept.length;
+    return { entries: kept, quality: quality };
+  }
+
+  function directorySignature(entries) {
+    return JSON.stringify(entries.map(function (e) { return [e.tmpId, e.title, e.parentTmpId, e.level, e.printedPage, e.pdfPage, e.method]; }));
+  }
+  function validateDirectory(entries, method) {
+    var q = { valid: entries.length, autoMerged: 0, weakDuplicates: 0, abnormalTitles: 0, levelConflicts: 0, pageIssues: 0, method: method, errors: [] };
+    var byId = Object.create(null), duplicates = Object.create(null);
+    entries.forEach(function (e) {
+      e.issues = [];
+      if (!e.tmpId || byId[e.tmpId]) { q.errors.push('章节 ID 缺少或重复'); q.levelConflicts++; }
+      byId[e.tmpId] = e;
+    });
+    entries.forEach(function (e) {
+      function structural(message) { q.errors.push(message + '：' + e.title); q.levelConflicts++; addIssue(e, message); }
+      if (!String(e.title || '').trim()) { q.errors.push('存在空标题章节'); addIssue(e, '标题不能为空'); }
+      if (!Number.isInteger(e.level) || e.level < 0 || e.level > 4) structural('层级无效');
+      var parent = e.parentTmpId ? byId[e.parentTmpId] : null;
+      if (e.parentTmpId && !parent) structural('父章节不存在');
+      if (!parent && e.level > 1) structural('层级缺少父章节');
+      if (parent && (parent.level >= e.level || e.level > parent.level + 1)) structural('父子层级冲突');
+      var seen = Object.create(null), cur = e;
+      while (cur) {
+        if (seen[cur.tmpId]) { structural('章节父子关系存在循环或自引用'); break; }
+        seen[cur.tmpId] = true; cur = cur.parentTmpId ? byId[cur.parentTmpId] : null;
+      }
+      var key = JSON.stringify([e.parentTmpId || null, e.level, normTitle(e.title)]);
+      if (duplicates[key]) { q.weakDuplicates++; addIssue(e, '疑似重复（同父级/同标题），请确认'); }
+      duplicates[key] = true;
+      var tq = titleQuality(e.title); if (tq) { q.abnormalTitles++; addIssue(e, tq); }
+      var pq = pageQuality(e.printedPage); if (pq) { q.pageIssues++; addIssue(e, pq); }
+      if (!e.pdfPage) { q.pageIssues++; addIssue(e, 'PDF 页码未记录'); }
+      if (e.method === 'ocr') addIssue(e, 'OCR 结果需人工确认');
+    });
+    q.needsReview = q.weakDuplicates + q.abnormalTitles + q.pageIssues > 0 || method === 'ocr';
+    return q;
+  }
+  function refreshTaskQuality(t) {
+    var merged = t.quality && t.quality.autoMerged || 0;
+    t.quality = validateDirectory(t.entries || [], t.method);
+    t.quality.autoMerged = merged;
+    if (t.qualityAckSignature !== directorySignature(t.entries || [])) t.qualityAckSignature = null;
+    return t.quality;
   }
 
   function detectReliableText(lines) {
@@ -98,7 +211,12 @@
     var cjk = (text.match(/[\u4e00-\u9fff]/g) || []).length;
     var headings = lines.filter(function (x) { return /第[一二三四五六七八九十百\d]+[篇编章节]|^[一二三四五六七八九十]+[、.]/.test(cleanLine(x.text)); }).length;
     var pages = new Set(lines.map(function (x) { return x.page; }));
-    var badOrder = lines.some(function (ln, i) { return i && ln.y > lines[i - 1].y + 40; });
+    var lastY = Object.create(null);
+    var badOrder = lines.some(function (ln) {
+      var key = ln.page + ':' + (ln.column || 0), previous = lastY[key];
+      lastY[key] = ln.y;
+      return previous != null && ln.y > previous + 40;
+    });
     var reasons = [];
     if (cjk < 20) reasons.push('中文字符不足');
     if (headings < 2) reasons.push('目录标题行不足');
@@ -121,19 +239,53 @@
   }
   async function textLinesForPage(doc, pageNo) {
     var page = await doc.getPage(pageNo); var content = await page.getTextContent(); var vp = page.getViewport({ scale: 1 });
-    var lines = [], current = null;
-    (content.items || []).slice().sort(function (a, b) { return b.transform[5] - a.transform[5] || a.transform[4] - b.transform[4]; }).forEach(function (it) {
+    var items = [];
+    (content.items || []).forEach(function (it) {
       if (!it.str || !it.str.trim()) return;
-      var y = it.transform[5], x = it.transform[4];
-      if (!current || Math.abs(current.y - y) > 5) { current = { text: it.str, x: x, y: y, page: pageNo, width: vp.width }; lines.push(current); }
-      else { current.text += it.str; current.x = Math.min(current.x, x); }
+      items.push({ text: it.str, x: it.transform[4], y: it.transform[5], w: it.width || 0 });
     });
+    items.sort(function (a, b) { return b.y - a.y || a.x - b.x; });
+    var rows = [];
+    items.forEach(function (it) {
+      var row = null;
+      for (var r = rows.length - 1; r >= 0; r--) { if (Math.abs(rows[r].y - it.y) <= 5) { row = rows[r]; break; } }
+      if (!row) { row = { y: it.y, items: [] }; rows.push(row); }
+      row.items.push(it);
+    });
+    rows.sort(function (a, b) { return b.y - a.y; });
+    var lines = [];
+    rows.forEach(function (row) {
+      row.items.sort(function (a, b) { return a.x - b.x; });
+      var seg = null;
+      for (var i = 0; i < row.items.length; i++) {
+        var it = row.items[i];
+        if (!seg || (it.x - seg.lastX) > 32) {
+          seg = { text: it.text, x: it.x, y: row.y, page: pageNo, width: vp.width, lastX: it.x + (it.w || 0) };
+          lines.push(seg);
+        } else {
+          seg.text += it.text;
+          seg.lastX = it.x + (it.w || 0);
+          seg.x = Math.min(seg.x, it.x);
+        }
+      }
+    });
+    // Only establish columns from repeated title positions, not printed page
+    // values. Page-number fragments follow their physical column.
+    var titleXs = lines.filter(function (l) { return /[\u4e00-\u9fff]/.test(l.text); }).map(function (l) { return l.x; });
+    if (titleXs.length >= 4) {
+      var leftX = Math.min.apply(null, titleXs), right = titleXs.filter(function (x) { return x - leftX > vp.width * 0.35; });
+      if (right.length >= 2 && titleXs.length - right.length >= 2) {
+        var splitX = Math.min.apply(null, right) - 12;
+        lines.forEach(function (l) { l.column = l.x >= splitX ? 1 : 0; });
+        lines.sort(function (a, b) { return a.column - b.column || b.y - a.y || a.x - b.x; });
+      }
+    }
     if (page.cleanup) { try { page.cleanup(); } catch (e) {} }
     return lines;
   }
   function draftKey(task) { return task.id; }
   function draftSnapshot(task) {
-    return { at: Date.now(), key: draftKey(task), fileName: task.name, entries: task.entries, rawText: task.rawText, method: task.method, range: task.range, textInfo: task.textInfo, hash: task.hash || null };
+    return { at: Date.now(), key: draftKey(task), fileName: task.name, entries: task.entries, rawText: task.rawText, method: task.method, range: task.range, textInfo: task.textInfo, quality: task.quality || null, hash: task.hash || null };
   }
   async function refreshDraftIndex() {
     try {
@@ -182,19 +334,21 @@
       var reliable = detectReliableText(allLines);
       task.textInfo = reliable;
       if (reliable.reliable) {
-        task.method = 'text'; task.message = '已读取目录文字'; task.entries = parseDirectory(allLines, 'text');
+        task.method = 'text'; task.message = '已读取目录文字'; var textResult = finalizeDirectory(parseDirectory(allLines, 'text'), 'text'); task.entries = textResult.entries; task.quality = textResult.quality;
       } else {
         if (!root.OcrEngine || !OcrEngine.isAvailable()) throw new Error('扫描识别不可用，请重新安装或选择文字版 PDF');
-        task.method = 'ocr'; task.entries = []; var ocrTexts = [];
+        task.method = 'ocr'; task.entries = []; var ocrTexts = []; var ocrAllLines = [];
         for (var j = 0; j < selected.length; j++) {
           if (isStale(task)) throw new Error('已取消');
           task.message = '识别第 ' + (j + 1) + '/' + selected.length + ' 页'; task.progress = Math.round((j / selected.length) * 100); render();
           var r = await OcrEngine.recognizePdfPage(doc, selected[j], { scale: 2, onProgress: function (m) { if (m.status === 'recognizing text' && !isStale(task)) { task.message = '识别第 ' + (j + 1) + '/' + selected.length + ' 页 ' + Math.round((m.progress || 0) * 100) + '%'; render(); } } });
           if (isStale(task)) throw new Error('已取消');
           ocrTexts.push(r.text || '');
-          task.entries = task.entries.concat(parseDirectory(ocrLines(r, selected[j]), 'ocr'));
+          ocrAllLines = ocrAllLines.concat(ocrLines(r, selected[j]));
         }
         if (isStale(task)) throw new Error('已取消');
+        var ocrResult = finalizeDirectory(parseDirectory(ocrAllLines, 'ocr'), 'ocr');
+        task.entries = ocrResult.entries; task.quality = ocrResult.quality;
         task.entries.forEach(function (e) { e.method = 'ocr'; if (e.issues.indexOf('请核对识别结果') < 0) e.issues.push('请核对识别结果'); });
         allLines = ocrTexts.join('\n').split(/\n+/).map(function (x) { return { text: x, page: null }; });
       }
@@ -204,7 +358,7 @@
       if (isStale(task)) throw new Error('已取消');
       task.status = 'ready'; task.message = '识别完成，请核对'; task.progress = 100;
       if (isStale(task)) throw new Error('已取消');
-      try { var books = await LearningStore.listTextbooks(); task.duplicates = books.filter(function (b) { return task.hash && b.sourcePdfHash === task.hash; }).slice(0, 5); } catch (e) { task.duplicates = []; }
+      try { var books = await LearningStore.listTextbooks(); task.duplicates = books.filter(function (b) { return task.hash && (b.sourcePdfHash === task.hash || (b.sourcePdfs || []).some(function (p) { return p.hash === task.hash; })); }).slice(0, 5); } catch (e) { task.duplicates = []; }
       if (isStale(task)) throw new Error('已取消');
       await persistDraft(task);
       render();
@@ -325,7 +479,7 @@
     $('tocRange').addEventListener('change', function () { state.range = this.value; });
     $('tocBody').querySelectorAll('[data-toc-draft]').forEach(function (b) { b.addEventListener('click', function () { restoreDraft(Number(b.getAttribute('data-toc-draft'))); }); });
     $('tocBody').querySelectorAll('[data-toc-task]').forEach(function (el) { el.addEventListener('click', function (e) { if (e.target.closest('button')) return; state.active = Number(el.getAttribute('data-toc-task')); render(); }); });
-    $('tocBody').querySelectorAll('[data-toc-cancel]').forEach(function (b) { b.addEventListener('click', function () { var t = state.tasks[+b.getAttribute('data-toc-cancel')]; if (!t) return; t.cancelled = true; t.status = 'cancelled'; t.message = '已取消，未保存结果'; if (root.OcrEngine) { try { OcrEngine.cancel(); } catch (e) {} } render(); }); });
+    $('tocBody').querySelectorAll('[data-toc-cancel]').forEach(function (b) { b.addEventListener('click', function () { var t = state.tasks[+b.getAttribute('data-toc-cancel')]; if (!t) return; t.cancelled = true; t.status = 'cancelled'; t.message = '已取消，未保存结果'; stopAll().catch(function (err) { toast('取消失败：' + (err.message || err)); }); render(); }); });
     $('tocBody').querySelectorAll('[data-toc-retry]').forEach(function (b) { b.addEventListener('click', function () { var t = state.tasks[+b.getAttribute('data-toc-retry')]; if (!t) return; if (t.running || state.busy) { toast('当前任务结束后再重试'); return; } t.cancelled = false; t.status = 'queued'; processTask(t); }); });
     wireActive();
   }
@@ -334,11 +488,14 @@
     var t = state.tasks[state.active];
     if (!t) return '<div class="learn-empty">选择 PDF 后显示识别预览</div>';
     if (t.status !== 'ready') return '<div class="learn-empty">' + esc(t.message || '处理中…') + '</div>';
+    var q = refreshTaskQuality(t);
     var canvas = '<div class="toc-preview"><canvas id="tocCanvas"></canvas><div class="learn-note">左侧为目录页预览（当前第 ' + (t.entries[0] && t.entries[0].pdfPage || 1) + ' 页）。</div></div>';
     var rows = t.entries.map(function (e, i) {
       return '<tr data-toc-row="' + i + '"><td>' + (i + 1) + '</td><td><input class="learn-input" data-toc-title="' + i + '" value="' + esc(e.title) + '"></td><td><select class="learn-select" data-toc-parent="' + i + '"><option value="">无</option>' + t.entries.map(function (x, xi) { return xi === i ? '' : '<option value="' + esc(x.tmpId) + '"' + (e.parentTmpId === x.tmpId ? ' selected' : '') + '>' + esc((x.title || '未命名').slice(0, 16)) + '</option>'; }).join('') + '</select></td><td><select class="learn-select" data-toc-level="' + i + '">' + [0, 1, 2, 3, 4].map(function (l) { return '<option value="' + l + '"' + (e.level === l ? ' selected' : '') + '>' + ['篇/编', '章', '节', '一、', '（一）/小节'][l] + '</option>'; }).join('') + '</select></td><td><input class="learn-input" data-toc-page="' + i + '" value="' + esc(e.printedPage || '') + '" placeholder="印刷页"></td><td>' + esc(e.pdfPage || '') + '</td><td><span class="learn-badge ' + (e.issues.length ? 'warn' : 'ok') + '">' + (e.issues.length ? '待确认' : '正常') + '</span></td><td><button class="learn-btn" data-toc-del="' + i + '">删除</button></td></tr>';
     }).join('');
-    return '<div class="toc-workspace">' + canvas + '<div class="toc-editor"><div class="learn-actions-row"><b>识别结果（' + t.entries.length + ' 条，' + esc(t.method) + '）</b><button id="tocAdd" class="learn-btn">＋ 添加章节</button><button id="tocConfirmAll" class="learn-btn">全部确认</button><button id="tocSaveDraft" class="learn-btn">保存草稿</button><button id="tocExport" class="learn-btn">导出识别 JSON</button></div>' +
+    var qIssues = (q.weakDuplicates || 0) + (q.levelConflicts || 0) + (q.abnormalTitles || 0) + (q.pageIssues || 0);
+    var qHtml = '<div class="learn-card" style="margin-bottom:10px"><div class="learn-actions-row"><b>目录质量检查</b><span class="learn-badge ' + (qIssues || q.needsReview ? 'warn' : 'ok') + '">' + (qIssues || q.needsReview ? '待核对' : '通过') + '</span></div><div class="learn-sub">有效章节 ' + (q.valid || 0) + ' · 自动合并重复 ' + (q.autoMerged || 0) + ' · 疑似重复 ' + (q.weakDuplicates || 0) + ' · 异常标题 ' + (q.abnormalTitles || 0) + ' · 层级冲突 ' + (q.levelConflicts || 0) + ' · 页码异常 ' + (q.pageIssues || 0) + '</div>' + (q.errors.length ? '<div class="learn-warn">请先修正：' + q.errors.map(esc).join('；') + '</div>' : '') + (q.needsReview ? '<label class="learn-check"><input type="checkbox" id="tocQualityAck"' + (t.qualityAckSignature === directorySignature(t.entries) ? ' checked' : '') + '> 我已核对当前目录的识别、重复、标题及页码问题，确认按当前内容导入</label>' : '') + '</div>';
+    return '<div class="toc-workspace">' + canvas + '<div class="toc-editor"><div class="learn-actions-row"><b>识别结果（' + t.entries.length + ' 条，' + esc(t.method) + '）</b><button id="tocAdd" class="learn-btn">＋ 添加章节</button><button id="tocConfirmAll" class="learn-btn">全部确认</button><button id="tocSaveDraft" class="learn-btn">保存草稿</button><button id="tocExport" class="learn-btn">导出识别 JSON</button></div>' + qHtml +
       (t.duplicates && t.duplicates.length ? '<div class="learn-warn">疑似已有教材（仅提示，不自动合并）：' + t.duplicates.map(function (b) { return esc(b.name); }).join('、') + '。请人工判断是否为新版本。</div>' : '') +
       '<div class="toc-table-wrap"><table class="learn-table"><thead><tr><th>#</th><th>标题</th><th>父级</th><th>层级</th><th>印刷页</th><th>PDF页</th><th>状态</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
       '<div class="learn-card" style="margin-top:10px"><h3>原始识别文本</h3><textarea id="tocRaw" class="learn-textarea" readonly>' + esc((t.rawText || '').slice(0, 4000)) + '</textarea></div>' +
@@ -361,13 +518,22 @@
     var t = state.tasks[state.active];
     if (!t || t.status !== 'ready') return;
     drawPreview(t);
-    $('tocBody').querySelectorAll('[data-toc-title]').forEach(function (el) { el.addEventListener('change', function () { t.entries[+el.getAttribute('data-toc-title')].title = this.value.trim(); }); });
-    $('tocBody').querySelectorAll('[data-toc-level]').forEach(function (el) { el.addEventListener('change', function () { t.entries[+el.getAttribute('data-toc-level')].level = +this.value; }); });
-    $('tocBody').querySelectorAll('[data-toc-parent]').forEach(function (el) { el.addEventListener('change', function () { t.entries[+el.getAttribute('data-toc-parent')].parentTmpId = this.value || null; }); });
-    $('tocBody').querySelectorAll('[data-toc-page]').forEach(function (el) { el.addEventListener('change', function () { t.entries[+el.getAttribute('data-toc-page')].printedPage = this.value.trim(); }); });
+    function edited() {
+      t.qualityAckSignature = null;
+      var target = $('tocTarget').value, mode = $('tocMode').value;
+      var scroll = $('tocBody').scrollTop, tableScroll = $('tocBody').querySelector('.toc-table-wrap').scrollTop;
+      render();
+      $('tocTarget').value = target; $('tocMode').value = mode;
+      $('tocBody').scrollTop = scroll; $('tocBody').querySelector('.toc-table-wrap').scrollTop = tableScroll;
+    }
+    $('tocBody').querySelectorAll('[data-toc-title]').forEach(function (el) { el.addEventListener('change', function () { t.entries[+el.getAttribute('data-toc-title')].title = this.value.trim(); edited(); }); });
+    $('tocBody').querySelectorAll('[data-toc-level]').forEach(function (el) { el.addEventListener('change', function () { t.entries[+el.getAttribute('data-toc-level')].level = +this.value; edited(); }); });
+    $('tocBody').querySelectorAll('[data-toc-parent]').forEach(function (el) { el.addEventListener('change', function () { t.entries[+el.getAttribute('data-toc-parent')].parentTmpId = this.value || null; edited(); }); });
+    $('tocBody').querySelectorAll('[data-toc-page]').forEach(function (el) { el.addEventListener('change', function () { t.entries[+el.getAttribute('data-toc-page')].printedPage = this.value.trim(); edited(); }); });
     $('tocBody').querySelectorAll('[data-toc-del]').forEach(function (b) { b.addEventListener('click', function () { t.entries.splice(+b.getAttribute('data-toc-del'), 1); render(); }); });
     if ($('tocAdd')) $('tocAdd').addEventListener('click', function () { t.entries.push({ tmpId: uid('toc'), rawText: '', title: '新增章节', level: 2, parentTmpId: null, order: t.entries.length, printedPage: '', pdfPage: null, method: t.method, issues: ['人工添加'], confirmed: false }); render(); });
-    if ($('tocConfirmAll')) $('tocConfirmAll').addEventListener('click', function () { t.entries.forEach(function (e) { e.confirmed = true; e.issues = []; }); render(); toast('已全部确认'); });
+    if ($('tocQualityAck')) $('tocQualityAck').addEventListener('change', function () { t.qualityAckSignature = this.checked ? directorySignature(t.entries) : null; });
+    if ($('tocConfirmAll')) $('tocConfirmAll').addEventListener('click', function () { refreshTaskQuality(t); if (t.quality.errors.length) { toast('请先修正目录结构错误'); return; } t.entries.forEach(function (e) { e.confirmed = true; }); t.qualityAckSignature = directorySignature(t.entries); render(); toast('已确认当前目录'); });
     if ($('tocSaveDraft')) $('tocSaveDraft').addEventListener('click', async function () { await persistDraft(t); toast('草稿已保存'); });
 
     if ($('tocExport')) $('tocExport').addEventListener('click', function () { var b = new Blob([JSON.stringify({ schema: 'examcard.toc-recognition/v1', fileName: t.name, hash: t.hash, method: t.method, range: t.range, textInfo: t.textInfo, duplicates: t.duplicates || [], entries: t.entries, rawText: t.rawText }, null, 2)], { type: 'application/json' }); var a = document.createElement('a'); a.download = 'ExamCard_OCR_recognition_' + Date.now() + '.json'; a.href = URL.createObjectURL(b); document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 3000); });
@@ -375,15 +541,20 @@
   }
 
   async function confirmImport(t) {
+    if (t.saving || isStale(t)) return;
     var target = $('tocTarget').value, mode = $('tocMode').value;
     if (!t.entries.length) { toast('没有可导入章节'); return; }
     var bad = t.entries.filter(function (e) { return !e.title; });
     if (bad.length) { toast('存在空标题章节'); return; }
+    var q = refreshTaskQuality(t);
+    if (q.errors.length) { toast('请修正目录结构：' + q.errors[0]); return; }
+    if (q.needsReview && t.qualityAckSignature !== directorySignature(t.entries)) { toast('请先核对并确认当前目录质量问题'); return; }
     if (mode === 'replace' && !confirm('覆盖会先保存快照，但可能影响已有章节。确认继续？')) return;
     var entries = t.entries.map(function (e) {
-      return { id: e.tmpId, textbookId: target === 'new' ? 'imported-book' : target, parentId: e.parentTmpId || null, title: e.title, level: e.level, order: e.order, printedPage: e.printedPage || null, pdfPage: e.pdfPage || null, progressPercent: 0, progressNote: '', tagIds: [], source: e.method, issues: e.issues, confirmed: e.confirmed };
+      return { id: e.tmpId, textbookId: target === 'new' ? 'imported-book' : target, parentId: e.parentTmpId || null, title: e.title, level: e.level, order: e.order, printedPage: e.printedPage || null, pdfPage: e.pdfPage || null, progressPercent: 0, progressNote: '', tagIds: [], source: e.method, sourcePdfHash: t.hash || null, rawText: e.rawText || '', issues: e.issues, confirmed: e.confirmed };
     });
-    var catalog = { textbooks: [{ id: 'imported-book', name: t.name.replace(/\.pdf$/i, ''), publisher: '', edition: '', year: null, source: 'PDF OCR 导入', notes: '用户导入，待核对' }], chapters: entries };
+    var catalog = { textbooks: [{ id: 'imported-book', name: t.name.replace(/\.pdf$/i, ''), publisher: '', edition: '', year: null, source: 'PDF OCR 导入', notes: '用户导入，待核对', sourcePdfHash: t.hash || null, sourcePdfName: t.name || null, sourceRange: t.range || null }], chapters: entries };
+    t.saving = true;
     try {
       var r = await LearningStore.importCatalog(catalog, { mode: target === 'new' ? 'new' : mode, targetTextbookId: target === 'new' ? null : target });
       await removeDraft(t);
@@ -392,15 +563,16 @@
       if (root.LearningApp) await LearningApp.reloadIfOpen();
       render();
     } catch (e) { toast('导入失败：' + (e.message || e)); }
+    finally { t.saving = false; }
   }
 
   function restoreDraft(index) {
     var list = (state.drafts && state.drafts.length) ? state.drafts : (state.draft ? [state.draft] : []);
     var d = typeof index === 'number' ? list[index] : list[0];
     if (!d) return;
-    var t = { id: uid('job'), name: d.fileName || '恢复的草稿', size: 0, buf: null, range: d.range || state.range, status: 'ready', message: '从草稿恢复，请核对', progress: 100, entries: d.entries || [], rawText: d.rawText || '', method: d.method || 'ocr', textInfo: d.textInfo || {}, hash: d.hash || null, duplicates: [] };
+    var t = { id: uid('job'), epoch: state.stopEpoch, name: d.fileName || '恢复的草稿', size: 0, buf: null, range: d.range || state.range, status: 'ready', message: '从草稿恢复，请核对', progress: 100, entries: d.entries || [], rawText: d.rawText || '', method: d.method || 'ocr', textInfo: d.textInfo || {}, quality: d.quality || null, hash: d.hash || null, duplicates: [] };
     state.tasks.push(t); state.active = state.tasks.length - 1; render();
   }
 
-  root.TextbookImport = { open: open, close: close, beforeLeave: beforeLeave, finishLeave: finishLeave, requestLeave: requestLeave, stopForClear: stopForClear };
+  root.TextbookImport = { open: open, close: close, beforeLeave: beforeLeave, finishLeave: finishLeave, requestLeave: requestLeave, stopForClear: stopForClear, _internal: { parseDirectory: parseDirectory, finalizeDirectory: finalizeDirectory, validateDirectory: validateDirectory, detectReliableText: detectReliableText, parseRanges: parseRanges, titleQuality: titleQuality, pageQuality: pageQuality } };
 })(typeof window !== 'undefined' ? window : globalThis);

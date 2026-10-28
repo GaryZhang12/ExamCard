@@ -1,0 +1,22 @@
+[
+  {
+    "path": "C:\\Program Files\\ExamCard\\ExamCard.exe",
+    "exists": false
+  },
+  {
+    "path": "C:\\Users\\Public\\Desktop\\ExamCard.lnk",
+    "exists": false
+  },
+  {
+    "path": "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\ExamCard.lnk",
+    "exists": false
+  },
+  {
+    "path": "HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\7134a377-5401-546b-9238-608223f86541",
+    "exists": false
+  },
+  {
+    "path": "HKLM:\\Software\\7134a377-5401-546b-9238-608223f86541",
+    "exists": false
+  }
+]

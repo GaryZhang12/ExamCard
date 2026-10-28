@@ -269,17 +269,86 @@
   }
 
   function extractOptions(blockLines) {
-    var out = [];
-    var seen = {};
-    for (var i = 0; i < (blockLines || []).length; i++) {
-      var text = normalizeText(blockLines[i].text || '');
-      var m = /^([A-D])\s*[.．、:：)）]\s*(.*)$/.exec(text);
-      if (!m || seen[m[1]]) continue;
-      seen[m[1]] = true;
-      out.push({ key: m[1], text: String(m[2] || '').trim().slice(0, 300) });
+    // Parse A-D markers anywhere in the block, not only at line starts. This handles:
+    // - one line with all four options,
+    // - four lines,
+    // - two-column PDF text merged into one logical row,
+    // - option text continuing across line/page breaks,
+    // - full-width punctuation and (A)/(A) forms.
+    // Only literal A-D markers are accepted; numbers/statistics are never invented as options.
+    var optionLines = [], optionsStarted = false;
+    for (var li = 0; li < (blockLines || []).length; li++) {
+      var lineText = normalizeText(blockLines[li].text || '');
+      // Explicit document/material boundaries end the answer block. Otherwise
+      // the last option absorbs footers and the following passage until Q+1.
+      if (optionsStarted && (/第\s*\d+\s*页\s*[/／]\s*共\s*\d+\s*页/.test(lineText) || /^材料[一二三四五六七八九十\d]+[（(]/.test(lineText))) break;
+      optionLines.push(lineText);
+      if (/[A-D]\s*[.．、:：)）]/.test(lineText)) optionsStarted = true;
     }
-    out.sort(function (a, b) { return a.key.localeCompare(b.key); });
-    return out;
+    var text = optionLines.join('\n');
+    var re = /[（(]?([A-Da-d])\s*[.．、:：)）]\s*/g;
+    var markers = [];
+    var m;
+    while ((m = re.exec(text)) !== null) {
+      // Do not require a non-alphanumeric prefix: real PDFs often concatenate
+      // option values and the next marker with no space (e.g. "A. 5.0B. 6.0").
+      var lineStart = text.lastIndexOf('\n', m.index - 1) + 1;
+      var prefix = text.slice(lineStart, m.index);
+      var boundary = !prefix.trim() || /[\s?？:：;；)）(（]$/.test(prefix);
+      // Numeric values can abut the next marker. A Chinese prose reference has
+      // no layout boundary; keep it in the stem rather than manufacture options.
+      var previous = markers[markers.length - 1];
+      var optionRow = previous && /^[（(]?[A-Da-d]\s*[.．、:：)）]/.test(text.slice(lineStart, m.index));
+      var numericJoin = previous && /^(?:上升|下降|增长|减少|增加|约)?[+−-]?\d+(?:[.,/又]\d+)*(?:[%％万亿元人倍年月日秒分时公里平方米]*?)$/.test(text.slice(previous.end, m.index).trim());
+      if (!boundary && !numericJoin && !optionRow) continue;
+      markers.push({ letter: m[1].toUpperCase(), start: m.index, end: re.lastIndex });
+    }
+    // Select a coherent A/B/C/D set. A stem can itself contain a literal "A." reference;
+    // choosing the latest valid A start avoids treating that reference as option A.
+    function collectFrom(startIndex) {
+      var picked = [markers[startIndex]];
+      var letters = {};
+      letters[picked[0].letter] = true;
+      for (var j = startIndex + 1; j < markers.length; j++) {
+        if (letters[markers[j].letter]) continue;
+        letters[markers[j].letter] = true;
+        picked.push(markers[j]);
+        if (picked.length === 4) break;
+      }
+      return picked;
+    }
+    var aStarts = [];
+    for (var ai = 0; ai < markers.length; ai++) if (markers[ai].letter === 'A') aStarts.push(ai);
+    if (!aStarts.length) aStarts = markers.length ? [0] : [];
+    var best = [];
+    for (var bi = 0; bi < aStarts.length; bi++) {
+      var group = collectFrom(aStarts[bi]);
+      if (group.length > best.length || (group.length === best.length && group[0].start > best[0].start)) best = group;
+    }
+    // Keep only unique letters, in document order, then sort for presentation.
+    var selected = [];
+    var selectedLetters = {};
+    for (var si = 0; si < best.length; si++) {
+      if (selectedLetters[best[si].letter]) continue;
+      selectedLetters[best[si].letter] = true;
+      selected.push(best[si]);
+    }
+    var options = [];
+    for (var oi = 0; oi < selected.length; oi++) {
+      var marker2 = selected[oi];
+      var nextMarker = null;
+      for (var ni = 0; ni < selected.length; ni++) {
+        if (selected[ni].start > marker2.start) { nextMarker = selected[ni]; break; }
+      }
+      var nextStart2 = nextMarker ? nextMarker.start : text.length;
+      var optionText2 = text.slice(marker2.end, nextStart2).replace(/\s+/g, ' ').trim();
+      optionText2 = optionText2.replace(/^[、,，;；:：.．]+/, '').trim();
+      options.push({ key: marker2.letter, text: optionText2.slice(0, 500) });
+    }
+    options.sort(function (a, b) { return a.key.localeCompare(b.key); });
+    var firstMarker2 = selected.length ? selected[0].start : text.length;
+    var stem = text.slice(0, firstMarker2).replace(/\s+/g, ' ').trim();
+    return { options: options, stem: stem };
   }
 
   function detectQuestionType(blockText) {
@@ -547,12 +616,14 @@
 
       var firstRest = ac.rest;
       var type = detectQuestionType(blockText);
-      var options = extractOptions(blockLines);
+      var optionResult = extractOptions(blockLines);
+      var options = optionResult.options;
       var qIssues = [];
       var optionStatus = 'n/a';
       if (type !== 'judge') {
+        var nonEmptyOptions = options.filter(function (o) { return o.text && o.text.trim(); }).length;
         if (!options.length) { optionStatus = 'missing'; qIssues.push({ code: 'options-missing', severity: 'warning', message: '未识别到 A-D 选项，请人工确认' }); }
-        else if (options.length < 4) { optionStatus = 'partial'; qIssues.push({ code: 'options-partial', severity: 'warning', message: '仅识别到 ' + options.length + ' 个选项，请人工确认' }); }
+        else if (options.length < 4 || nonEmptyOptions < 4) { optionStatus = 'partial'; qIssues.push({ code: 'options-partial', severity: 'warning', message: '仅识别到 ' + options.length + ' 个选项，请人工确认' }); }
         else optionStatus = 'ok';
       }
       if (previousQuestion && previousQuestion.page && ac.page > previousQuestion.page + 1) {
@@ -563,12 +634,13 @@
       }
       var reviewStatus = qIssues.length ? 'needs-confirm' : 'ok';
       // preview：题干（去题号、去题型标记），最多取 90 字
-      var stemRest = stripTypeMarker(firstRest);
-      var preview = stemRest;
+      var stemText = optionResult.stem || firstRest;
+      stemText = stemText.replace(/^(?:第\s*)?\d{1,3}\s*[.．、]\s*/, '').replace(/^第\s*\d{1,3}\s*题\s*[.．、:：]?\s*/, '');
+      var preview = stripTypeMarker(stemText);
       if (preview.length < 24) {
         for (var b = 1; b < blockLines.length && preview.length < 60; b++) {
           var bt = blockLines[b].text;
-          if (/^[A-D][.．、]/.test(bt)) break;
+          if (/(?:^|[^A-Za-z0-9_])[A-D][.．、]/.test(bt)) break;
           if (moduleNameFromLine(bt)) break;
           preview += normalizeText(bt);
         }

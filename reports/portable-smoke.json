@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "info": {
+    "name": "ExamCard",
+    "version": "1.0.1",
+    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-gEXYOV"
+  },
+  "schema": {
+    "name": "gd_exam_v2",
+    "version": 5,
+    "stores": 22
+  },
+  "launch": "actual portable wrapper -> packaged Electron via local CDP; medium user session, not a separate standard account"
+}

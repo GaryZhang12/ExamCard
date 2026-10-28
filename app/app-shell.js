@@ -78,6 +78,9 @@
     else setPage('ExamCard', '');
   }
   function hideModules() {
+    ['modalRoot', 'learnModalRoot', 'essayModalRoot', 'diagModalRoot', 'bankModalRoot'].forEach(function (id) {
+      var dialogRoot = $(id); if (dialogRoot) dialogRoot.innerHTML = '';
+    });
     MODULE_ROOTS.forEach(function (id) {
       var el = $(id);
       if (el) el.classList.add('hidden');
@@ -195,7 +198,7 @@
     setPage('关于 ExamCard', '');
     setActive('about');
     var box = $('aboutBody');
-    var ver = (root.ExamBackup && ExamBackup.APP_VERSION) || '1.0.0';
+    var ver = (root.ExamBackup && ExamBackup.APP_VERSION) || '1.0.1';
     box.innerHTML = '<div class="data-head about-head"><div><div class="home-kicker">ExamCard</div><h1>ExamCard</h1>' +
       '<p>ExamCard 是一款开源、离线优先的桌面考试训练与学习管理工具，面向广东省考和深圳市考备考，提供行测与申论训练、PDF 试卷导入、题库管理、学习计划及错题复盘等功能。学习数据默认保存在本机，不会自动上传。</p></div>' +
       '<div class="about-logo"><img src="assets/examcard-icon.png" alt="ExamCard"></div></div>' +
@@ -360,8 +363,8 @@
   }
   async function act(a) {
     if (state.routing) return;
-    if (state.view === 'module' && state.currentModule === a) return;
     state.railOpen = false; document.body.classList.remove('rail-open');
+    if (state.view === 'module' && state.currentModule === a) return;
     state.routing = true;
     var rail = $('appRail'); if (rail) rail.classList.add('routing');
     try {

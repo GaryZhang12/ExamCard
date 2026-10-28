@@ -232,6 +232,7 @@
       '<div class="learn-plan-meta"><div><span>计划日期</span><b>' + esc(plan.date) + '</b></div><div><span>考试类别</span><b>' + esc(plan.exam_type) + '</b></div><div><span>任务数量</span><b>' + plan.tasks.length + '</b></div><div><span>计划总时长</span><b>' + totalMin + ' 分钟</b></div></div>' +
       '<div class="learn-note">' + esc(plan.title || '') + (plan.goal ? ' · ' + esc(plan.goal) : '') + '</div>' +
       '<div class="learn-plan-diff">新增 ' + changes + ' · 更新 ' + updates + ' · 未变化 ' + same + ' · 已完成跳过 ' + skipped + '</div>' +
+      ((prepared.normalizationWarnings && prepared.normalizationWarnings.length) ? '<div class="learn-warn">拆分计划模式已按实际阶段调整（未补造缺失阶段，未编造分钟）：' + prepared.normalizationWarnings.map(function (w) { return '“' + esc(w.topic) + '” course_first → ' + esc(w.to) + '（' + esc(w.reason) + '）'; }).join('；') + '。请确认后再导入。</div>' : '') +
       '<div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>科目</th><th>任务</th><th>时间</th><th>模式</th><th>阶段</th><th>课程</th><th>教材</th><th>计划</th><th>预览</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
       (prepared.warnings.length ? '<div class="learn-warn">待关联：' + prepared.warnings.map(esc).join('；') + '。仍可导入，之后可在任务编辑中关联。</div>' : '') +
       '<div class="learn-note">导入只写计划；实际完成、正确题数和复盘记录不会被覆盖。已完成任务不会被重置。</div>' +
@@ -241,7 +242,7 @@
         var result = await LearningStore.applyDailyPlan(plan, prepared.records);
         closeModal(); await load(); state.tab = 'plans'; render();
         toast('导入完成：新增 ' + result.created + '，更新 ' + result.updated + '，未变化 ' + result.unchanged + '，已完成跳过 ' + result.skippedCompleted);
-      } catch (e) { closeModal(); toast('导入失败：' + (e.message || e)); }
+      } catch (e) { throw e; }
     });
   }
 
@@ -363,11 +364,23 @@
     $('learnModalRoot').firstElementChild.addEventListener('click', function (e) { if (e.target === e.currentTarget) closeModal(); });
   }
   function closeModal() { $('learnModalRoot').innerHTML = ''; }
-  function wireModal(onOk) { var r = $('learnModalRoot'); var c = r.querySelector('[data-cancel]'); if (c) c.addEventListener('click', closeModal); var o = r.querySelector('[data-ok]'); if (o) o.addEventListener('click', function () { onOk(o); }); }
+  function wireModal(onOk) {
+    var r = $('learnModalRoot'), c = r.querySelector('[data-cancel]'), o = r.querySelector('[data-ok]');
+    if (c) c.addEventListener('click', closeModal);
+    if (o) o.addEventListener('click', async function () {
+      if (o.disabled) return;
+      o.disabled = true; o.setAttribute('data-busy', '1'); if (c) c.disabled = true;
+      try { await onOk(o); }
+      catch (e) {
+        var note = r.querySelector('.learn-action-error');
+        if (!note) { note = document.createElement('p'); note.className = 'learn-warn learn-action-error'; note.setAttribute('role', 'alert'); r.querySelector('.learn-modal').appendChild(note); }
+        note.textContent = '操作失败：' + (e.message || e) + '。请修正后重试。';
+      } finally { o.disabled = false; o.removeAttribute('data-busy'); if (c) c.disabled = false; }
+    });
+  }
   function confirmBox(title, msg, fn) {
     openModal('<h3>' + esc(title) + '</h3><div class="learn-warn">' + esc(msg) + '</div><div id="learnConfirmError" class="learn-warn hidden"></div><div class="actions"><button class="learn-btn" data-cancel>取消</button><button class="learn-btn danger" data-ok>确认</button></div>');
     wireModal(async function (okBtn) {
-      if (!okBtn || okBtn.getAttribute('data-busy')) return;
       var rootM = $('learnModalRoot');
       var cancelBtn = rootM.querySelector('[data-cancel]');
       okBtn.setAttribute('data-busy', '1');

@@ -42,6 +42,7 @@
 ### 阶段
 
 - `course_first` 必须严格为：`video` → `examples` → `practice` → `review`，四阶段分钟合计等于 `planned_minutes`。
+- 生成或拆分任务时：仅 `video` 使用 `other`；完整的 `examples → practice → review` 使用 `practice`。导入器仅为这两个已知旧格式提供带预览提示的兼容转换；`video → review` 和其他子集拒绝按 `course_first` 导入。所有转换仍要求真实阶段分钟之和等于 `planned_minutes`，不补造缺失阶段。
 - 其他模式可使用适合的阶段；不得虚构听课阶段。
 - 阶段字段：`type`、`minutes`，可选 `count`、`question_set_id`。
 - 阶段类型：`video`、`examples`、`practice`、`review`、`mock`、`reading`、`other`。

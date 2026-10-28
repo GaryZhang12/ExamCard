@@ -4,11 +4,14 @@
 
 [简体中文](#简体中文) · [English](#english)
 
-**Version:** 1.0.0  
+**Version:** 1.0.1 Stable / 正式版  
 **Platform:** Windows 10 / 11 (x64)  
 **License:** Apache License 2.0  
 **Repository:** https://github.com/GaryZhang12/ExamCard  
-**Latest Release:** [ExamCard v1.0.0](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.0)
+**Latest Release:** [ExamCard v1.0.1](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.1)
+
+> **ExamCard v1.0.1 Stable。** 用户已亲自在 Windows 验证“仅当前用户”和“所有用户”安装、正常卸载、程序移除及卸载后学习数据保留。真实高 DPI 和真实教材 OCR 内容仍有验收边界，识别结果需人工核对。
+> **ExamCard v1.0.1 Stable.** The owner reports successful Windows current-user and all-user installation, normal uninstallation, program removal, and learning-data retention. Real high-DPI and real-textbook OCR validation remain limited; review recognized content manually.
 
 ---
 
@@ -31,6 +34,18 @@ ExamCard 将试卷训练、申论写作、教材管理、课程学习、每日�
 - **数据自主可控**：支持完整备份与恢复，无需将个人学习数据上传到第三方服务器。
 
 ExamCard 不提供在线 AI 自动生成或在线同步服务。用户可以借助 ChatGPT 等外部工具生成学习计划，然后手动导入软件。
+
+### 1.0.1 主要修复
+
+- 行测 PDF：保留粘连数字、百分数及分数选项；减少题干 A/B/C/D 误识别和页末选项吞入后续材料的问题。
+- 人工核对：修改题号、模块或页码不能解除缺选项确认；编辑后重算质量，提交前重新校验。
+- 教材目录：按物理 PDF 页和栏目校验阅读顺序；修复跨页页码归属、质量缓存及非法范围；阻断循环、自引用和孤立父级。
+- 合并和来源：保留已有章节的人工修正，追踪多个来源 PDF；明确替换前保存快照。
+- OCR：取消会停止当前识别及剩余教材队列；保留退出、清空后禁止旧任务回写的保护。OCR 仍可能识错，必须人工核对，不自动补造标题。
+- 每日计划：仅兼容有充分依据的 video-only 和 examples → practice → review 两类旧拆分形状；严格校验分钟并保护已完成任务及实际记录。
+- 数据和界面：加强导入/恢复事务异常回滚，修复弹窗残留、键盘焦点和窄窗口导航遮罩问题。
+
+1.0.1 沿用 IndexedDB v5 / 22 表、`gd_exam_v2`、原用户数据目录和 `examcard.daily-plan/v1`。Windows 安装与正常卸载已由用户实机确认；这不代表全部 DPI、真实教材内容或视觉基准均已验收。
 
 ### 主要功能
 
@@ -145,28 +160,30 @@ ExamCard 支持导入由 ChatGPT 或其他工具生成的结构化学习计划�
 
 #### 下载地址
 
-**[前往 GitHub 下载 ExamCard v1.0.0](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.0)**
+**[前往 GitHub 下载 ExamCard v1.0.1](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.1)**
 
 | 文件 | 说明 |
 |---|---|
-| `ExamCard-1.0.0-win-portable.exe` | Windows 便携版，无需安装 |
-| `ExamCard-1.0.0-win-setup.exe` | Windows 安装版 |
-| `ExamCard-1.0.0-source.zip` | 对应版本的源码压缩包 |
+| `ExamCard-1.0.1-win-portable.exe` | Windows 便携版，无需安装 |
+| `ExamCard-1.0.1-win-setup.exe` | Windows 安装版 |
+| `ExamCard-1.0.1-source.zip` | 对应版本的源码压缩包 |
 | `SHA256SUMS.txt` | 发行文件 SHA-256 校验值 |
 
 #### 便携版
 
-1. 下载 `ExamCard-1.0.0-win-portable.exe`。
+1. 下载 `ExamCard-1.0.1-win-portable.exe`。
 2. 保存到普通用户有权访问的目录。
 3. 双击启动软件。
 4. 无需执行安装程序。
 
 #### 安装版
 
-1. 下载 `ExamCard-1.0.0-win-setup.exe`。
+1. 下载 `ExamCard-1.0.1-win-setup.exe`。
 2. 运行安装程序。
 3. 按照安装向导完成安装。
 4. 从桌面或开始菜单启动 ExamCard。
+
+1.0.1 安装方式：选择“仅为我安装”无需管理员权限；选择“所有用户”后，安装向导会请求 Windows 管理员授权。若原版本为全机安装，覆盖升级请保持选择“所有用户”。日常启动应用不需要管理员权限。
 
 #### Windows 安全提示
 
@@ -238,9 +255,9 @@ ExamCard 默认使用本地存储，不需要云端账户。
 | 数据表数量 | 22 |
 | 数据位置 | Windows 本地用户数据目录 |
 
-为了兼容早期版本，ExamCard 1.0.0 继续沿用原来的数据库名称和用户数据目录。
+为了兼容早期版本，ExamCard 1.0.1 继续沿用原来的数据库名称和用户数据目录。
 
-更新至 1.0.0 时，软件不会主动删除已有试卷、申论草稿、学习任务和历史记录。
+更新至 1.0.1 时，软件不会主动删除已有试卷、申论草稿、学习任务和历史记录。
 
 #### 备份与恢复
 
@@ -406,6 +423,18 @@ ExamCard brings together aptitude test practice, essay writing, PDF processing, 
 
 ExamCard does not include an online AI generation service or cloud synchronization. Users may generate study plans using ChatGPT or other external tools and import them manually.
 
+### Main Fixes in ExamCard 1.0.1
+
+- PDF imports retain joined numeric, percentage, and fraction options while reducing false A/B/C/D references and trailing-material contamination.
+- Review acknowledgements remain tied to current content: changing question metadata cannot bypass missing-option review, and content is revalidated before saving.
+- Catalog checks respect physical PDF pages and columns, reject invalid ranges, refresh quality after edits, and block cyclic, self-referencing, or orphaned chapter relationships.
+- Catalog merges preserve existing manual corrections and track multiple PDF sources; explicit replacement retains snapshot protection.
+- Cancelling OCR stops the current task and remaining textbook queue. Exit/clear protections prevent stale writes. OCR can still misread text and requires manual review; titles are never invented.
+- Daily-plan compatibility is limited to the evidenced video-only and examples → practice → review split shapes. Minute totals, completed tasks, and actual records remain protected.
+- Import/restore transactions roll back on synchronous errors; modal cleanup, keyboard focus, and narrow-window navigation overlays are hardened.
+
+IndexedDB v5 / 22 stores, `gd_exam_v2`, the user data directory, and `examcard.daily-plan/v1` remain unchanged. The owner has confirmed real Windows installation and normal uninstallation; this is not a claim that every DPI, textbook sample, or visual baseline has been validated.
+
 ### Features
 
 #### 1. Aptitude Test Training
@@ -520,13 +549,13 @@ Documentation:
 
 #### Download
 
-**[Download ExamCard v1.0.0 from GitHub Releases](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.0)**
+**[Download ExamCard v1.0.1 from GitHub Releases](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.1)**
 
 | File | Description |
 |---|---|
-| `ExamCard-1.0.0-win-portable.exe` | Portable Windows executable |
-| `ExamCard-1.0.0-win-setup.exe` | Windows installer |
-| `ExamCard-1.0.0-source.zip` | Release source archive |
+| `ExamCard-1.0.1-win-portable.exe` | Portable Windows executable |
+| `ExamCard-1.0.1-win-setup.exe` | Windows installer |
+| `ExamCard-1.0.1-source.zip` | Release source archive |
 | `SHA256SUMS.txt` | SHA-256 checksum list |
 
 #### Portable Version
@@ -542,6 +571,8 @@ Documentation:
 2. Run the installer.
 3. Follow the installation wizard.
 4. Launch ExamCard from the desktop or Start menu.
+
+For ExamCard 1.0.1, “Only for me” installs without administrator privileges. Selecting “All users” requests Windows administrator approval. Keep “All users” when upgrading an existing machine-wide installation. Everyday app use does not require administrator privileges.
 
 #### Windows Security Notice
 
@@ -617,7 +648,7 @@ ExamCard stores learning data locally.
 
 The original database name and application data directory are preserved for compatibility with previous ExamCard versions.
 
-Upgrading to ExamCard 1.0.0 does not automatically delete existing exam papers, essay drafts, tasks, or learning history.
+Upgrading to ExamCard 1.0.1 does not automatically delete existing exam papers, essay drafts, tasks, or learning history.
 
 #### Backup and Restore
 
@@ -755,7 +786,9 @@ For general feedback, visit [GitHub Issues](https://github.com/GaryZhang12/ExamC
 
 ### Release Status
 
-**Current stable release: v1.0.0**
+**Current stable release: v1.0.1**
+
+**Previous release retained: [ExamCard v1.0.0](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.0).**
 
 ExamCard is publicly available as an open-source project under the Apache License 2.0 license.
 
@@ -763,7 +796,7 @@ The Windows binaries are currently unsigned. PDF extraction and automatic questi
 
 For official downloads, checksums, and release information, visit:
 
-[ExamCard v1.0.0 — GitHub Releases](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.0)
+[ExamCard v1.0.1 — GitHub Releases](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.1)
 
 ---
 

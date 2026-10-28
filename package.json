@@ -1,7 +1,7 @@
 {
   "name": "gd-exam-card-v3",
   "productName": "ExamCard",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "ExamCard - offline-first exam training and study management for Guangdong and Shenzhen civil service exams",
   "author": "Gary",
@@ -17,7 +17,11 @@
     "build": "electron-builder --win portable",
     "build:dir": "electron-builder --win dir",
     "build:installer": "electron-builder --win nsis",
-    "build:public": "node scripts/build-public.mjs"
+    "build:public": "node scripts/build-public.mjs",
+    "test": "node scripts/test.cjs",
+    "test:unit": "node --test tests/*.test.cjs",
+    "test:data": "node tests/data-electron.cjs",
+    "test:ui": "node tests/ui-electron.cjs"
   },
   "devDependencies": {
     "electron": "43.3.0",
@@ -72,7 +76,7 @@
     "nsis": {
       "oneClick": false,
       "perMachine": false,
-      "allowElevation": false,
+      "allowElevation": true,
       "allowToChangeInstallationDirectory": false,
       "packElevateHelper": false,
       "createDesktopShortcut": true,

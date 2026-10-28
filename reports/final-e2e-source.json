@@ -1,0 +1,351 @@
+{
+  "environment": {
+    "version": "1.0.1",
+    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-aznIyk",
+    "electron": "43.3.0",
+    "sandbox": false,
+    "displays": [
+      {
+        "size": {
+          "width": 1080,
+          "height": 1920
+        },
+        "scaleFactor": 1
+      },
+      {
+        "size": {
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  },
+  "results": [
+    {
+      "name": "text catalog physical pages and independently authored tree",
+      "status": "pass",
+      "detail": [
+        {
+          "title": "第一章 基础知识",
+          "page": "1",
+          "level": 1,
+          "parent": ""
+        },
+        {
+          "title": "第一节 数量关系",
+          "page": "3",
+          "level": 2,
+          "parent": "toc-mvrv7q1t-ozq0"
+        },
+        {
+          "title": "第二节 资料分析",
+          "page": "8",
+          "level": 2,
+          "parent": "toc-mvrv7q1t-ozq0"
+        },
+        {
+          "title": "第二章 综合练习",
+          "page": "20",
+          "level": 1,
+          "parent": ""
+        },
+        {
+          "title": "第一节 阅读理解",
+          "page": "22",
+          "level": 2,
+          "parent": "toc-mvrv7q1t-16f8"
+        },
+        {
+          "title": "第二节 错题复盘",
+          "page": "30",
+          "level": 2,
+          "parent": "toc-mvrv7q1t-16f8"
+        }
+      ]
+    },
+    {
+      "name": "catalog edit E2E: title/page/level/parent, stale ack, cycle, deletion, persisted preview",
+      "status": "pass",
+      "detail": {
+        "book": {
+          "id": "tb-mvrv7qh1-h9ds9x",
+          "name": "toc-text",
+          "publisher": "",
+          "edition": "",
+          "year": null,
+          "source": "PDF OCR 导入",
+          "notes": "用户导入，待核对",
+          "sourcePdfHash": "f522d8bc94a8e7c85adc8d47e30a9df5258bc98223999ce9dd36a746216cac4e",
+          "sourcePdfName": "toc-text.pdf",
+          "sourceRange": "1-2",
+          "sourcePdfs": [
+            {
+              "hash": "f522d8bc94a8e7c85adc8d47e30a9df5258bc98223999ce9dd36a746216cac4e",
+              "name": "toc-text.pdf",
+              "range": "1-2"
+            }
+          ],
+          "createdAt": 1793176878277,
+          "updatedAt": 1793176878277
+        },
+        "chapters": [
+          {
+            "id": "ch-mvrv7qh1-0vnl9p",
+            "textbookId": "tb-mvrv7qh1-h9ds9x",
+            "createdAt": 1793176878277,
+            "title": "第一章 基础知识",
+            "order": 0,
+            "progressPercent": 0,
+            "progressNote": "",
+            "tagIds": [],
+            "updatedAt": 1793176878277,
+            "level": 1,
+            "printedPage": "1",
+            "pdfPage": 1,
+            "source": "text",
+            "issues": [],
+            "confirmed": true,
+            "rawText": "第一章 基础知识1",
+            "sourcePdfHash": "f522d8bc94a8e7c85adc8d47e30a9df5258bc98223999ce9dd36a746216cac4e",
+            "parentId": null
+          },
+          {
+            "id": "ch-mvrv7qh1-moppgf",
+            "textbookId": "tb-mvrv7qh1-h9ds9x",
+            "createdAt": 1793176878277,
+            "title": "第一节 人工核对",
+            "order": 1,
+            "progressPercent": 0,
+            "progressNote": "",
+            "tagIds": [],
+            "updatedAt": 1793176878277,
+            "level": 2,
+            "printedPage": "5",
+            "pdfPage": 1,
+            "source": "text",
+            "issues": [],
+            "confirmed": true,
+            "rawText": "第一节 数量关系3",
+            "sourcePdfHash": "f522d8bc94a8e7c85adc8d47e30a9df5258bc98223999ce9dd36a746216cac4e",
+            "parentId": "ch-mvrv7qh1-0vnl9p"
+          },
+          {
+            "id": "ch-mvrv7qh2-lgrb9s",
+            "textbookId": "tb-mvrv7qh1-h9ds9x",
+            "createdAt": 1793176878277,
+            "title": "第二节 资料分析",
+            "order": 2,
+            "progressPercent": 0,
+            "progressNote": "",
+            "tagIds": [],
+            "updatedAt": 1793176878277,
+            "level": 2,
+            "printedPage": "8",
+            "pdfPage": 1,
+            "source": "text",
+            "issues": [],
+            "confirmed": true,
+            "rawText": "第二节 资料分析8",
+            "sourcePdfHash": "f522d8bc94a8e7c85adc8d47e30a9df5258bc98223999ce9dd36a746216cac4e",
+            "parentId": "ch-mvrv7qh1-0vnl9p"
+          },
+          {
+            "id": "ch-mvrv7qh2-2ch2v7",
+            "textbookId": "tb-mvrv7qh1-h9ds9x",
+            "createdAt": 1793176878277,
+            "title": "第二章 综合练习",
+            "order": 3,
+            "progressPercent": 0,
+            "progressNote": "",
+            "tagIds": [],
+            "updatedAt": 1793176878277,
+            "level": 1,
+            "printedPage": "20",
+            "pdfPage": 2,
+            "source": "text",
+            "issues": [],
+            "confirmed": true,
+            "rawText": "第二章 综合练习20",
+            "sourcePdfHash": "f522d8bc94a8e7c85adc8d47e30a9df5258bc98223999ce9dd36a746216cac4e",
+            "parentId": null
+          },
+          {
+            "id": "ch-mvrv7qh2-24woqo",
+            "textbookId": "tb-mvrv7qh1-h9ds9x",
+            "createdAt": 1793176878277,
+            "title": "第一节 阅读理解",
+            "order": 4,
+            "progressPercent": 0,
+            "progressNote": "",
+            "tagIds": [],
+            "updatedAt": 1793176878277,
+            "level": 2,
+            "printedPage": "22",
+            "pdfPage": 2,
+            "source": "text",
+            "issues": [],
+            "confirmed": true,
+            "rawText": "第一节 阅读理解22",
+            "sourcePdfHash": "f522d8bc94a8e7c85adc8d47e30a9df5258bc98223999ce9dd36a746216cac4e",
+            "parentId": "ch-mvrv7qh2-2ch2v7"
+          },
+          {
+            "id": "ch-mvrv7qh2-27zxq1",
+            "textbookId": "tb-mvrv7qh1-h9ds9x",
+            "createdAt": 1793176878277,
+            "title": "第二节 错题复盘",
+            "order": 5,
+            "progressPercent": 0,
+            "progressNote": "",
+            "tagIds": [],
+            "updatedAt": 1793176878277,
+            "level": 2,
+            "printedPage": "30",
+            "pdfPage": 2,
+            "source": "text",
+            "issues": [],
+            "confirmed": true,
+            "rawText": "第二节 错题复盘30",
+            "sourcePdfHash": "f522d8bc94a8e7c85adc8d47e30a9df5258bc98223999ce9dd36a746216cac4e",
+            "parentId": "ch-mvrv7qh2-2ch2v7"
+          }
+        ]
+      }
+    },
+    {
+      "name": "merge preserves existing manual chapter fields; replace snapshots",
+      "status": "pass",
+      "detail": {
+        "manualFieldsPreserved": true,
+        "replaceSnapshot": true
+      }
+    },
+    {
+      "name": "real local Tesseract Chinese scan pipeline",
+      "status": "pass",
+      "detail": {
+        "kind": "synthetic raster-only PDF / actual bundled Tesseract+chi_sim",
+        "goldenExact": false,
+        "differences": [
+          {
+            "row": 0,
+            "field": "title",
+            "expected": "第一章 基础知识",
+            "actual": "第一章 基砾知识"
+          },
+          {
+            "row": 4,
+            "field": "title",
+            "expected": "第一节 阅读理解",
+            "actual": "第一节 阅读理解 “"
+          }
+        ],
+        "unreviewedImportBlocked": true,
+        "entries": [
+          {
+            "title": "第一章 基砾知识",
+            "page": "1",
+            "level": 1,
+            "parent": ""
+          },
+          {
+            "title": "第一节 数量关系",
+            "page": "3",
+            "level": 2,
+            "parent": "toc-mvrv7rt8-lpb3"
+          },
+          {
+            "title": "第二节 资料分析",
+            "page": "8",
+            "level": 2,
+            "parent": "toc-mvrv7rt8-lpb3"
+          },
+          {
+            "title": "第二章 综合练习",
+            "page": "20",
+            "level": 1,
+            "parent": ""
+          },
+          {
+            "title": "第一节 阅读理解 “",
+            "page": "22",
+            "level": 2,
+            "parent": "toc-mvrv7rt8-epdm"
+          },
+          {
+            "title": "第二节 错题复盘",
+            "page": "30",
+            "level": 2,
+            "parent": "toc-mvrv7rt8-epdm"
+          }
+        ]
+      }
+    },
+    {
+      "name": "real OCR cancellation settles; queued second PDF does not start",
+      "status": "pass",
+      "detail": {
+        "started": 1,
+        "settled": 1
+      }
+    },
+    {
+      "name": "real OCR leave via navigation, no late write; reenter recognizes",
+      "status": "pass"
+    },
+    {
+      "name": "real OCR stop plus actual isolated clear blocks draft/session resurrection",
+      "status": "pass",
+      "detail": {
+        "counts": {
+          "answers": 0,
+          "attempts": 0,
+          "courses": 0,
+          "essayAnswerVersions": 0,
+          "essayExams": 0,
+          "essayMaterials": 0,
+          "essayReviews": 0,
+          "essaySessions": 0,
+          "examProfiles": 3,
+          "exams": 0,
+          "gradingRecords": 0,
+          "knowledgeTags": 0,
+          "learningTasks": 0,
+          "meta": 1,
+          "pdfs": 0,
+          "questionTags": 0,
+          "questions": 0,
+          "sessions": 0,
+          "standardAnswerSets": 0,
+          "studyLogs": 0,
+          "textbookChapters": 0,
+          "textbooks": 0
+        },
+        "draft": null,
+        "mirrors": []
+      }
+    },
+    {
+      "name": "invalid PDF and illegal catalog range show failure, no success",
+      "status": "pass"
+    },
+    {
+      "name": "actual six-task private plan: parse/minutes/IDs/dedup/actuals",
+      "status": "pass",
+      "detail": {
+        "inputSha256": "ce8fb9eb55c42277fdb62c6dc600f737ce12d35fefc8f1cc3c43a2b9ce3656c5",
+        "parsed": 6,
+        "created": 6,
+        "unchanged": 6,
+        "completedSkipped": 1,
+        "idsAndMinutesMatch": true
+      }
+    }
+  ],
+  "pageErrors": [],
+  "totals": {
+    "pass": 9,
+    "fail": 0
+  }
+}

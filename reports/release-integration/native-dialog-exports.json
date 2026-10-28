@@ -1,0 +1,47 @@
+{
+  "environment": {
+    "version": "1.0.1",
+    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-zu84mB",
+    "electron": "43.3.0",
+    "sandbox": false,
+    "displays": [
+      {
+        "size": {
+          "width": 1080,
+          "height": 1920
+        },
+        "scaleFactor": 1
+      },
+      {
+        "size": {
+          "width": 2560,
+          "height": 1440
+        },
+        "scaleFactor": 1
+      }
+    ]
+  },
+  "profile": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-zu84mB",
+  "results": [
+    {
+      "name": "actual Windows Save dialog Cancel",
+      "status": "pass",
+      "nativeInput": "Computer Use clicked observed Cancel button",
+      "statusText": "已取消导出",
+      "dataUnchanged": true
+    },
+    {
+      "name": "study records export actual file contents",
+      "status": "pass",
+      "schema": "examcard.learning-records/v1",
+      "taskActualMinutes": 31,
+      "studyDurationMin": 17
+    },
+    {
+      "name": "diagnosis events export actual graded synthetic snapshot",
+      "status": "pass",
+      "schema": "examcard.diagnosis-events/v1",
+      "events": 1
+    }
+  ]
+}

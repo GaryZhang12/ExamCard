@@ -97,6 +97,19 @@
   async function deleteTask(id) { return withDb(function (db) { return del(db, 'learningTasks', id); }); }
   async function applyDailyPlan(plan, records) {
     if (!plan || !plan.plan_id || !Array.isArray(records) || !records.length) throw new Error('没有可导入的计划任务');
+    // Revalidate at the persistence boundary, then take a snapshot before any
+    // await. Caller-owned preview objects cannot change the pending transaction.
+    var errors = DailyPlanImport.validatePlan(plan);
+    if (errors.length) throw new Error(errors[0].path + '：' + errors[0].message);
+    plan = JSON.parse(JSON.stringify(plan)); records = JSON.parse(JSON.stringify(records));
+    var expected = DailyPlanImport.prepare(plan, {}).records;
+    var seenTasks = Object.create(null);
+    if (records.length !== expected.length || records.some(function (r) {
+      var e = expected.filter(function (x) { return x.planTaskId === r.planTaskId; })[0];
+      if (!e || seenTasks[r.planTaskId]) return true;
+      seenTasks[r.planTaskId] = true;
+      return ['planId', 'planHash', 'taskHash', 'title', 'planMinutes', 'learningMode', 'stages'].some(function (k) { return JSON.stringify(e[k]) !== JSON.stringify(r[k]); });
+    })) throw new Error('计划预览与任务不一致，请重新导入');
     return withDb(async function (db) {
       var tx = db.transaction(['learningTasks', 'meta'], 'readwrite');
       var lt = tx.objectStore('learningTasks'), mt = tx.objectStore('meta');
@@ -158,6 +171,7 @@
         return { planId: plan.plan_id, created: created, updated: updated, unchanged: unchanged, skippedCompleted: skippedCompleted };
       } catch (e) {
         try { tx.abort(); } catch (ignore) {}
+        await txDone.catch(function () {});
         throw e;
       }
     });
@@ -191,6 +205,7 @@
 
   async function importCatalog(obj, options) {
     if (!obj || !Array.isArray(obj.textbooks) || !Array.isArray(obj.chapters)) throw new Error('Invalid textbook catalog JSON');
+    obj = JSON.parse(JSON.stringify(obj));
     options = options || {};
     validateCatalogTree(obj.chapters);
     var mode = options.mode || 'new';
@@ -215,7 +230,7 @@
         var sourceBooks = obj.textbooks.length ? obj.textbooks : [{ name: 'Imported textbook' }];
         for (var i = 0; i < sourceBooks.length; i++) {
           var b = sourceBooks[i];
-          var rec = { id: uid('tb'), name: String(b.name || 'Imported textbook').trim(), publisher: b.publisher || '', edition: b.edition || '', year: b.year || null, source: b.source || 'catalog-import', notes: b.notes || '', createdAt: now, updatedAt: now };
+          var rec = { id: uid('tb'), name: String(b.name || 'Imported textbook').trim(), publisher: b.publisher || '', edition: b.edition || '', year: b.year || null, source: b.source || 'catalog-import', notes: b.notes || '', sourcePdfHash: b.sourcePdfHash || null, sourcePdfName: b.sourcePdfName || null, sourceRange: b.sourceRange || null, sourcePdfs: catalogSources(b), createdAt: now, updatedAt: now };
           await reqp(tStore.put(rec));
           bookMap[b.id || ('__book' + i)] = rec.id;
           if (!result.textbookId) result.textbookId = rec.id;
@@ -229,7 +244,7 @@
           name: targetBook.name, publisher: incoming.publisher != null ? incoming.publisher : targetBook.publisher,
           edition: incoming.edition != null ? incoming.edition : targetBook.edition,
           year: incoming.year != null ? incoming.year : targetBook.year,
-          source: targetBook.source, notes: targetBook.notes, updatedAt: now
+          source: targetBook.source, notes: targetBook.notes, sourcePdfs: catalogSources(targetBook, incoming), updatedAt: now
         });
         await reqp(tStore.put(updatedBook));
         obj.textbooks.forEach(function (x) { bookMap[x.id] = targetBook.id; });
@@ -239,6 +254,7 @@
 
       var oldChaptersOfTarget = mode === 'new' ? [] : existingChapters.filter(function (c) { return c.textbookId === targetBook.id; });
       var usedIds = {};
+      var preserveParents = {};
       var parentMap = {};
       var ordered = obj.chapters.slice().sort(function (a, b) { return (Number(a.order) || 0) - (Number(b.order) || 0); });
       for (var j = 0; j < ordered.length; j++) {
@@ -254,10 +270,14 @@
           id: mode === 'new' ? uid('ch') : (ch.id && !oldChaptersOfTarget.some(function (x) { return x.id === ch.id; }) ? ch.id : uid('ch')),
           textbookId: tbId, createdAt: now
         };
-        if (match) { rec.title = ch.title || rec.title; rec.order = Number(ch.order) || 0; rec.updatedAt = now; result.updated++; }
+        if (match) { if (mode !== 'merge') { rec.title = ch.title || rec.title; rec.order = Number(ch.order) || 0; } rec.updatedAt = now; result.updated++; }
         else { rec.title = String(ch.title || '').trim(); rec.order = Number(ch.order) || 0; rec.progressPercent = Math.max(0, Math.min(100, Number(ch.progressPercent) || 0)); rec.progressNote = ch.progressNote || ''; rec.tagIds = Array.isArray(ch.tagIds) ? ch.tagIds : []; rec.updatedAt = now; result.created++; }
         rec.textbookId = tbId;
-        rec.parentId = ch.parentId ? (parentMap[ch.parentId] || null) : null;
+        // Optional provenance fields are backward compatible with existing v5
+        // records. Preserve original PDF provenance on the book when merging.
+        ['level', 'printedPage', 'pdfPage', 'source', 'issues', 'confirmed', 'rawText', 'sourcePdfHash'].forEach(function (field) { if (ch[field] !== undefined && !(match && mode === 'merge' && Object.prototype.hasOwnProperty.call(rec, field))) rec[field] = ch[field]; });
+        if (match && mode === 'merge') preserveParents[rec.id] = true;
+        else rec.parentId = ch.parentId ? (parentMap[ch.parentId] || null) : null;
         await reqp(cStore.put(rec));
         usedIds[rec.id] = true;
         parentMap[extId] = rec.id;
@@ -267,7 +287,7 @@
         var ch2 = ordered[k]; var key2 = ch2.id || ('__ch' + k);
         var rec2 = await reqp(cStore.get(parentMap[key2]));
         if (!rec2) continue;
-        rec2.parentId = ch2.parentId ? (parentMap[ch2.parentId] || null) : null;
+        if (!preserveParents[rec2.id]) rec2.parentId = ch2.parentId ? (parentMap[ch2.parentId] || null) : null;
         await reqp(cStore.put(rec2));
       }
       if (mode === 'replace') {
@@ -287,13 +307,28 @@
           await reqp(cStore.delete(old.id));
         }
       }
+      var finalChapters = await reqp(cStore.getAll());
+      Array.from(new Set(Object.keys(bookMap).map(function (k) { return bookMap[k]; }))).forEach(function (tbId) {
+        validateCatalogTree(finalChapters.filter(function (c) { return c.textbookId === tbId; }));
+      });
       await txDone;
       return result;
       } catch (e) {
         try { tx.abort(); } catch (ignore) {}
+        await txDone.catch(function () {});
         throw e;
       }
     });
+  }
+
+  function catalogSources() {
+    var result = [], seen = Object.create(null);
+    Array.prototype.forEach.call(arguments, function (book) {
+      var list = (book.sourcePdfs || []).slice();
+      if (book.sourcePdfHash) list.push({ hash: book.sourcePdfHash, name: book.sourcePdfName || null, range: book.sourceRange || null });
+      list.forEach(function (p) { var key = JSON.stringify([p.hash, p.range || null]); if (p.hash && !seen[key]) { seen[key] = true; result.push(p); } });
+    });
+    return result;
   }
 
   root.LearningStore = {

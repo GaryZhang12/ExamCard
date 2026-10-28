@@ -1,0 +1,40 @@
+{
+  "runs": [
+    {
+      "name": "unit",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "data",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "golden",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "ui",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "final-e2e",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "workflows",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "legacy",
+      "status": "pass",
+      "exitCode": 0
+    }
+  ],
+  "visual": "Requires human approved baseline; see ui-electron.json"
+}

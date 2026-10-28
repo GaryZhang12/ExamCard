@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: P1-1: unrelated metadata edit cannot clear missing-options gate
+ok 1 - P1-1: unrelated metadata edit cannot clear missing-options gate
+  ---
+  duration_ms: 5.8554
+  type: 'test'
+  ...
+# Subtest: P1-2: prose A-D references are not answer options
+ok 2 - P1-2: prose A-D references are not answer options
+  ---
+  duration_ms: 2.7781
+  type: 'test'
+  ...
+# Subtest: P1-3: physical page reset does not force OCR
+ok 3 - P1-3: physical page reset does not force OCR
+  ---
+  duration_ms: 1.6956
+  type: 'test'
+  ...
+# Subtest: P1-4: standalone printed page cannot attach across PDF pages
+ok 4 - P1-4: standalone printed page cannot attach across PDF pages
+  ---
+  duration_ms: 1.801
+  type: 'test'
+  ...
+# Subtest: P1-5: render revalidates edited tree without rewriting manual parent
+ok 5 - P1-5: render revalidates edited tree without rewriting manual parent
+  ---
+  duration_ms: 1.5913
+  type: 'test'
+  ...
+# Subtest: P1-6: video→review is rejected instead of relabelled as video-only
+ok 6 - P1-6: video→review is rejected instead of relabelled as video-only
+  ---
+  duration_ms: 1.9903
+  type: 'test'
+  ...
+# Subtest: P2-2: invalid ranges explicitly reject instead of falling back
+ok 7 - P2-2: invalid ranges explicitly reject instead of falling back
+  ---
+  duration_ms: 1.8128
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 88.9763

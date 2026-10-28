@@ -1,0 +1,38 @@
+[
+  {
+    "file": "ExamCard-1.0.1-win-portable.exe",
+    "requestedExecutionLevel": [
+      {
+        "level": "asInvoker",
+        "uiAccess": "false"
+      }
+    ],
+    "manifestVerified": true,
+    "sha256": "6bc2940aba27557917184ad98907542cdfc303ffab9b881f0eb153cae63b9593",
+    "bytes": 175862410
+  },
+  {
+    "file": "ExamCard-1.0.1-win-setup.exe",
+    "requestedExecutionLevel": [
+      {
+        "level": "asInvoker",
+        "uiAccess": "false"
+      }
+    ],
+    "manifestVerified": true,
+    "sha256": "a2a03036cabbf271a259394e6f82dd9305aaa16f4bdbe6cf3dfd1d3a926e5653",
+    "bytes": 202757727
+  },
+  {
+    "file": "win-unpacked/ExamCard.exe",
+    "requestedExecutionLevel": [
+      {
+        "level": "asInvoker",
+        "uiAccess": "false"
+      }
+    ],
+    "manifestVerified": true,
+    "sha256": "ef31172e794535577cd5202062f010a9527406bbd066a321fc354957868ec8f7",
+    "bytes": 225442304
+  }
+]

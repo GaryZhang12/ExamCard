@@ -1,0 +1,1348 @@
+{
+  "environment": {
+    "version": "1.0.1",
+    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-zy9JJQ",
+    "electron": "43.3.0",
+    "sandbox": false,
+    "displays": [
+      {
+        "size": {
+          "width": 1080,
+          "height": 1920
+        },
+        "scaleFactor": 1
+      },
+      {
+        "size": {
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  },
+  "profile": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-zy9JJQ",
+  "target": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\.test-runs\\baseline",
+  "cases": [
+    {
+      "name": "empty-960x720-home",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 635
+        },
+        "active": "home",
+        "issues": []
+      },
+      "screenshot": "empty-960x720-home.png",
+      "sha256": "8b27ba7fcc8f9968a40ffdd4bf821df253ccf8985d3c28cd61ec00c61f4a2607"
+    },
+    {
+      "name": "empty-960x720-library",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 635
+        },
+        "active": "library",
+        "issues": []
+      },
+      "screenshot": "empty-960x720-library.png",
+      "sha256": "5280dc436ce759ba1f379cd30090c4369bf1e5d8b254286df413b144ad336fb2"
+    },
+    {
+      "name": "empty-960x720-essay",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 617
+        },
+        "active": "essay",
+        "issues": []
+      },
+      "screenshot": "empty-960x720-essay.png",
+      "sha256": "197b25b36fea4cc3ebfc5b549743e315b5585c20ab1e0ca375dc3a4c8ddb2b1a"
+    },
+    {
+      "name": "empty-960x720-toc",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 617
+        },
+        "active": "learn-textbooks",
+        "issues": []
+      },
+      "screenshot": "empty-960x720-toc.png",
+      "sha256": "b78b4197efefe934b613fc4aed60ec0a25c6f1ec1fcb3c5b731390da5a8b8ea3"
+    },
+    {
+      "name": "empty-960x720-learn-plans",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 617
+        },
+        "active": "learn-plans",
+        "issues": []
+      },
+      "screenshot": "empty-960x720-learn-plans.png",
+      "sha256": "51da7c7cdfdfa15207f89996c04b000fecaf17035ebee9050e2c7dc4ec135240"
+    },
+    {
+      "name": "empty-960x720-data",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 617
+        },
+        "active": "data",
+        "issues": []
+      },
+      "screenshot": "empty-960x720-data.png",
+      "sha256": "29911e89647345ffc1990ce6d27d6c86385032e44781f5409656eec7a60e0bf2"
+    },
+    {
+      "name": "empty-960x720-diagnosis-logs",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 617
+        },
+        "active": "diagnosis-logs",
+        "issues": []
+      },
+      "screenshot": "empty-960x720-diagnosis-logs.png",
+      "sha256": "9c11926e8628e256b4a9a6ecd30724b715c4267eb0b66503256c0bee5b1c3aa8"
+    },
+    {
+      "name": "empty-960x720-about",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 635
+        },
+        "active": "about",
+        "issues": []
+      },
+      "screenshot": "empty-960x720-about.png",
+      "sha256": "9ee4bb2835fff4c7b4d5097649a1e60c61623cf7d4f772b661823ed98153fe12"
+    },
+    {
+      "name": "empty-1366x768-home",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 665
+        },
+        "active": "home",
+        "issues": []
+      },
+      "screenshot": "empty-1366x768-home.png",
+      "sha256": "e1ac6faabdf675c0352c5ac76360e2f1ed88b39c1d8af81d420468120c6a755b"
+    },
+    {
+      "name": "empty-1366x768-library",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 712
+        },
+        "active": "library",
+        "issues": []
+      },
+      "screenshot": "empty-1366x768-library.png",
+      "sha256": "69619e14e96204b9f62a9bb59b67d15c80fcdee33763242100ab9b630922e41a"
+    },
+    {
+      "name": "empty-1366x768-essay",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 665
+        },
+        "active": "essay",
+        "issues": []
+      },
+      "screenshot": "empty-1366x768-essay.png",
+      "sha256": "d16b06235315d7177089d5a113ad63f5dcdb3b2f893eacbee308a4f6837367c4"
+    },
+    {
+      "name": "empty-1366x768-toc",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 665
+        },
+        "active": "learn-textbooks",
+        "issues": []
+      },
+      "screenshot": "empty-1366x768-toc.png",
+      "sha256": "b9b7cc39685b1b735f5928abc096a764b47644eac0a9d9abba14fc6c57ee6f1a"
+    },
+    {
+      "name": "empty-1366x768-learn-plans",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 665
+        },
+        "active": "learn-plans",
+        "issues": []
+      },
+      "screenshot": "empty-1366x768-learn-plans.png",
+      "sha256": "7d8a53bea8f3864973d1c7eb7ed28a4d31491a0bf6d04d0cfd01a822aacdc3b0"
+    },
+    {
+      "name": "empty-1366x768-data",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 665
+        },
+        "active": "data",
+        "issues": []
+      },
+      "screenshot": "empty-1366x768-data.png",
+      "sha256": "157065306d44a12b1158a68808014e1af650c5d94db2692446a128834f3ad9a5"
+    },
+    {
+      "name": "empty-1366x768-diagnosis-logs",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 665
+        },
+        "active": "diagnosis-logs",
+        "issues": []
+      },
+      "screenshot": "empty-1366x768-diagnosis-logs.png",
+      "sha256": "73cd3ed5279f9b18ed7f78444c22c5b10a16b2d0f6b0c0a4473ac148c9d40de5"
+    },
+    {
+      "name": "empty-1366x768-about",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 665
+        },
+        "active": "about",
+        "issues": []
+      },
+      "screenshot": "empty-1366x768-about.png",
+      "sha256": "72d46dd181b1e111d6885e5c2090ddd125e1172c04fda3baf8086278f148b919"
+    },
+    {
+      "name": "empty-1920x1080-home",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 977
+        },
+        "active": "home",
+        "issues": []
+      },
+      "screenshot": "empty-1920x1080-home.png",
+      "sha256": "f26aa12a430f2820df44743d82a24dc536e9f9ca6586adfbb6919564a93aab5b"
+    },
+    {
+      "name": "empty-1920x1080-library",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 1024
+        },
+        "active": "library",
+        "issues": []
+      },
+      "screenshot": "empty-1920x1080-library.png",
+      "sha256": "012a28b8cdba6c734b99c3f3dfdb5738a62e904495b1d78341b96c74fb0fd6af"
+    },
+    {
+      "name": "empty-1920x1080-essay",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 977
+        },
+        "active": "essay",
+        "issues": []
+      },
+      "screenshot": "empty-1920x1080-essay.png",
+      "sha256": "80f4926845b035227906f5f7fd3dea57cd9a1da8a9d876d2b72f4a21f514eea9"
+    },
+    {
+      "name": "empty-1920x1080-toc",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 977
+        },
+        "active": "learn-textbooks",
+        "issues": []
+      },
+      "screenshot": "empty-1920x1080-toc.png",
+      "sha256": "968ad6b61247af05e9273fe35ea5b0af2d252f07994d842909a055e613e68667"
+    },
+    {
+      "name": "empty-1920x1080-learn-plans",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 977
+        },
+        "active": "learn-plans",
+        "issues": []
+      },
+      "screenshot": "empty-1920x1080-learn-plans.png",
+      "sha256": "7efb37ceb2c9d44167715a06c4dc876236a852f54f39506621196e517dd5dd77"
+    },
+    {
+      "name": "empty-1920x1080-data",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 977
+        },
+        "active": "data",
+        "issues": []
+      },
+      "screenshot": "empty-1920x1080-data.png",
+      "sha256": "323bba461a147ac444e216ecec8361434c2cbe3f813964bc9f9a565413d9c8cd"
+    },
+    {
+      "name": "empty-1920x1080-diagnosis-logs",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 977
+        },
+        "active": "diagnosis-logs",
+        "issues": []
+      },
+      "screenshot": "empty-1920x1080-diagnosis-logs.png",
+      "sha256": "4dd2c8c3ad094a02918cde79ba84659447f111cfc6c9455800264893e874aa1e"
+    },
+    {
+      "name": "empty-1920x1080-about",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 977
+        },
+        "active": "about",
+        "issues": []
+      },
+      "screenshot": "empty-1920x1080-about.png",
+      "sha256": "73c2e1a08b6d5e9388dbc7cece5d5d38b93e65a890908c4bdc25e79e7c3be556"
+    },
+    {
+      "name": "empty-2560x1440-home",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1337
+        },
+        "active": "home",
+        "issues": []
+      },
+      "screenshot": "empty-2560x1440-home.png",
+      "sha256": "43faf502312cf10db9f4c443aa940caf895d8bc1f3bf690f221cc49f98c1b2ed"
+    },
+    {
+      "name": "empty-2560x1440-library",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1384
+        },
+        "active": "library",
+        "issues": []
+      },
+      "screenshot": "empty-2560x1440-library.png",
+      "sha256": "8144bc044200422968da491bf1898483684384777829866e4896619b67751746"
+    },
+    {
+      "name": "empty-2560x1440-essay",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1337
+        },
+        "active": "essay",
+        "issues": []
+      },
+      "screenshot": "empty-2560x1440-essay.png",
+      "sha256": "b448e95e510543fb53a8e9fd05f651e0525102d0094a4b1b179b825aaa594300"
+    },
+    {
+      "name": "empty-2560x1440-toc",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1337
+        },
+        "active": "learn-textbooks",
+        "issues": []
+      },
+      "screenshot": "empty-2560x1440-toc.png",
+      "sha256": "7a9cf1691e1ecc53eeb17d1eeda403069a1c53dd2624bff2cd4e2a648ff13467"
+    },
+    {
+      "name": "empty-2560x1440-learn-plans",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1337
+        },
+        "active": "learn-plans",
+        "issues": []
+      },
+      "screenshot": "empty-2560x1440-learn-plans.png",
+      "sha256": "dc1d95579714e6159781538cb5a4ab685a2d9998449995488c507a4dd8811660"
+    },
+    {
+      "name": "empty-2560x1440-data",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1337
+        },
+        "active": "data",
+        "issues": []
+      },
+      "screenshot": "empty-2560x1440-data.png",
+      "sha256": "42a9fbdd5b72df61eb3904f00cb9ffdec61ff586552aa1b7dfb091c5ab3f6a87"
+    },
+    {
+      "name": "empty-2560x1440-diagnosis-logs",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1337
+        },
+        "active": "diagnosis-logs",
+        "issues": []
+      },
+      "screenshot": "empty-2560x1440-diagnosis-logs.png",
+      "sha256": "1a78211071a4efaff7fad904d46f2859ecc76ca07470dc482cbbcd83e1eaaee2"
+    },
+    {
+      "name": "empty-2560x1440-about",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1337
+        },
+        "active": "about",
+        "issues": []
+      },
+      "screenshot": "empty-2560x1440-about.png",
+      "sha256": "5e5b0b738588e5d0b0443e50b1503a5e9da26108f2ece3fa3c8c74df6f865ac8"
+    },
+    {
+      "name": "long-content-960x720-home",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 635
+        },
+        "active": "home",
+        "issues": []
+      },
+      "screenshot": "long-content-960x720-home.png",
+      "sha256": "19f389f29413a9c17679d3dba6286ff32b502e003e127d8b9fb4167523ea6bd4"
+    },
+    {
+      "name": "long-content-960x720-library",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 635
+        },
+        "active": "library",
+        "issues": []
+      },
+      "screenshot": "long-content-960x720-library.png",
+      "sha256": "26bcebaef8e123b26ff47b4aa8a3d8720786b64831ed280a8073737929b73701"
+    },
+    {
+      "name": "long-content-960x720-essay",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 617
+        },
+        "active": "essay",
+        "issues": []
+      },
+      "screenshot": "long-content-960x720-essay.png",
+      "sha256": "e46af7a364cf113d0b38876df9a78aaae6bf9b882e44732516acc7e5c4b0fbad"
+    },
+    {
+      "name": "long-content-960x720-toc",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 617
+        },
+        "active": "learn-textbooks",
+        "issues": []
+      },
+      "screenshot": "long-content-960x720-toc.png",
+      "sha256": "b78b4197efefe934b613fc4aed60ec0a25c6f1ec1fcb3c5b731390da5a8b8ea3"
+    },
+    {
+      "name": "long-content-960x720-learn-plans",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 617
+        },
+        "active": "learn-plans",
+        "issues": []
+      },
+      "screenshot": "long-content-960x720-learn-plans.png",
+      "sha256": "f05b0712fe68289290535afb4c3b158211fa6498341de2cc296b895c6341b498"
+    },
+    {
+      "name": "long-content-960x720-data",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 617
+        },
+        "active": "data",
+        "issues": []
+      },
+      "screenshot": "long-content-960x720-data.png",
+      "sha256": "29911e89647345ffc1990ce6d27d6c86385032e44781f5409656eec7a60e0bf2"
+    },
+    {
+      "name": "long-content-960x720-diagnosis-logs",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 617
+        },
+        "active": "diagnosis-logs",
+        "issues": []
+      },
+      "screenshot": "long-content-960x720-diagnosis-logs.png",
+      "sha256": "9c11926e8628e256b4a9a6ecd30724b715c4267eb0b66503256c0bee5b1c3aa8"
+    },
+    {
+      "name": "long-content-960x720-about",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          944,
+          681
+        ],
+        "page": {
+          "x": 0,
+          "y": 46,
+          "width": 944,
+          "height": 635
+        },
+        "active": "about",
+        "issues": []
+      },
+      "screenshot": "long-content-960x720-about.png",
+      "sha256": "27fc7bbe5221f869246a949fa4fd0320aebf49ea1891afcac876b7954fa46df7"
+    },
+    {
+      "name": "long-content-1366x768-home",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 712
+        },
+        "active": "home",
+        "issues": []
+      },
+      "screenshot": "long-content-1366x768-home.png",
+      "sha256": "463335d8aa9ecf835581f36896a0f3c7921b18cbc377840235f7d0705197da93"
+    },
+    {
+      "name": "long-content-1366x768-library",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 712
+        },
+        "active": "library",
+        "issues": []
+      },
+      "screenshot": "long-content-1366x768-library.png",
+      "sha256": "18af371305594a04caf6b4a65204f9933f2d7829be52b665fc1ba87db3192c4d"
+    },
+    {
+      "name": "long-content-1366x768-essay",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 665
+        },
+        "active": "essay",
+        "issues": []
+      },
+      "screenshot": "long-content-1366x768-essay.png",
+      "sha256": "b6b0eee3e8828eb42a955a31ba194040a08430dbfef5ba459f81a6b064758581"
+    },
+    {
+      "name": "long-content-1366x768-toc",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 665
+        },
+        "active": "learn-textbooks",
+        "issues": []
+      },
+      "screenshot": "long-content-1366x768-toc.png",
+      "sha256": "eafbcd120e08ec8f0a7112c6bc0ce3775e4acfb87706b3db13ff35032828aee9"
+    },
+    {
+      "name": "long-content-1366x768-learn-plans",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 665
+        },
+        "active": "learn-plans",
+        "issues": []
+      },
+      "screenshot": "long-content-1366x768-learn-plans.png",
+      "sha256": "a5d4ddbaf0225e42c6bdeef8d2e60db4bb73010ec9ca6fc5bed6e37438a66369"
+    },
+    {
+      "name": "long-content-1366x768-data",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 665
+        },
+        "active": "data",
+        "issues": []
+      },
+      "screenshot": "long-content-1366x768-data.png",
+      "sha256": "fa0139b7df7dc7503516d8dd82f692bffd50465c64a1a86c4d0cdfb471c6dc7c"
+    },
+    {
+      "name": "long-content-1366x768-diagnosis-logs",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 665
+        },
+        "active": "diagnosis-logs",
+        "issues": []
+      },
+      "screenshot": "long-content-1366x768-diagnosis-logs.png",
+      "sha256": "327183ba6dedb90f7f1178ba60576d2ff7de5feccf894715d2fb15a01ee7b3fc"
+    },
+    {
+      "name": "long-content-1366x768-about",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1350,
+          729
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1126,
+          "height": 665
+        },
+        "active": "about",
+        "issues": []
+      },
+      "screenshot": "long-content-1366x768-about.png",
+      "sha256": "2b5bccb4b5b73dd0ca84343464c1cb438eca06f42f16d4fe2eb8b0f371bc30ac"
+    },
+    {
+      "name": "long-content-1920x1080-home",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 1024
+        },
+        "active": "home",
+        "issues": []
+      },
+      "screenshot": "long-content-1920x1080-home.png",
+      "sha256": "3790c566e34e77d97eb581d2cf95195d5d954ac13e28ff79ffd519d094dbfdab"
+    },
+    {
+      "name": "long-content-1920x1080-library",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 1024
+        },
+        "active": "library",
+        "issues": []
+      },
+      "screenshot": "long-content-1920x1080-library.png",
+      "sha256": "0c3f982f65e0733aaef285f9693bf0454d3fbaef46aa9ec1dd42d7cb441e2dc5"
+    },
+    {
+      "name": "long-content-1920x1080-essay",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 977
+        },
+        "active": "essay",
+        "issues": []
+      },
+      "screenshot": "long-content-1920x1080-essay.png",
+      "sha256": "3b300f879074bc30c89e9d87376d6c652c393caa0dd1317346dd9c8e10a92b71"
+    },
+    {
+      "name": "long-content-1920x1080-toc",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 977
+        },
+        "active": "learn-textbooks",
+        "issues": []
+      },
+      "screenshot": "long-content-1920x1080-toc.png",
+      "sha256": "d8a8bc7c4b6074ca6aa6c0db8310efbcb263f463b0829a22a42abc0e35520ee6"
+    },
+    {
+      "name": "long-content-1920x1080-learn-plans",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 977
+        },
+        "active": "learn-plans",
+        "issues": []
+      },
+      "screenshot": "long-content-1920x1080-learn-plans.png",
+      "sha256": "dea2209c7cb6b2372c43d01fea78ea1dabcd4c366d01f4ece9da1cc2a7ea21b9"
+    },
+    {
+      "name": "long-content-1920x1080-data",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 977
+        },
+        "active": "data",
+        "issues": []
+      },
+      "screenshot": "long-content-1920x1080-data.png",
+      "sha256": "6537f84f70c6666c14fafb23bd5bc32c3e7b67061c8a4f0f61afa9418fdf76d6"
+    },
+    {
+      "name": "long-content-1920x1080-diagnosis-logs",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 977
+        },
+        "active": "diagnosis-logs",
+        "issues": []
+      },
+      "screenshot": "long-content-1920x1080-diagnosis-logs.png",
+      "sha256": "0963a6726b1e29a37d15176828d27ce0ec2cf9372a72223a1c9e4d0eb8929aca"
+    },
+    {
+      "name": "long-content-1920x1080-about",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          1904,
+          1041
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 1680,
+          "height": 977
+        },
+        "active": "about",
+        "issues": []
+      },
+      "screenshot": "long-content-1920x1080-about.png",
+      "sha256": "6b8554c7c5f7ecac915908228bfbcb9df049787dab3f511db376eb103510ac28"
+    },
+    {
+      "name": "long-content-2560x1440-home",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1337
+        },
+        "active": "home",
+        "issues": []
+      },
+      "screenshot": "long-content-2560x1440-home.png",
+      "sha256": "9c99ac1f3094134ce952b2076768e5908bf356249d516d97e4830e430aaf8263"
+    },
+    {
+      "name": "long-content-2560x1440-library",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1384
+        },
+        "active": "library",
+        "issues": []
+      },
+      "screenshot": "long-content-2560x1440-library.png",
+      "sha256": "2939c6a6e16ff1ac42a723850c82784284a1f25de7aa0109b8b6b8f73f19cfbf"
+    },
+    {
+      "name": "long-content-2560x1440-essay",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1337
+        },
+        "active": "essay",
+        "issues": []
+      },
+      "screenshot": "long-content-2560x1440-essay.png",
+      "sha256": "d8a624e5e7bf53c617696e8fce7a5bdac8e0918021bc2d1022b2d60bb69baa85"
+    },
+    {
+      "name": "long-content-2560x1440-toc",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1337
+        },
+        "active": "learn-textbooks",
+        "issues": []
+      },
+      "screenshot": "long-content-2560x1440-toc.png",
+      "sha256": "2c2f9adc6dc61852111703f9a11c57e7e32ea9f8e1b2b278d35063b4fbaac03b"
+    },
+    {
+      "name": "long-content-2560x1440-learn-plans",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1337
+        },
+        "active": "learn-plans",
+        "issues": []
+      },
+      "screenshot": "long-content-2560x1440-learn-plans.png",
+      "sha256": "88a5985aaf07389bc38fa8270e5656729770dfc704aae08285ca7768dd211df0"
+    },
+    {
+      "name": "long-content-2560x1440-data",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1337
+        },
+        "active": "data",
+        "issues": []
+      },
+      "screenshot": "long-content-2560x1440-data.png",
+      "sha256": "05d11183b5690f177b9c508a2892ccfdcd2f70f14a085da92681d3b0f8407fe3"
+    },
+    {
+      "name": "long-content-2560x1440-diagnosis-logs",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1337
+        },
+        "active": "diagnosis-logs",
+        "issues": []
+      },
+      "screenshot": "long-content-2560x1440-diagnosis-logs.png",
+      "sha256": "8f2d6fa0f49334bd2e46588e71088d2c68b08cc045b51bd93371cfd142e8d07c"
+    },
+    {
+      "name": "long-content-2560x1440-about",
+      "status": "pass",
+      "detail": {
+        "viewport": [
+          2544,
+          1401
+        ],
+        "page": {
+          "x": 224,
+          "y": 17,
+          "width": 2320,
+          "height": 1337
+        },
+        "active": "about",
+        "issues": []
+      },
+      "screenshot": "long-content-2560x1440-about.png",
+      "sha256": "d31fd001377574c226109426e6b863d6c2cb607a6f546c5e5dc55c95491fe125"
+    },
+    {
+      "name": "plan modal Escape closes and returns focus",
+      "status": "fail",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 0\n\n    at C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:92:14\n    at async scenario (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:57:11)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:88:5"
+    },
+    {
+      "name": "navigation cannot resurrect stale module modal",
+      "status": "fail",
+      "error": "page.waitForFunction: Timeout 7000ms exceeded.\n    at nav (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:21:16)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:96:7\n    at async scenario (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:57:11)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:95:5"
+    },
+    {
+      "name": "invalid plan shows errors, close works, no task writes",
+      "status": "fail",
+      "error": "locator.click: Timeout 7000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#railToggle')\u001b[22m\n\u001b[2m    - locator resolved to <button id=\"railToggle\" class=\"btn ghost\" aria-label=\"打开导航\">☰</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"rail-brand\">…</div> from <nav id=\"appRail\" class=\"app-rail\" aria-label=\"主导航\">…</nav> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"rail-brand\">…</div> from <nav id=\"appRail\" class=\"app-rail\" aria-label=\"主导航\">…</nav> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    14 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"rail-brand\">…</div> from <nav id=\"appRail\" class=\"app-rail\" aria-label=\"主导航\">…</nav> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at nav (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:17:90)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:103:7\n    at async scenario (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:57:11)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:102:5"
+    },
+    {
+      "name": "backup malformed file error retains data and navigation",
+      "status": "fail",
+      "error": "locator.click: Timeout 7000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#railToggle')\u001b[22m\n\u001b[2m    - locator resolved to <button id=\"railToggle\" class=\"btn ghost\" aria-label=\"打开导航\">☰</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"rail-brand\">…</div> from <nav id=\"appRail\" class=\"app-rail\" aria-label=\"主导航\">…</nav> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"rail-brand\">…</div> from <nav id=\"appRail\" class=\"app-rail\" aria-label=\"主导航\">…</nav> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    14 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"rail-brand\">…</div> from <nav id=\"appRail\" class=\"app-rail\" aria-label=\"主导航\">…</nav> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at nav (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:17:90)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:114:7\n    at async scenario (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:57:11)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:113:5"
+    },
+    {
+      "name": "about license close / Escape / focus",
+      "status": "fail",
+      "error": "locator.click: Timeout 7000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#railToggle')\u001b[22m\n\u001b[2m    - locator resolved to <button id=\"railToggle\" class=\"btn ghost\" aria-label=\"打开导航\">☰</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"rail-brand\">…</div> from <nav id=\"appRail\" class=\"app-rail\" aria-label=\"主导航\">…</nav> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"rail-brand\">…</div> from <nav id=\"appRail\" class=\"app-rail\" aria-label=\"主导航\">…</nav> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    14 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"rail-brand\">…</div> from <nav id=\"appRail\" class=\"app-rail\" aria-label=\"主导航\">…</nav> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at nav (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:17:90)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:121:7\n    at async scenario (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:57:11)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:120:5"
+    },
+    {
+      "name": "long modal actions remain reachable by keyboard and scrolling",
+      "status": "fail",
+      "error": "locator.click: Timeout 7000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#modalRoot [data-close]')\u001b[22m\n\u001b[2m    - locator resolved to <button class=\"btn\" data-close=\"\">关闭</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <body class=\"shell-mode rail-open\">…</body> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <body class=\"shell-mode rail-open\">…</body> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    14 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <body class=\"shell-mode rail-open\">…</body> intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:130:19\n    at async scenario (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:57:11)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\ui-electron.cjs:126:5"
+    }
+  ],
+  "pageErrors": [],
+  "visual": {
+    "status": "skip",
+    "reason": "No human-approved screenshot baselines. Candidates never overwrite approved images."
+  },
+  "totals": {
+    "pass": 64,
+    "fail": 6,
+    "skip": 1
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "environment": {
+    "version": "1.0.1",
+    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-9RU8Tk",
+    "electron": "43.3.0",
+    "sandbox": false,
+    "displays": [
+      {
+        "size": {
+          "width": 1080,
+          "height": 1920
+        },
+        "scaleFactor": 1
+      },
+      {
+        "size": {
+          "width": 1920,
+          "height": 1080
+        },
+        "scaleFactor": 1
+      }
+    ]
+  },
+  "results": [
+    {
+      "name": "PDF import UI current-content acknowledgement and duplicate-click guard",
+      "status": "pass"
+    },
+    {
+      "name": "objective exam enter pause resume exit and continue",
+      "status": "pass"
+    },
+    {
+      "name": "essay long text automatic save and navigation recovery",
+      "status": "fail",
+      "error": "locator.click: Timeout 7000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#essayRoot [data-act=\"continue\"]')\u001b[22m\n\n    at C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\workflows-electron.cjs:25:141\n    at async check (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\workflows-electron.cjs:3:48)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\workflows-electron.cjs:19:3"
+    },
+    {
+      "name": "exam bundle asynchronous transaction abort rolls back",
+      "status": "pass"
+    },
+    {
+      "name": "restore synchronous failure preserves current data atomically",
+      "status": "fail",
+      "error": "page.evaluate: Error: Restore failure partially overwrote current stores\n    at eval (eval at evaluate (:311:30), <anonymous>:5:192)\n    at async <anonymous>:337:30\n    at C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\workflows-electron.cjs:34:93\n    at check (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\workflows-electron.cjs:3:54)\n    at C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\workflows-electron.cjs:34:9"
+    },
+    {
+      "name": "application restart retains essay actual content and objective sessions",
+      "status": "fail",
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert.ok(result.sessions.length)\n\n    at C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\workflows-electron.cjs:43:89\n    at async check (C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\workflows-electron.cjs:3:48)\n    at async C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work\\tests\\workflows-electron.cjs:40:3"
+    }
+  ],
+  "totals": {
+    "pass": 3,
+    "fail": 3
+  }
+}

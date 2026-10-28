@@ -479,6 +479,28 @@
         return normalized;
       });
     },
+    async putExamBundle(exam, blob) {
+      return withDb(async function (db) {
+        var normalized = normalizeExamModel(exam);
+        if (!normalized.id) throw new Error('试卷缺少 id');
+        normalized.createdAt = normalized.createdAt || Date.now();
+        normalized.updatedAt = Date.now();
+        var tx = db.transaction(['exams', 'questions', 'pdfs'], 'readwrite');
+        var completion = txDone(tx);
+        try {
+          tx.objectStore('exams').put(normalized);
+          var qStore = tx.objectStore('questions');
+          (normalized.questions || []).forEach(function (q) { qStore.put(questionRecord(normalized, q)); });
+          if (blob) tx.objectStore('pdfs').put({ id: normalized.id, blob: blob, savedAt: Date.now() });
+          await completion;
+        } catch (e) {
+          try { tx.abort(); } catch (ignore) {}
+          await completion.catch(function () {});
+          throw e;
+        }
+        return normalized;
+      });
+    },
     async putExamPdf(examId, blob) {
       return withDb(function (db) { return putOne(db, 'pdfs', { id: examId, blob: blob, savedAt: Date.now() }); });
     },

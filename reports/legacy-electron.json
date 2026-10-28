@@ -1,0 +1,31 @@
+{
+  "status": "pass",
+  "environment": {
+    "version": "1.0.1",
+    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-arwKw1",
+    "electron": "43.3.0",
+    "sandbox": false,
+    "displays": [
+      {
+        "size": {
+          "width": 1080,
+          "height": 1920
+        },
+        "scaleFactor": 1
+      },
+      {
+        "size": {
+          "width": 2560,
+          "height": 1440
+        },
+        "scaleFactor": 1
+      }
+    ]
+  },
+  "detail": {
+    "oldVersion": "1.0.0",
+    "newVersion": "1.0.1",
+    "categoriesVerified": 6,
+    "backupStores": 22
+  }
+}

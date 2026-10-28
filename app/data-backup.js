@@ -7,7 +7,7 @@
   var DB_NAME = 'gd_exam_v2';
   var FORMAT = 'ExamCardBackup';
   var FORMAT_VERSION = 1;
-  var APP_VERSION = '1.0.0';
+  var APP_VERSION = '1.0.1';
 
   function BackupError(message, detail) {
     var e = new Error(message);
@@ -360,12 +360,19 @@
         if (currentStores.indexOf(name) < 0) throw BackupError('当前数据库缺少表：' + name);
       });
       var tx = db.transaction(currentStores, 'readwrite');
-      currentStores.forEach(function (name) { tx.objectStore(name).clear(); });
-      Object.keys(decoded).forEach(function (name) {
-        var store = tx.objectStore(name);
-        decoded[name].forEach(function (rec) { store.put(rec); });
-      });
-      await txDone(tx);
+      var completion = txDone(tx);
+      try {
+        currentStores.forEach(function (name) { tx.objectStore(name).clear(); });
+        Object.keys(decoded).forEach(function (name) {
+          var store = tx.objectStore(name);
+          decoded[name].forEach(function (rec) { store.put(rec); });
+        });
+        await completion;
+      } catch (e) {
+        try { tx.abort(); } catch (ignore) {}
+        await completion.catch(function () {});
+        throw e;
+      }
       return { ok: true, dbVersion: info.dbVersion, counts: info.counts };
     } finally {
       db.close();

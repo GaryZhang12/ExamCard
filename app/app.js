@@ -436,6 +436,27 @@
     return out;
   }
 
+  // Editing metadata is not a quality decision. Both preview and commit derive
+  // completeness from the current content; acknowledgements bind to that content.
+  function validateImportQuestion(q) {
+    var choice = q.type !== 'judge', seen = {}, valid = 0;
+    (q.options || []).forEach(function (o) {
+      if (/^[A-D]$/.test(o.key) && !seen[o.key] && String(o.text || '').trim()) valid++;
+      seen[o.key] = true;
+    });
+    var complete = !choice || (valid === 4 && (q.options || []).length === 4);
+    var issues = (q.issues || []).filter(function (i) { return !/^options-/.test(i.code); });
+    if (!complete) issues.push({ code: 'options-incomplete', severity: 'warning', message: '缺少完整 A-D 选项，请人工确认' });
+    return { optionStatus: choice ? (complete ? 'ok' : ((q.options || []).length ? 'partial' : 'missing')) : 'n/a',
+      issues: issues, reviewStatus: issues.some(function (i) { return i.severity === 'warning' || i.severity === 'error'; }) ? 'needs-confirm' : 'ok' };
+  }
+  function refreshQuestion(q) { Object.assign(q, validateImportQuestion(q)); return q; }
+  function importReviewSignature() {
+    return JSON.stringify((state.draftQuestions || []).map(function (q) {
+      return [q.n, q.type, q.page, q.options, validateImportQuestion(q)];
+    }));
+  }
+
   function buildImportReport(ctx, qs, corrections) {
     var d = ctx.detected || {};
     var q = d.quality || {};
@@ -455,7 +476,8 @@
       pageWarnings: pageWarnings,
       duplicateRisk: { exact: exact, similar: similar, similarQuestions: (ctx.duplicates && ctx.duplicates.similarQuestions || []).length },
       manualCorrections: corrections || 0,
-      unresolvedIssues: qs.filter(function (x) { return x.reviewStatus === 'needs-confirm' && !x.manualEdited; }).length,
+      unresolvedIssues: qs.filter(function (x) { return validateImportQuestion(x).reviewStatus === 'needs-confirm'; }).length,
+      qualityAcknowledged: state.importAckSignature === importReviewSignature(),
       warnings: (d.warnings || []).map(function (w) { return w.message || w.type; })
     };
   }
@@ -506,13 +528,17 @@
   }
 
   function importQualitySummary(qs) {
+    qs.forEach(refreshQuestion);
+    var complete = qs.filter(function (q) { return q.optionStatus === 'ok' && q.reviewStatus === 'ok'; }).length;
     var optionMissing = qs.filter(function (q) { return q.optionStatus === 'missing' || q.optionStatus === 'partial'; }).length;
-    var needs = qs.filter(function (q) { return q.reviewStatus === 'needs-confirm' && !q.manualEdited; }).length;
+    var needs = qs.filter(function (q) { return q.reviewStatus === 'needs-confirm'; }).length;
     var page = qs.filter(function (q) { return (q.issues || []).some(function (i) { return i.code === 'page-jump' || i.code === 'page-back'; }); }).length;
-    return '<div id="impQuality" class="issue-line warn">质量摘要：共 ' + qs.length + ' 题；选项异常 ' + optionMissing + '；页码异常 ' + page + '；待人工确认 ' + needs + '；已人工修正 ' + (state.importCorrections || 0) + '</div>';
+    return '<div id="impQuality" class="issue-line warn">质量摘要：共 ' + qs.length + ' 题；完整 ' + complete + '；缺少/不完整选项 ' + optionMissing + '；页码异常 ' + page + '；待人工确认 ' + needs + '；已人工修正 ' + (state.importCorrections || 0) + '</div>';
   }
 
   function refreshImportQuality() {
+    state.importAckSignature = null;
+    if ($('impIssueAck')) $('impIssueAck').checked = false;
     var el = $('impQuality');
     if (!el) return;
     el.outerHTML = importQualitySummary(state.draftQuestions || []);
@@ -558,6 +584,7 @@
       '<span class="muted small">共 ' + exam.pageCount + ' 页 · 识别到 <b id="impCount">' + state.draftQuestions.length + '</b> 题</span>' +
       '</div>' +
       importQualitySummary(state.draftQuestions) +
+      '<label class="help-text" id="impIssueAckWrap"><input type="checkbox" id="impIssueAck"> 我已逐题核对缺少选项/待确认题目，理解不会自动补齐选项；确认按当前识别/修正结果导入</label>' +
       '<div class="issue-box">' + issues + dupHtml + '</div>' +
       '<div class="review-wrap"><table class="review-table"><thead><tr>' +
       '<th>#</th><th>题号</th><th>题型</th><th>模块</th><th>页码</th><th>纵向位置(%)</th><th>选项</th><th>识别状态</th><th>题干预览</th><th></th>' +
@@ -569,6 +596,8 @@
       'wide'
     );
     renderImportRows();
+    state.importAckSignature = null;
+    $('impIssueAck').addEventListener('change', function () { state.importAckSignature = this.checked ? importReviewSignature() : null; });
     $('impRows').addEventListener('change', onImportRowChange);
     $('impRows').addEventListener('input', onImportRowChange);
     $('impRows').addEventListener('click', onImportRowClick);
@@ -577,11 +606,14 @@
       state.draftQuestions.push({ n: max + 1, type: 'single', module: state.draftQuestions.length ? state.draftQuestions[state.draftQuestions.length - 1].module : '未分类', page: 1, yRatio: 0.12, xRatio: 0.1, preview: '', options: [], optionStatus: 'missing', issues: [{ code: 'manual', severity: 'info', message: '人工添加' }], reviewStatus: 'manual', manualEdited: true });
       state.importCorrections++;
       renderImportRows();
+      refreshImportQuality();
     });
     $('impReset').addEventListener('click', function () {
+      if ((state.importCorrections || 0) > 0 && !window.confirm('重新识别会丢弃当前 ' + state.importCorrections + ' 处人工修正，是否继续？')) return;
       state.draftQuestions = (ctx.detected.questions || []).map(function (q) { return Object.assign({}, q, { options: (q.options || []).slice(), issues: (q.issues || []).slice() }); });
       state.importCorrections = 0;
       renderImportRows();
+      refreshImportQuality();
       toast('已恢复自动识别结果');
     });
     $('impConfirm').addEventListener('click', confirmImport);
@@ -592,8 +624,9 @@
     if (!tbody) return;
     var qs = state.draftQuestions || [];
     tbody.innerHTML = qs.map(function (q, i) {
+      refreshQuestion(q);
       var issueLabels = (q.issues || []).map(function (x) { return x.message || x.code; }).join('；');
-      var status = q.manualEdited ? '人工修正' : (q.reviewStatus === 'needs-confirm' ? '待确认：' + issueLabels : '正常');
+      var status = (q.optionStatus === 'missing' || q.optionStatus === 'partial') ? '缺少选项：' + issueLabels : (q.reviewStatus === 'needs-confirm' ? '待确认：' + issueLabels : '完整');
       var opts = (q.options || []).map(function (o) { return o.key + '、' + (o.text || ''); }).join(' | ');
       return '<tr data-i="' + i + '">' +
         '<td class="num">' + (i + 1) + '</td>' +
@@ -604,7 +637,7 @@
         '<td><input type="text" data-f="module" value="' + escapeAttr(q.module || '') + '"></td>' +
         '<td><input class="small" type="number" data-f="page" value="' + (q.page || 1) + '"></td>' +
         '<td><input class="small" type="number" step="0.1" data-f="yRatioPct" value="' + ((q.yRatio == null ? 0.1 : q.yRatio) * 100).toFixed(1) + '"></td>' +
-        '<td><input type="text" data-f="options" value="' + escapeAttr(opts) + '" placeholder="A、... | B、..."></td>' +
+        '<td><textarea data-f="options" rows="2" title="' + escapeAttr(opts) + '" placeholder="A、... | B、..." style="min-width:230px;min-height:44px">' + escapeHtml(opts) + '</textarea></td>' +
         '<td><div class="preview">' + escapeHtml(status) + '</div></td>' +
         '<td><div class="preview">' + escapeHtml(q.preview || '') + '</div></td>' +
         '<td><button class="row-del" data-del="1" type="button">删除</button></td></tr>';
@@ -630,8 +663,10 @@
       q.optionStatus = q.options.length >= 4 ? 'manual' : (q.options.length ? 'partial' : 'missing');
     }
     q.manualEdited = true;
-    q.reviewStatus = 'manual';
+    refreshQuestion(q);
     state.importCorrections = (state.importCorrections || 0) + 1;
+    var statusCell = tr.children[7];
+    if (statusCell) statusCell.innerHTML = '<div class="preview">' + (q.reviewStatus === 'needs-confirm' ? '待确认（已编辑）' : '完整（已编辑）') + '</div>';
     refreshImportQuality();
   }
 
@@ -651,6 +686,10 @@
     if (ctx.duplicates && ctx.duplicates.exact && ctx.duplicates.exact.length) {
       if (!$('impDupAck') || !$('impDupAck').checked) { toast('检测到相同 PDF 文件；请先勾选“已确认重复导入”'); return; }
     }
+    if (state.importSaving) return;
+    (state.draftQuestions || []).forEach(refreshQuestion);
+    var unresolved = (state.draftQuestions || []).filter(function (q) { return q.reviewStatus === 'needs-confirm'; }).length;
+    if (unresolved && (!$('impIssueAck') || !$('impIssueAck').checked || state.importAckSignature !== importReviewSignature())) { toast('还有 ' + unresolved + ' 道待确认题目；请先勾选“我已逐题核对”'); return; }
     var qs = (state.draftQuestions || []).map(function (q) {
       return {
         n: parseInt(q.n, 10), type: q.type || 'single', module: (q.module || '未分类').trim() || '未分类',
@@ -658,7 +697,7 @@
         yRatio: clamp(q.yRatio == null ? 0.1 : q.yRatio, 0, 1), xRatio: q.xRatio == null ? 0.1 : q.xRatio,
         preview: q.preview || '', options: (q.options || []).slice(),
         optionStatus: q.optionStatus || 'n/a', issues: (q.issues || []).slice(),
-        reviewStatus: q.manualEdited ? 'manual' : (q.reviewStatus || 'ok'), manualEdited: !!q.manualEdited
+        reviewStatus: q.reviewStatus || 'ok', manualEdited: !!q.manualEdited
       };
     }).filter(function (q) { return q.n > 0; });
     qs.sort(function (a, b) { return a.n - b.n; });
@@ -676,9 +715,9 @@
     });
     exam.importReport = buildImportReport(ctx, qs, state.importCorrections || 0);
     var blob = new Blob([ctx.buf], { type: 'application/pdf' });
+    state.importSaving = true;
     try {
-      await ExamStore.putExamPdf(exam.id, blob);
-      await ExamStore.putExam(exam);
+      await ExamStore.putExamBundle(exam, blob);
       state.pendingImport = null;
       state.draftQuestions = null;
       closeModal();
@@ -687,7 +726,7 @@
     } catch (err) {
       console.error(err);
       toast('保存失败：' + err.message);
-    }
+    } finally { state.importSaving = false; }
   }
 
   function buildModules(qs) {

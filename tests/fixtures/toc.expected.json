@@ -1,0 +1,44 @@
+[
+  {
+    "title": "第一章 基础知识",
+    "level": 1,
+    "parent": null,
+    "printedPage": "1",
+    "pdfPage": 1
+  },
+  {
+    "title": "第一节 数量关系",
+    "level": 2,
+    "parent": 0,
+    "printedPage": "3",
+    "pdfPage": 1
+  },
+  {
+    "title": "第二节 资料分析",
+    "level": 2,
+    "parent": 0,
+    "printedPage": "8",
+    "pdfPage": 1
+  },
+  {
+    "title": "第二章 综合练习",
+    "level": 1,
+    "parent": null,
+    "printedPage": "20",
+    "pdfPage": 2
+  },
+  {
+    "title": "第一节 阅读理解",
+    "level": 2,
+    "parent": 3,
+    "printedPage": "22",
+    "pdfPage": 2
+  },
+  {
+    "title": "第二节 错题复盘",
+    "level": 2,
+    "parent": 3,
+    "printedPage": "30",
+    "pdfPage": 2
+  }
+]
