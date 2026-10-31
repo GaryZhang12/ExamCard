@@ -131,6 +131,11 @@
       "exitCode": 0
     },
     {
+      "name": "plan-archive",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
       "name": "capacity",
       "status": "pass",
       "exitCode": 0

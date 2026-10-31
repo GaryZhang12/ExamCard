@@ -16,6 +16,7 @@ runs.push(['review-state',['tests/review-state-ui.cjs']]);
 runs.push(['answer-preview',['tests/answer-preview-ui.cjs']]);
 runs.push(['judge-ui',['tests/judge-ui.cjs']]);
 runs.push(['plan-ui',['tests/plan-ui-v2.cjs']]);
+runs.push(['plan-archive',['tests/plan-archive-ui.cjs']]);
 runs.push(['capacity',['tests/capacity-electron.cjs']]);
 const results=[];
 for(const [name,args] of runs){

@@ -3,7 +3,7 @@
 /* ExamCard V5 · 学习管理 UI：教材/课程/计划/记录/反馈 */
 (function (root) {
   'use strict';
-  var state = { open: false, tab: 'textbooks', textbooks: [], chapters: [], courses: [], tasks: [], studyLogs: [], engine: null, tags: [], exams: [], selectedTextbook: null, textbookSearch: '', feedbackDays: 30, planWeek: '' };
+  var state = { open: false, tab: 'textbooks', textbooks: [], chapters: [], courses: [], tasks: [], studyLogs: [], engine: null, tags: [], exams: [], selectedTextbook: null, textbookSearch: '', feedbackDays: 30, planWeek: '', planView: 'pending', completedOpen: false };
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function toast(msg) { var o = document.querySelector('.learn-toast'); if (o) o.remove(); var e = document.createElement('div'); e.className = 'learn-toast'; e.textContent = msg; document.body.appendChild(e); setTimeout(function () { e.remove(); }, 2800); }
@@ -167,28 +167,89 @@
     });
   }
 
+  function planTaskType(t) { return t.taskType ? (TASK_TYPE_LABEL[t.taskType] || t.taskType) : (TYPE[t.type] || t.type || '其他'); }
+  function planTimeKey(t) { return (t.time || '99:99') + '|' + String(t.title || ''); }
+  function planBucket(t, date) {
+    var d = t.date || '';
+    return d < date ? 0 : (d === date ? 1 : 2);
+  }
+  function planCompletedDay(t) {
+    if (t.completedAt) { var d = new Date(Number(t.completedAt) + 8 * 3600 * 1000); return d.toISOString().slice(0, 10); }
+    return t.date || '未知日期';
+  }
+  function sortActive(list, date) {
+    return list.slice().sort(function (a, b) {
+      var ba = planBucket(a, date), bb = planBucket(b, date);
+      if (ba !== bb) return ba - bb;
+      if ((a.date || '') !== (b.date || '')) return (a.date || '').localeCompare(b.date || '');
+      var p = { high: 0, normal: 1, low: 2 };
+      if ((p[a.priority] == null ? 1 : p[a.priority]) !== (p[b.priority] == null ? 1 : p[b.priority])) return (p[a.priority] == null ? 1 : p[a.priority]) - (p[b.priority] == null ? 1 : p[b.priority]);
+      return planTimeKey(a).localeCompare(planTimeKey(b));
+    });
+  }
+  function sortCompleted(list) {
+    return list.slice().sort(function (a, b) {
+      return (Number(b.completedAt) || 0) - (Number(a.completedAt) || 0) || String(b.date || '').localeCompare(String(a.date || '')) || planTimeKey(a).localeCompare(planTimeKey(b));
+    });
+  }
+  function taskRow(t, mode) {
+    var links = [t.courseId ? '课程' : '', t.chapterId ? '章节' : '', (t.tagIds || []).length ? '知识点' : '', t.examId ? '试卷' : ''].filter(Boolean).join(' / ');
+    var stageText = (t.stages || []).map(function (s) { return (STAGE_LABEL[s.type] || s.type) + ' ' + s.minutes + '分'; }).join(' → ');
+    var planText = t.planId ? ('计划：' + (t.planTitle || t.planId) + (t.subject ? ' · ' + t.subject : '') + (t.planMode ? ' · ' + (PLAN_MODE_LABEL[t.planMode] || t.planMode) : '') + (t.learningMode ? ' · ' + (MODE_LABEL[t.learningMode] || t.learningMode) : '')) : '';
+    if (t.module || t.knowledgePoint) planText += (planText ? ' · ' : '') + [t.module, t.knowledgePoint].filter(Boolean).join(' / ');
+    if (t.courseInfo && !t.courseId) links += (links ? ' / ' : '') + '课程待关联';
+    if (t.materialInfo && t.materialInfo.name && !t.textbookId) links += (links ? ' / ' : '') + '教材待关联';
+    var overdue = t.status !== 'completed' && t.date && t.date < today();
+    var typeLabel = planTaskType(t);
+    var actual = t.status === 'completed' ? ((t.actualMinutes != null ? t.actualMinutes + ' 分钟' : '—') + ' / ' + (t.actualQuestions != null ? t.actualQuestions + ' 题' : '—') + '<div class="learn-sub">' + (t.actualSource === 'software' ? '软件带入' : '用户确认') + '</div>') : '—';
+    var status = '<span class="learn-badge ' + (t.status === 'completed' ? 'ok' : overdue ? 'warn' : '') + '">' + (t.status === 'completed' ? '已完成' : overdue ? '逾期未完成' : esc(STATUS[t.status] || '待完成')) + '</span>';
+    var actions;
+    if (mode === 'completed') {
+      actions = ((t.stages || []).length ? ' <button class="learn-btn" data-stage-task="' + esc(t.id) + '">阶段记录</button>' : '') + ' <button class="learn-btn" data-undo-task="' + esc(t.id) + '">撤销完成</button> <button class="learn-btn" data-edit-task="' + esc(t.id) + '">编辑</button> <button class="learn-btn danger" data-del-task="' + esc(t.id) + '">删除</button>';
+    } else {
+      actions = '<button class="learn-btn" data-complete-task="' + esc(t.id) + '">完成</button>' + ((t.stages || []).length ? ' <button class="learn-btn" data-stage-task="' + esc(t.id) + '">阶段记录</button>' : '') + ' <button class="learn-btn" data-edit-task="' + esc(t.id) + '">编辑</button> <button class="learn-btn" data-postpone-task="' + esc(t.id) + '">顺延</button> <button class="learn-btn danger" data-del-task="' + esc(t.id) + '">删除</button>';
+    }
+    return '<tr><td>' + esc(t.date) + (t.time ? '<div class="learn-sub">' + esc(t.time) + (t.end ? '–' + esc(t.end) : '') + '</div>' : '') + (mode === 'completed' && t.completedAt ? '<div class="learn-sub">完成于 ' + esc(new Date(Number(t.completedAt)).toLocaleDateString()) + '</div>' : '') + '</td><td>' + esc(typeLabel) + '</td><td><b>' + esc(t.title) + '</b>' + (planText ? '<div class="learn-sub">' + esc(planText) + '</div>' : '') + (stageText ? '<div class="learn-sub">' + esc(stageText) + '</div>' : '') + '<div class="learn-sub">' + esc(links) + '</div></td><td>' + esc(t.priority === 'high' ? '高' : t.priority === 'low' ? '低' : '中') + '</td><td>' + esc(t.dueDate || '—') + '</td><td>' + (t.planMinutes != null ? t.planMinutes + ' 分钟' : '—') + ' / ' + (t.planQuestions != null ? t.planQuestions + ' 题' : '—') + '</td><td>' + actual + '</td><td>' + status + '</td><td>' + actions + '</td></tr>';
+  }
+  function taskTable(list, mode) {
+    return '<div class="learn-table-wrap"><table class="learn-table learn-task-table learn-task-table-' + mode + '"><thead><tr><th>日期</th><th>类型</th><th>任务</th><th>优先级</th><th>截止</th><th>计划</th><th>实际</th><th>状态</th><th>操作</th></tr></thead><tbody>' + list.map(function (t) { return taskRow(t, mode); }).join('') + '</tbody></table></div>';
+  }
+  function completedArchive(completed) {
+    if (!completed.length) return '';
+    var groups = {};
+    sortCompleted(completed).forEach(function (t) { var day = planCompletedDay(t); (groups[day] = groups[day] || []).push(t); });
+    var body = Object.keys(groups).sort().reverse().map(function (day) {
+      return '<div class="learn-completed-group"><h4>完成日期 · ' + esc(day) + ' <span class="learn-sub">' + groups[day].length + ' 项</span></h4>' + taskTable(sortCompleted(groups[day]), 'completed') + '</div>';
+    }).join('');
+    return '<details class="learn-completed-archive" ' + (state.completedOpen || state.planView === 'completed' ? 'open' : '') + '><summary>已完成任务（' + completed.length + '）· 点击展开历史，未删除任何记录</summary>' + body + '</details>';
+  }
   function renderPlans() {
     var filter = state.planWeek || '';
-    var tasks = state.tasks.filter(function (t) { return !filter || t.date >= filter && t.date <= addDays(filter, 6); }).sort(function (a, b) { return (a.date || '').localeCompare(b.date || '') || ({high:0,normal:1,low:2}[a.priority] == null ? 1 : {high:0,normal:1,low:2}[a.priority]) - ({high:0,normal:1,low:2}[b.priority] == null ? 1 : {high:0,normal:1,low:2}[b.priority]); });
-    var done = tasks.filter(function (t) { return t.status === 'completed'; }).length;
-    var plannedMinutes = tasks.reduce(function (n, t) { return n + (Number(t.planMinutes) || 0); }, 0);
-    var modes = [...new Set(tasks.map(function (t) { return t.planMode; }).filter(Boolean))];
-    var due = root.PlanScheduler ? PlanScheduler.dueReviews(state.tasks, today()) : { selected: [], deferred: [], totalMinutes: 0, maxMinutes: 25 };
+    var baseTasks = state.tasks.filter(function (t) { return !filter || t.date >= filter && t.date <= addDays(filter, 6); });
+    var active = baseTasks.filter(function (t) { return t.status !== 'completed' && t.status !== 'cancelled'; });
+    var completed = sortCompleted(baseTasks.filter(function (t) { return t.status === 'completed'; }));
+    var view = state.planView || 'pending';
+    var date = today();
+    var todayActive = active.filter(function (t) { return t.date === date; });
+    var pendingList = sortActive(active, date);
+    var viewTasks = view === 'pending' ? pendingList : view === 'today' ? todayActive : view === 'all' ? pendingList.concat(completed) : completed;
+    var done = completed.length;
+    var plannedMinutes = baseTasks.reduce(function (n, t) { return n + (Number(t.planMinutes) || 0); }, 0);
+    var modes = [...new Set(baseTasks.map(function (t) { return t.planMode; }).filter(Boolean))];
+    var due = root.PlanScheduler ? PlanScheduler.dueReviews(state.tasks, date) : { selected: [], deferred: [], totalMinutes: 0, maxMinutes: 25 };
     var advice = root.LearningAdvisor ? LearningAdvisor.recommend({ tasks: state.tasks, attempts: state.engine && state.engine.attempts || [] }) : { recommendations: [], sample: {} };
     var dueHtml = '<div class="learn-card"><h3>今日背诵 / 到期复测</h3>' + (due.selected.length ? '<div class="learn-note">到期 ' + due.selected.length + ' 项，建议先做 ' + due.totalMinutes + ' 分钟（上限 ' + due.maxMinutes + ' 分钟）' + (due.recallMinutes ? '，另留 ' + due.recallMinutes + ' 分钟闭卷验证' : '') + (due.deferred.length ? '；另 ' + due.deferred.length + ' 项顺延，避免无限叠加' : '') + '。</div><table class="learn-table"><thead><tr><th>日期</th><th>类型</th><th>任务</th><th>计划</th></tr></thead><tbody>' + due.selected.map(function (x) { return '<tr><td>' + esc(x.dueDate) + '</td><td>间隔复测</td><td>' + esc(x.title) + '</td><td>' + x.planMinutes + ' 分钟</td></tr>'; }).join('') + '</tbody></table>' : '<div class="learn-empty">今天没有到期复测；完成背诵任务后自动生成 D+1/D+3/D+7 复测。</div>') + '</div>';
     var adviceHtml = '<div class="learn-card"><h3>系统建议 <span class="learn-sub">仅建议，不自动改计划</span></h3>' + (advice.recommendations.length ? advice.recommendations.map(function (r, ri) { return '<div class="issue-line ' + (r.confidence === 'low' ? 'warn' : 'ok') + '"><b>' + esc(r.title) + '</b>：' + esc(r.reason) + '<span class="learn-sub"> 样本 ' + (r.evidence && r.evidence.questions != null ? r.evidence.questions : '—') + ' 题 · 置信度 ' + esc(r.confidence) + '</span><div class="learn-actions-row"><button class="learn-btn" data-rec-accept="' + ri + '">采用建议</button><button class="learn-btn" data-rec-dismiss="' + ri + '">忽略</button></div></div>'; }).join('') : '<div class="learn-empty">有效样本不足（至少 ' + (root.LearningAdvisor ? LearningAdvisor.MIN_SAMPLE : 5) + ' 题），暂不生成掌握结论。</div>') + '<div class="learn-note">建议依据含样本量、来源、限时和重复错误；未确认/未批改数据不参与。</div></div>';
-    var html = '<div class="learn-grid"><div class="learn-stat"><div class="k">当前任务</div><div class="v">' + tasks.length + '</div></div><div class="learn-stat"><div class="k">已完成</div><div class="v">' + done + '</div></div><div class="learn-stat"><div class="k">完成率</div><div class="v">' + (tasks.length ? Math.round(done / tasks.length * 1000) / 10 : 0) + '%</div></div><div class="learn-stat"><div class="k">计划分钟</div><div class="v">' + plannedMinutes + '</div><div class="learn-sub">' + (modes.length ? modes.map(function (m) { return PLAN_MODE_LABEL[m] || m; }).join('、') : '未指定模式') + '</div></div></div>' + dueHtml + adviceHtml +
-      '<div class="learn-card"><div class="learn-filter"><button id="learnNewTask" class="learn-btn primary">＋ 新建任务</button><button id="learnImportPlan" class="learn-btn">导入学习计划</button><button id="learnPlanTemplate" class="learn-btn">下载模板</button><input id="learnPlanFile" type="file" accept=".json,.csv,application/json,text/csv" class="hidden"><label>周起始<input id="learnWeek" type="date" class="learn-input" value="' + esc(filter) + '"></label><button id="learnClearWeek" class="learn-btn">全部日期</button><span class="learn-note">计划完成量与实际完成量分列；创建任务不算完成。</span></div>' +
-      (tasks.length ? '<div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>日期</th><th>类型</th><th>任务</th><th>优先级</th><th>截止</th><th>计划</th><th>实际</th><th>状态</th><th>操作</th></tr></thead><tbody>' + tasks.map(function (t) {
-        var links = [t.courseId ? '课程' : '', t.chapterId ? '章节' : '', (t.tagIds || []).length ? '知识点' : '', t.examId ? '试卷' : ''].filter(Boolean).join(' / ');
-        var stageText = (t.stages || []).map(function (s) { return (STAGE_LABEL[s.type] || s.type) + ' ' + s.minutes + '分'; }).join(' → ');
-        var planText = t.planId ? ('计划：' + (t.planTitle || t.planId) + (t.subject ? ' · ' + t.subject : '') + (t.planMode ? ' · ' + (PLAN_MODE_LABEL[t.planMode] || t.planMode) : '') + (t.learningMode ? ' · ' + (MODE_LABEL[t.learningMode] || t.learningMode) : '')) : '';
-        if (t.module || t.knowledgePoint) planText += (planText ? ' · ' : '') + [t.module, t.knowledgePoint].filter(Boolean).join(' / ');
-        if (t.courseInfo && !t.courseId) links += (links ? ' / ' : '') + '课程待关联';
-        if (t.materialInfo && t.materialInfo.name && !t.textbookId) links += (links ? ' / ' : '') + '教材待关联';
-        var typeLabel = t.taskType ? (TASK_TYPE_LABEL[t.taskType] || t.taskType) : (TYPE[t.type] || t.type);
-        return '<tr><td>' + esc(t.date) + (t.time ? '<div class="learn-sub">' + esc(t.time) + (t.end ? '–' + esc(t.end) : '') + '</div>' : '') + '</td><td>' + esc(typeLabel) + '</td><td><b>' + esc(t.title) + '</b>' + (planText ? '<div class="learn-sub">' + esc(planText) + '</div>' : '') + (stageText ? '<div class="learn-sub">' + esc(stageText) + '</div>' : '') + '<div class="learn-sub">' + esc(links) + '</div></td><td>' + esc(t.priority === 'high' ? '高' : t.priority === 'low' ? '低' : '中') + '</td><td>' + esc(t.dueDate || '—') + '</td><td>' + (t.planMinutes != null ? t.planMinutes + ' 分钟' : '—') + ' / ' + (t.planQuestions != null ? t.planQuestions + ' 题' : '—') + '</td><td>' + (t.status === 'completed' ? ((t.actualMinutes != null ? t.actualMinutes + ' 分钟' : '—') + ' / ' + (t.actualQuestions != null ? t.actualQuestions + ' 题' : '—') + '<div class="learn-sub">' + (t.actualSource === 'software' ? '软件带入' : '用户确认') + '</div>') : '—') + '</td><td><span class="learn-badge ' + (t.status === 'completed' ? 'ok' : t.status === 'postponed' ? 'warn' : '') + '">' + esc(STATUS[t.status] || t.status) + '</span></td><td><button class="learn-btn" data-complete-task="' + esc(t.id) + '">' + (t.status === 'completed' ? '更新实际' : '完成') + '</button>' + ((t.stages || []).length ? ' <button class="learn-btn" data-stage-task="' + esc(t.id) + '">阶段记录</button>' : '') + ' <button class="learn-btn" data-edit-task="' + esc(t.id) + '">编辑</button> <button class="learn-btn" data-postpone-task="' + esc(t.id) + '">顺延</button> <button class="learn-btn danger" data-del-task="' + esc(t.id) + '">删除</button></td></tr>';
-      }).join('') + '</tbody></table></div>' : '<div class="learn-empty">暂无计划任务。可创建每日/每周听课、刷题、错题复测、模考任务。</div>') + '</div>';
+    var viewTabs = '<div class="learn-view-tabs">' + [['pending', '待完成', pendingList.length], ['today', '今天', todayActive.length], ['all', '全部', baseTasks.length], ['completed', '已完成', done]].map(function (x) { return '<button class="learn-btn ' + (view === x[0] ? 'primary' : '') + '" data-plan-view="' + x[0] + '">' + x[1] + '（' + x[2] + '）</button>'; }).join('') + '</div>';
+    var mainHtml = '';
+    if (view === 'completed') {
+      mainHtml = '<div class="learn-card"><h3>已完成任务 · 按完成日期归档</h3>' + (completed.length ? completedArchive(completed) : '<div class="learn-empty">还没有已完成任务。</div>') + '</div>';
+    } else if (view === 'all') {
+      mainHtml = '<div class="learn-card"><h3>全部任务</h3>' + (viewTasks.length ? taskTable(viewTasks, 'active') : '<div class="learn-empty">没有任务。</div>') + '</div>';
+    } else {
+      mainHtml = '<div class="learn-card"><h3>' + (view === 'pending' ? '待完成任务 · 逾期优先' : '今天任务') + '</h3>' + (viewTasks.length ? taskTable(viewTasks, 'active') : '<div class="learn-empty">' + (view === 'today' ? '今天没有待完成任务。' : '没有待完成任务。') + '</div>') + completedArchive(completed) + '</div>';
+    }
+    var html = '<div class="learn-grid"><div class="learn-stat"><div class="k">待完成</div><div class="v">' + active.length + '</div><div class="learn-sub">含逾期未完成</div></div><div class="learn-stat"><div class="k">已完成</div><div class="v">' + done + '</div></div><div class="learn-stat"><div class="k">完成率</div><div class="v">' + (baseTasks.length ? Math.round(done / baseTasks.length * 1000) / 10 : 0) + '%</div></div><div class="learn-stat"><div class="k">计划分钟</div><div class="v">' + plannedMinutes + '</div><div class="learn-sub">' + (modes.length ? modes.map(function (m) { return PLAN_MODE_LABEL[m] || m; }).join('、') : '未指定模式') + '</div></div></div>' + dueHtml + adviceHtml + '<div class="learn-card"><div class="learn-filter"><button id="learnNewTask" class="learn-btn primary">＋ 新建任务</button><button id="learnImportPlan" class="learn-btn">导入学习计划</button><button id="learnPlanTemplate" class="learn-btn">下载模板</button><input id="learnPlanFile" type="file" accept=".json,.csv,application/json,text/csv" class="hidden"><label>周起始<input id="learnWeek" type="date" class="learn-input" value="' + esc(filter) + '"></label><button id="learnClearWeek" class="learn-btn">全部日期</button><span class="learn-note">计划完成量与实际完成量分列；创建任务不算完成。</span></div>' + viewTabs + mainHtml + '</div>';
     $('learnBody').innerHTML = html;
     $('learnNewTask').addEventListener('click', function () { editTask(null); });
     $('learnImportPlan').addEventListener('click', function () { $('learnPlanFile').click(); });
@@ -196,11 +257,14 @@
     $('learnPlanTemplate').addEventListener('click', openTemplateDialog);
     $('learnWeek').addEventListener('change', function () { state.planWeek = this.value; renderPlans(); });
     $('learnClearWeek').addEventListener('click', function () { state.planWeek = ''; renderPlans(); });
+    $('learnBody').querySelectorAll('[data-plan-view]').forEach(function (b) { b.addEventListener('click', function () { state.planView = b.getAttribute('data-plan-view'); state.completedOpen = state.planView === 'completed'; renderPlans(); }); });
+    var archive = $('learnBody').querySelector('.learn-completed-archive'); if (archive) archive.addEventListener('toggle', function () { state.completedOpen = archive.open; });
     $('learnBody').querySelectorAll('[data-rec-dismiss]').forEach(function (b) { b.addEventListener('click', function () { var card = b.closest('.issue-line'); if (card) card.remove(); toast('已忽略该建议，不改动计划'); }); });
     $('learnBody').querySelectorAll('[data-rec-accept]').forEach(function (b) { b.addEventListener('click', async function () { try { var r = advice.recommendations[Number(b.getAttribute('data-rec-accept'))]; if (!r) return; var sg = r.suggested || {}; await LearningStore.saveTask({ id: null, title: r.title, type: TASK_TYPE_LEGACY[sg.taskType] || 'questions', taskType: sg.taskType || 'practice', planMode: (modes[0] || null), date: addDays(today(), 1), dueDate: addDays(today(), 1), priority: 'normal', planMinutes: sg.planMinutes || 30, planQuestions: null, status: 'pending', tagIds: [], questionIds: [], notes: '由系统建议人工采用；可编辑或删除' }); await load(); toast('建议已采纳为待办任务；未覆盖原计划'); } catch (e) { toast('采纳失败：' + (e.message || e)); } }); });
     $('learnBody').querySelectorAll('[data-stage-task]').forEach(function (b) { b.addEventListener('click', function () { openStageRecord(state.tasks.filter(function (t) { return t.id === b.getAttribute('data-stage-task'); })[0]); }); });
     $('learnBody').querySelectorAll('[data-edit-task]').forEach(function (b) { b.addEventListener('click', function () { editTask(state.tasks.filter(function (t) { return t.id === b.getAttribute('data-edit-task'); })[0]); }); });
     $('learnBody').querySelectorAll('[data-complete-task]').forEach(function (b) { b.addEventListener('click', function () { completeTask(state.tasks.filter(function (t) { return t.id === b.getAttribute('data-complete-task'); })[0]); }); });
+    $('learnBody').querySelectorAll('[data-undo-task]').forEach(function (b) { b.addEventListener('click', function () { undoTask(state.tasks.filter(function (t) { return t.id === b.getAttribute('data-undo-task'); })[0]); }); });
     $('learnBody').querySelectorAll('[data-postpone-task]').forEach(function (b) { b.addEventListener('click', async function () { var t = state.tasks.filter(function (x) { return x.id === b.getAttribute('data-postpone-task'); })[0]; if (!t) return; var baseDate = t.date || today(); var baseDue = t.dueDate || baseDate; t.date = addDays(baseDate, 1); t.dueDate = addDays(baseDue, 1); t.status = 'postponed'; t.postponedCount = (t.postponedCount || 0) + 1; await LearningStore.saveTask(t); await load(); toast('已顺延一天，计划/实际均保留'); }); });
     $('learnBody').querySelectorAll('[data-del-task]').forEach(function (b) { b.addEventListener('click', function () { confirmBox('删除任务', '删除任务不影响真实练习/成绩。确定？', async function () { await LearningStore.deleteTask(b.getAttribute('data-del-task')); await load(); }); }); });
   }
@@ -347,6 +411,20 @@
       created.push(r.id);
     }
     return created;
+  }
+
+  function undoTask(t) {
+    if (!t) return;
+    confirmBox('撤销完成', '将任务恢复为待完成；不会删除实际时长、阶段记录、答案或成绩。继续？', async function () {
+      var oldCompletedAt = t.completedAt || null;
+      t.status = 'pending';
+      t.completedAt = null;
+      t.undoHistory = (t.undoHistory || []).concat([{ completedAt: oldCompletedAt, undoneAt: Date.now(), previousStatus: 'completed' }]);
+      t.updatedAt = Date.now();
+      await LearningStore.saveTask(t);
+      await load();
+      toast('已撤销完成，证据保留并重新进入待办');
+    });
   }
 
   function completeTask(t) {
