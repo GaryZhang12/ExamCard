@@ -87,7 +87,7 @@
       textbooks: data.textbooks || [], chapters: data.chapters || [], textbookAvgProgress: avgProgress,
       daily: dailyRows, weekly: weeklyRows,
       planVsActual: tasks.map(function (t) {
-        return { id: t.id, title: t.title, type: t.type, date: t.date, status: t.status, planMinutes: t.planMinutes, actualMinutes: t.actualMinutes, planQuestions: t.planQuestions, actualQuestions: t.actualQuestions, actualSource: t.actualSource || null };
+        return { id: t.id, title: t.title, type: t.type, taskType: t.taskType || null, planMode: t.planMode || null, module: t.module || null, knowledgePoint: t.knowledgePoint || null, date: t.date, status: t.status, planMinutes: t.planMinutes, actualMinutes: t.actualMinutes, planQuestions: t.planQuestions, actualQuestions: t.actualQuestions, actualSource: t.actualSource || null };
       }),
       dataNotes: [
         '计划完成量来自用户任务标记；未完成/已完成状态不自动推断。',

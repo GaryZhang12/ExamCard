@@ -1,0 +1,114 @@
+{
+  "schema_version": "examcard.daily-plan/v1",
+  "plan_id": "template-speed_training-20261031",
+  "date": "2026-10-31",
+  "timezone": "Asia/Shanghai",
+  "exam_type": "gd",
+  "status": "planned",
+  "plan_mode": "speed_training",
+  "plan_submode": null,
+  "title": "混合提速日示例",
+  "goal": "该模板只包含计划结构示例，不代表真实完成或成绩。",
+  "mem_suspended": false,
+  "schedule": [],
+  "tasks": [
+    {
+      "task_id": "speed-timed",
+      "task_type": "timed_drill",
+      "subject": "行测",
+      "topic": "多模块混合限时训练",
+      "priority": "normal",
+      "start": "19:30",
+      "end": "20:20",
+      "planned_minutes": 50,
+      "learning_mode": "practice",
+      "course": null,
+      "material": null,
+      "stages": [
+        {
+          "type": "practice",
+          "minutes": 50,
+          "count": 30
+        }
+      ],
+      "acceptance": null,
+      "module": "混合模块",
+      "question_count": 30,
+      "time_limit_seconds": 3000,
+      "target_accuracy": 0.8
+    },
+    {
+      "task_id": "speed-essay",
+      "task_type": "essay",
+      "subject": "申论",
+      "topic": "申论小题限时写作",
+      "priority": "normal",
+      "start": "20:20",
+      "end": "21:00",
+      "planned_minutes": 40,
+      "learning_mode": "practice",
+      "course": null,
+      "material": null,
+      "stages": [
+        {
+          "type": "practice",
+          "minutes": 40,
+          "count": 1
+        }
+      ],
+      "acceptance": null,
+      "module": "申论表达"
+    },
+    {
+      "task_id": "speed-review",
+      "task_type": "review",
+      "subject": "行测",
+      "topic": "超时题与错题复盘",
+      "priority": "normal",
+      "start": "21:30",
+      "end": "21:50",
+      "planned_minutes": 20,
+      "learning_mode": "review",
+      "course": null,
+      "material": null,
+      "stages": [
+        {
+          "type": "review",
+          "minutes": 20
+        }
+      ],
+      "acceptance": null,
+      "module": "混合模块"
+    },
+    {
+      "task_id": "speed-memory",
+      "task_type": "memorization",
+      "subject": "申论",
+      "topic": "申论表达背诵",
+      "priority": "normal",
+      "start": "21:50",
+      "end": "22:10",
+      "planned_minutes": 15,
+      "learning_mode": "textbook",
+      "course": null,
+      "material": null,
+      "stages": [
+        {
+          "type": "reading",
+          "minutes": 15
+        }
+      ],
+      "acceptance": null,
+      "module": "申论表达",
+      "memorization": {
+        "topic": "申论表达素材",
+        "source": "自建素材",
+        "keywords": [
+          "规范表达",
+          "对策"
+        ],
+        "recall_accuracy": null
+      }
+    }
+  ]
+}

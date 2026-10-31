@@ -126,6 +126,11 @@
       "exitCode": 0
     },
     {
+      "name": "plan-ui",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
       "name": "capacity",
       "status": "pass",
       "exitCode": 0

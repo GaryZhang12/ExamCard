@@ -1,0 +1,21 @@
+{
+  "status": "pass",
+  "taskTypes": 10,
+  "planModes": 5,
+  "generatedReviews": [
+    {
+      "dueDate": "2026-10-31",
+      "taskType": "retest"
+    },
+    {
+      "dueDate": "2026-11-02",
+      "taskType": "retest"
+    },
+    {
+      "dueDate": "2026-11-06",
+      "taskType": "retest"
+    }
+  ],
+  "recommendationAccepted": true,
+  "noOverwrite": true
+}

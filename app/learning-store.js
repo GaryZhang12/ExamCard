@@ -108,7 +108,7 @@
       var e = expected.filter(function (x) { return x.planTaskId === r.planTaskId; })[0];
       if (!e || seenTasks[r.planTaskId]) return true;
       seenTasks[r.planTaskId] = true;
-      return ['planId', 'planHash', 'taskHash', 'title', 'planMinutes', 'learningMode', 'stages'].some(function (k) { return JSON.stringify(e[k]) !== JSON.stringify(r[k]); });
+      return ['planId', 'planHash', 'taskHash', 'title', 'planMinutes', 'learningMode', 'stages', 'taskType', 'planMode', 'planSubmode', 'module', 'knowledgePoint', 'targetAccuracy', 'timeLimitSeconds', 'memorization'].some(function (k) { return JSON.stringify(e[k]) !== JSON.stringify(r[k]); });
     })) throw new Error('计划预览与任务不一致，请重新导入');
     return withDb(async function (db) {
       var tx = db.transaction(['learningTasks', 'meta'], 'readwrite');

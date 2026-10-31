@@ -1,0 +1,62 @@
+{
+  "schema_version": "examcard.daily-plan/v1",
+  "plan_id": "template-mock_exam-20261031",
+  "date": "2026-10-31",
+  "timezone": "Asia/Shanghai",
+  "exam_type": "gd",
+  "status": "planned",
+  "plan_mode": "mock_exam",
+  "plan_submode": null,
+  "title": "整卷模考日示例",
+  "goal": "该模板只包含计划结构示例，不代表真实完成或成绩。",
+  "mem_suspended": false,
+  "schedule": [],
+  "tasks": [
+    {
+      "task_id": "mock-xingce",
+      "task_type": "mock_exam",
+      "subject": "行测",
+      "topic": "行测整卷模考",
+      "priority": "normal",
+      "start": "09:00",
+      "end": "10:30",
+      "planned_minutes": 90,
+      "learning_mode": "mock",
+      "course": null,
+      "material": null,
+      "stages": [
+        {
+          "type": "mock",
+          "minutes": 90,
+          "count": 100
+        }
+      ],
+      "acceptance": null,
+      "module": null,
+      "question_count": 100
+    },
+    {
+      "task_id": "mock-shenlun",
+      "task_type": "mock_exam",
+      "subject": "申论",
+      "topic": "申论整卷模考",
+      "priority": "normal",
+      "start": "14:00",
+      "end": "16:30",
+      "planned_minutes": 150,
+      "learning_mode": "mock",
+      "course": null,
+      "material": null,
+      "stages": [
+        {
+          "type": "mock",
+          "minutes": 150,
+          "count": 4
+        }
+      ],
+      "acceptance": null,
+      "module": "申论",
+      "question_count": 4
+    }
+  ]
+}

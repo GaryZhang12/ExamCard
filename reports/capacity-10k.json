@@ -2,7 +2,7 @@
   "questions": 10000,
   "requested": 100,
   "selected": 100,
-  "elapsedMs": 98,
+  "elapsedMs": 106,
   "materialGroups": 5000,
-  "memoryRss": 69091328
+  "memoryRss": 82173952
 }
