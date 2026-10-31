@@ -12,9 +12,12 @@
 
   /* ---------------- IndexedDB 基础 ---------------- */
 
-  function openRaw() {
+  async function openRaw() {
+    var known = await indexedDB.databases();
+    var current = known.find(function(d){ return d.name === DB_NAME; });
+    var targetVersion = current && current.version === 6 ? 6 : DB_VERSION;
     return new Promise(function (resolve, reject) {
-      var req = indexedDB.open(DB_NAME, DB_VERSION);
+      var req = indexedDB.open(DB_NAME, targetVersion);
       var blocked = false;
       req.onupgradeneeded = function () {
         var db = req.result;
@@ -378,7 +381,7 @@
     var meta = await get(db, 'meta', 'migration.v2');
     if (meta && meta.value && meta.value.status === 'complete') return;
     var startedAt = Date.now();
-    await putOne(db, 'meta', { key: 'migration.v2', value: { status: 'running', dbVersion: DB_VERSION, startedAt: startedAt } });
+    await putOne(db, 'meta', { key: 'migration.v2', value: { status: 'running', dbVersion: db.version, startedAt: startedAt } });
     try {
       await ensureProfiles(db);
       await migrateExams(db);
@@ -387,8 +390,8 @@
         key: 'migration.v2',
         value: {
           status: 'complete',
-          dbVersion: DB_VERSION,
-          schemaVersion: SCHEMA_VERSION,
+          dbVersion: db.version,
+          schemaVersion: db.version,
           modelVersion: MODEL_VERSION,
           startedAt: startedAt,
           completedAt: Date.now()
@@ -399,7 +402,7 @@
         key: 'migration.v2',
         value: {
           status: 'failed',
-          dbVersion: DB_VERSION,
+          dbVersion: db.version,
           startedAt: startedAt,
           failedAt: Date.now(),
           error: (err && err.message) ? err.message : String(err)
@@ -448,7 +451,7 @@
       return {
         dbName: DB_NAME,
         dbVersion: db.version,
-        schemaVersion: SCHEMA_VERSION,
+        schemaVersion: db.version,
         modelVersion: MODEL_VERSION,
         stores: Array.prototype.slice.call(db.objectStoreNames),
         migration: meta ? meta.value : null
@@ -669,6 +672,8 @@
 
     /* 全量清空用户学习数据：保留考试类型配置与升级元数据，其他 store 在同一事务中清空。 */
     async clearUserData() {
+      if (root.BankStore) root.BankStore.stopForClear();
+      if (root.BankPractice) root.BankPractice.stopForClear();
       try {
         if (root.__GD_V2__ && root.__GD_V2__.beforeDataClear) await root.__GD_V2__.beforeDataClear();
         if (root.TextbookImport && root.TextbookImport.stopForClear) await root.TextbookImport.stopForClear();

@@ -1,0 +1,198 @@
+{
+  "status": "pass",
+  "environment": {
+    "version": "1.1.0",
+    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-lpWh6E",
+    "electron": "43.3.0",
+    "sandbox": false,
+    "displays": [
+      {
+        "size": {
+          "width": 1080,
+          "height": 1920
+        },
+        "scaleFactor": 1
+      },
+      {
+        "size": {
+          "width": 2560,
+          "height": 1440
+        },
+        "scaleFactor": 1
+      }
+    ]
+  },
+  "cases": [
+    {
+      "phase": "empty",
+      "route": "bank-independent",
+      "width": 960,
+      "height": 720,
+      "status": "pass"
+    },
+    {
+      "phase": "empty",
+      "route": "bank-practice",
+      "width": 960,
+      "height": 720,
+      "status": "pass"
+    },
+    {
+      "phase": "empty",
+      "route": "bank-diagnostics",
+      "width": 960,
+      "height": 720,
+      "status": "pass"
+    },
+    {
+      "phase": "empty",
+      "route": "bank-independent",
+      "width": 1366,
+      "height": 768,
+      "status": "pass"
+    },
+    {
+      "phase": "empty",
+      "route": "bank-practice",
+      "width": 1366,
+      "height": 768,
+      "status": "pass"
+    },
+    {
+      "phase": "empty",
+      "route": "bank-diagnostics",
+      "width": 1366,
+      "height": 768,
+      "status": "pass"
+    },
+    {
+      "phase": "empty",
+      "route": "bank-independent",
+      "width": 1920,
+      "height": 1080,
+      "status": "pass"
+    },
+    {
+      "phase": "empty",
+      "route": "bank-practice",
+      "width": 1920,
+      "height": 1080,
+      "status": "pass"
+    },
+    {
+      "phase": "empty",
+      "route": "bank-diagnostics",
+      "width": 1920,
+      "height": 1080,
+      "status": "pass"
+    },
+    {
+      "phase": "empty",
+      "route": "bank-independent",
+      "width": 2560,
+      "height": 1440,
+      "status": "pass"
+    },
+    {
+      "phase": "empty",
+      "route": "bank-practice",
+      "width": 2560,
+      "height": 1440,
+      "status": "pass"
+    },
+    {
+      "phase": "empty",
+      "route": "bank-diagnostics",
+      "width": 2560,
+      "height": 1440,
+      "status": "pass"
+    },
+    {
+      "phase": "long",
+      "route": "bank-independent",
+      "width": 960,
+      "height": 720,
+      "status": "pass"
+    },
+    {
+      "phase": "long",
+      "route": "bank-practice",
+      "width": 960,
+      "height": 720,
+      "status": "pass"
+    },
+    {
+      "phase": "long",
+      "route": "bank-diagnostics",
+      "width": 960,
+      "height": 720,
+      "status": "pass"
+    },
+    {
+      "phase": "long",
+      "route": "bank-independent",
+      "width": 1366,
+      "height": 768,
+      "status": "pass"
+    },
+    {
+      "phase": "long",
+      "route": "bank-practice",
+      "width": 1366,
+      "height": 768,
+      "status": "pass"
+    },
+    {
+      "phase": "long",
+      "route": "bank-diagnostics",
+      "width": 1366,
+      "height": 768,
+      "status": "pass"
+    },
+    {
+      "phase": "long",
+      "route": "bank-independent",
+      "width": 1920,
+      "height": 1080,
+      "status": "pass"
+    },
+    {
+      "phase": "long",
+      "route": "bank-practice",
+      "width": 1920,
+      "height": 1080,
+      "status": "pass"
+    },
+    {
+      "phase": "long",
+      "route": "bank-diagnostics",
+      "width": 1920,
+      "height": 1080,
+      "status": "pass"
+    },
+    {
+      "phase": "long",
+      "route": "bank-independent",
+      "width": 2560,
+      "height": 1440,
+      "status": "pass"
+    },
+    {
+      "phase": "long",
+      "route": "bank-practice",
+      "width": 2560,
+      "height": 1440,
+      "status": "pass"
+    },
+    {
+      "phase": "long",
+      "route": "bank-diagnostics",
+      "width": 2560,
+      "height": 1440,
+      "status": "pass"
+    }
+  ],
+  "pageErrors": [],
+  "visualBaseline": "skip - no approved baseline",
+  "realDpi125150": "not tested"
+}

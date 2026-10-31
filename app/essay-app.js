@@ -105,7 +105,7 @@
       '</main>' +
       '<main id="essaySessionView" class="essay-session hidden">' +
         '<section class="essay-pdf-pane">' +
-          '<div class="essay-pdf-toolbar"><button id="essayPrevPage" class="essay-btn">上一页</button><span id="essayPageInfo" class="page-info">1 / 1</span><button id="essayNextPage" class="essay-btn">下一页</button><button id="essayZoomOut" class="essay-btn">−</button><span id="essayZoom" class="page-info">100%</span><button id="essayZoomIn" class="essay-btn">＋</button><span id="essayPdfHint" class="page-info">申论材料</span></div>' +
+          '<div class="essay-pdf-toolbar"><button id="essayPrevPage" class="essay-btn">上一页</button><span id="essayPageInfo" class="page-info">1 / 1</span><button id="essayNextPage" class="essay-btn">下一页</button><input id="essayPageInput" class="page-input" style="width:64px" type="number" min="1" placeholder="页码" aria-label="申论材料页码"><button id="essayJumpPage" class="essay-btn">跳转</button><button id="essayZoomOut" class="essay-btn">−</button><span id="essayZoom" class="page-info">100%</span><button id="essayZoomIn" class="essay-btn">＋</button><span id="essayPdfHint" class="page-info">申论材料</span></div>' +
           '<div id="essayCanvasWrap" class="essay-pdf-canvas"><canvas id="essayCanvas"></canvas></div>' +
         '</section>' +
         '<section class="essay-answer-pane">' +
@@ -139,6 +139,8 @@
     $('essayPdfFileInput').addEventListener('change', onPdfSelected);
     $('essayPrevPage').addEventListener('click', function () { changePage(-1); });
     $('essayNextPage').addEventListener('click', function () { changePage(1); });
+    $('essayJumpPage').addEventListener('click', function () { jumpPage($('essayPageInput').value); });
+    $('essayPageInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); jumpPage(this.value); } });
     $('essayZoomOut').addEventListener('click', function () { setZoom(-.15); });
     $('essayZoomIn').addEventListener('click', function () { setZoom(.15); });
     $('essayPauseBtn').addEventListener('click', togglePause);
@@ -612,22 +614,41 @@
 
   async function renderPdf() {
     if (!state.doc || !state.open) return;
+    var seq = (state.pdfRenderSeq || 0) + 1; state.pdfRenderSeq = seq;
+    if (state.pdfRenderTask) { try { state.pdfRenderTask.cancel(); } catch (e) {} state.pdfRenderTask = null; }
     try {
       var page = await state.doc.getPage(state.page);
+      if (seq !== state.pdfRenderSeq) return;
       var viewport = page.getViewport({ scale: 1.35 * state.zoom });
       var canvas = $('essayCanvas');
       var ctx = canvas.getContext('2d');
       canvas.width = Math.floor(viewport.width);
       canvas.height = Math.floor(viewport.height);
-      await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+      var task = page.render({ canvasContext: ctx, viewport: viewport });
+      state.pdfRenderTask = task;
+      await task.promise;
+      if (seq !== state.pdfRenderSeq) return;
+      state.pdfRenderTask = null;
       $('essayPageInfo').textContent = state.page + ' / ' + state.doc.numPages;
+      if ($('essayPageInput')) { $('essayPageInput').max = state.doc.numPages; $('essayPageInput').value = state.page; }
+      if ($('essayPrevPage')) $('essayPrevPage').disabled = state.page <= 1;
+      if ($('essayNextPage')) $('essayNextPage').disabled = state.page >= state.doc.numPages;
       $('essayZoom').textContent = Math.round(state.zoom * 100) + '%';
-    } catch (e) { console.error(e); }
+    } catch (e) { if (!(e && e.name === 'RenderingCancelledException')) console.error(e); }
   }
 
   function changePage(delta) {
     if (!state.doc) return;
     state.page = Math.max(1, Math.min(state.doc.numPages, state.page + delta));
+    renderPdf();
+  }
+
+  function jumpPage(value) {
+    if (!state.doc) return;
+    var n = parseInt(value, 10);
+    if (!isFinite(n)) return;
+    state.page = Math.max(1, Math.min(state.doc.numPages, n));
+    if ($('essayPageInput')) $('essayPageInput').value = state.page;
     renderPdf();
   }
 

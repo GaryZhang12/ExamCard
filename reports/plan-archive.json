@@ -1,0 +1,23 @@
+{
+  "status": "pass",
+  "defaultActive": [
+    "逾期任务",
+    "课程已听练习未做",
+    "今日任务",
+    "未来任务"
+  ],
+  "completedCount": 2,
+  "ordering": [
+    "逾期",
+    "今日",
+    "未来"
+  ],
+  "undo": {
+    "status": "pending",
+    "actualMinutes": 18,
+    "undoHistory": 1
+  },
+  "partialComposite": "pending",
+  "persisted": true,
+  "notes": "front-end filtering only; study logs do not complete tasks"
+}

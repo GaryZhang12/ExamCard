@@ -1,0 +1,25 @@
+{
+  "status": "pass",
+  "objective": {
+    "pages": [
+      1,
+      2,
+      3,
+      2,
+      4
+    ],
+    "canvasHashes": [
+      "3b3e991989d4442b",
+      "ac127a98e7cd4421",
+      "4d7dc6c79225ed0b",
+      "5f3aa71fc860d486"
+    ],
+    "answerPreserved": true
+  },
+  "essay": {
+    "page": 3,
+    "total": 4,
+    "answerPreserved": true
+  },
+  "wheel": true
+}

@@ -3,13 +3,18 @@
 /* ExamCard V5 · 学习管理 UI：教材/课程/计划/记录/反馈 */
 (function (root) {
   'use strict';
-  var state = { open: false, tab: 'textbooks', textbooks: [], chapters: [], courses: [], tasks: [], studyLogs: [], engine: null, tags: [], exams: [], selectedTextbook: null, textbookSearch: '', feedbackDays: 30, planWeek: '' };
+  var state = { open: false, tab: 'textbooks', textbooks: [], chapters: [], courses: [], tasks: [], studyLogs: [], engine: null, tags: [], exams: [], selectedTextbook: null, textbookSearch: '', feedbackDays: 30, planWeek: '', planView: 'pending', completedOpen: false };
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function toast(msg) { var o = document.querySelector('.learn-toast'); if (o) o.remove(); var e = document.createElement('div'); e.className = 'learn-toast'; e.textContent = msg; document.body.appendChild(e); setTimeout(function () { e.remove(); }, 2800); }
   function today() { return new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10); }
   function download(name, text, mime) { var b = new Blob([text], { type: mime || 'application/json;charset=utf-8' }); var a = document.createElement('a'); a.download = name; a.href = URL.createObjectURL(b); document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 3000); }
-  var TYPE = { course: '听课', textbook: '教材阅读', questions: '配套刷题', retest: '错题复测', mock: '模考', other: '其他' };
+  var TYPE = { course: '听课', textbook: '教材阅读', questions: '配套刷题', retest: '错题复测', mock: '模考', other: '其他', memory: '背诵记忆', essay: '申论写作', mock_review: '模考分析' };
+  var TASK_TYPES = ['video','examples','practice','review','memorization','retest','timed_drill','essay','mock_exam','mock_review'];
+  var TASK_TYPE_LABEL = { video:'课程学习', examples:'教材例题', practice:'专项练习', review:'错题复盘', memorization:'背诵记忆', retest:'间隔复测', timed_drill:'限时训练', essay:'申论写作', mock_exam:'整卷模考', mock_review:'模考分析' };
+  var PLAN_MODES = ['foundation','reinforcement','speed_training','mock_exam','review_adjustment'];
+  var PLAN_MODE_LABEL = { foundation:'新知识学习日', reinforcement:'专项强化日', speed_training:'混合提速日', mock_exam:'整卷模考日', review_adjustment:'模考复盘／考前调整日' };
+  var TASK_TYPE_LEGACY = { video:'course', examples:'textbook', practice:'questions', review:'retest', memorization:'memory', retest:'retest', timed_drill:'questions', essay:'essay', mock_exam:'mock', mock_review:'mock_review' };
   var STATUS = { pending: '待完成', completed: '已完成', postponed: '已顺延' };
   var STAGE_LABEL = { video: '听课', examples: '教材例题', practice: '限时练习', review: '错题复盘', mock: '模考', reading: '阅读', other: '其他' };
   var MODE_LABEL = { course_first: '听课优先', mock: '模考', practice: '刷题', review: '错题复盘', textbook: '教材阅读', other: '其他' };
@@ -162,20 +167,90 @@
     });
   }
 
+  function planTaskType(t) { return t.taskType ? (TASK_TYPE_LABEL[t.taskType] || t.taskType) : (TYPE[t.type] || t.type || '其他'); }
+  function planTimeKey(t) { return (t.time || '99:99') + '|' + String(t.title || ''); }
+  function planBucket(t, date) {
+    var d = t.date || '';
+    return d < date ? 0 : (d === date ? 1 : 2);
+  }
+  function planCompletedDay(t) {
+    if (t.completedAt) { var d = new Date(Number(t.completedAt) + 8 * 3600 * 1000); return d.toISOString().slice(0, 10); }
+    return t.date || '未知日期';
+  }
+  function sortActive(list, date) {
+    return list.slice().sort(function (a, b) {
+      var ba = planBucket(a, date), bb = planBucket(b, date);
+      if (ba !== bb) return ba - bb;
+      if ((a.date || '') !== (b.date || '')) return (a.date || '').localeCompare(b.date || '');
+      var p = { high: 0, normal: 1, low: 2 };
+      if ((p[a.priority] == null ? 1 : p[a.priority]) !== (p[b.priority] == null ? 1 : p[b.priority])) return (p[a.priority] == null ? 1 : p[a.priority]) - (p[b.priority] == null ? 1 : p[b.priority]);
+      return planTimeKey(a).localeCompare(planTimeKey(b));
+    });
+  }
+  function sortCompleted(list) {
+    return list.slice().sort(function (a, b) {
+      return (Number(b.completedAt) || 0) - (Number(a.completedAt) || 0) || String(b.date || '').localeCompare(String(a.date || '')) || planTimeKey(a).localeCompare(planTimeKey(b));
+    });
+  }
+  function taskRow(t, mode) {
+    if (t.status === 'completed') mode = 'completed';
+    var links = [t.courseId ? '课程' : '', t.chapterId ? '章节' : '', (t.tagIds || []).length ? '知识点' : '', t.examId ? '试卷' : ''].filter(Boolean).join(' / ');
+    var stageText = (t.stages || []).map(function (s) { return (STAGE_LABEL[s.type] || s.type) + ' ' + s.minutes + '分'; }).join(' → ');
+    var planText = t.planId ? ('计划：' + (t.planTitle || t.planId) + (t.subject ? ' · ' + t.subject : '') + (t.planMode ? ' · ' + (PLAN_MODE_LABEL[t.planMode] || t.planMode) : '') + (t.learningMode ? ' · ' + (MODE_LABEL[t.learningMode] || t.learningMode) : '')) : '';
+    if (t.module || t.knowledgePoint) planText += (planText ? ' · ' : '') + [t.module, t.knowledgePoint].filter(Boolean).join(' / ');
+    if (t.courseInfo && !t.courseId) links += (links ? ' / ' : '') + '课程待关联';
+    if (t.materialInfo && t.materialInfo.name && !t.textbookId) links += (links ? ' / ' : '') + '教材待关联';
+    var overdue = t.status !== 'completed' && t.date && t.date < today();
+    var typeLabel = planTaskType(t);
+    var actual = t.status === 'completed' ? ((t.actualMinutes != null ? t.actualMinutes + ' 分钟' : '—') + ' / ' + (t.actualQuestions != null ? t.actualQuestions + ' 题' : '—') + '<div class="learn-sub">' + (t.actualSource === 'software' ? '软件带入' : '用户确认') + '</div>') : '—';
+    var status = '<span class="learn-badge ' + (t.status === 'completed' ? 'ok' : overdue ? 'warn' : '') + '">' + (t.status === 'completed' ? '已完成' : overdue ? '逾期未完成' : esc(STATUS[t.status] || '待完成')) + '</span>';
+    var actions;
+    if (mode === 'completed') {
+      actions = ((t.stages || []).length ? ' <button class="learn-btn" data-stage-task="' + esc(t.id) + '">阶段记录</button>' : '') + ' <button class="learn-btn" data-undo-task="' + esc(t.id) + '">撤销完成</button> <button class="learn-btn" data-edit-task="' + esc(t.id) + '">编辑</button> <button class="learn-btn danger" data-del-task="' + esc(t.id) + '">删除</button>';
+    } else {
+      actions = '<button class="learn-btn" data-complete-task="' + esc(t.id) + '">完成</button>' + ((t.stages || []).length ? ' <button class="learn-btn" data-stage-task="' + esc(t.id) + '">阶段记录</button>' : '') + ' <button class="learn-btn" data-edit-task="' + esc(t.id) + '">编辑</button> <button class="learn-btn" data-postpone-task="' + esc(t.id) + '">顺延</button> <button class="learn-btn danger" data-del-task="' + esc(t.id) + '">删除</button>';
+    }
+    return '<tr><td>' + esc(t.date) + (t.time ? '<div class="learn-sub">' + esc(t.time) + (t.end ? '–' + esc(t.end) : '') + '</div>' : '') + (mode === 'completed' && t.completedAt ? '<div class="learn-sub">完成于 ' + esc(new Date(Number(t.completedAt)).toLocaleDateString()) + '</div>' : '') + '</td><td>' + esc(typeLabel) + '</td><td><b>' + esc(t.title) + '</b>' + (planText ? '<div class="learn-sub">' + esc(planText) + '</div>' : '') + (stageText ? '<div class="learn-sub">' + esc(stageText) + '</div>' : '') + '<div class="learn-sub">' + esc(links) + '</div></td><td>' + esc(t.priority === 'high' ? '高' : t.priority === 'low' ? '低' : '中') + '</td><td>' + esc(t.dueDate || '—') + '</td><td>' + (t.planMinutes != null ? t.planMinutes + ' 分钟' : '—') + ' / ' + (t.planQuestions != null ? t.planQuestions + ' 题' : '—') + '</td><td>' + actual + '</td><td>' + status + '</td><td>' + actions + '</td></tr>';
+  }
+  function taskTable(list, mode) {
+    return '<div class="learn-table-wrap"><table class="learn-table learn-task-table learn-task-table-' + mode + '"><thead><tr><th>日期</th><th>类型</th><th>任务</th><th>优先级</th><th>截止</th><th>计划</th><th>实际</th><th>状态</th><th>操作</th></tr></thead><tbody>' + list.map(function (t) { return taskRow(t, mode); }).join('') + '</tbody></table></div>';
+  }
+  function completedArchive(completed) {
+    if (!completed.length) return '';
+    var groups = {};
+    sortCompleted(completed).forEach(function (t) { var day = planCompletedDay(t); (groups[day] = groups[day] || []).push(t); });
+    var body = Object.keys(groups).sort().reverse().map(function (day) {
+      return '<div class="learn-completed-group"><h4>完成日期 · ' + esc(day) + ' <span class="learn-sub">' + groups[day].length + ' 项</span></h4>' + taskTable(sortCompleted(groups[day]), 'completed') + '</div>';
+    }).join('');
+    return '<details class="learn-completed-archive" ' + (state.completedOpen || state.planView === 'completed' ? 'open' : '') + '><summary>已完成任务（' + completed.length + '）· 点击展开历史，未删除任何记录</summary>' + body + '</details>';
+  }
   function renderPlans() {
     var filter = state.planWeek || '';
-    var tasks = state.tasks.filter(function (t) { return !filter || t.date >= filter && t.date <= addDays(filter, 6); }).sort(function (a, b) { return (a.date || '').localeCompare(b.date || '') || ({high:0,normal:1,low:2}[a.priority] == null ? 1 : {high:0,normal:1,low:2}[a.priority]) - ({high:0,normal:1,low:2}[b.priority] == null ? 1 : {high:0,normal:1,low:2}[b.priority]); });
-    var done = tasks.filter(function (t) { return t.status === 'completed'; }).length;
-    var html = '<div class="learn-grid"><div class="learn-stat"><div class="k">当前任务</div><div class="v">' + tasks.length + '</div></div><div class="learn-stat"><div class="k">已完成</div><div class="v">' + done + '</div></div><div class="learn-stat"><div class="k">完成率</div><div class="v">' + (tasks.length ? Math.round(done / tasks.length * 1000) / 10 : 0) + '%</div></div><div class="learn-stat"><div class="k">未完成</div><div class="v">' + (tasks.length - done) + '</div></div></div>' +
-      '<div class="learn-card"><div class="learn-filter"><button id="learnNewTask" class="learn-btn primary">＋ 新建任务</button><button id="learnImportPlan" class="learn-btn">导入学习计划</button><button id="learnPlanTemplate" class="learn-btn">下载模板</button><input id="learnPlanFile" type="file" accept=".json,.csv,application/json,text/csv" class="hidden"><label>周起始<input id="learnWeek" type="date" class="learn-input" value="' + esc(filter) + '"></label><button id="learnClearWeek" class="learn-btn">全部日期</button><span class="learn-note">计划完成量与实际完成量分列；创建任务不算完成。</span></div>' +
-      (tasks.length ? '<div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>日期</th><th>类型</th><th>任务</th><th>优先级</th><th>截止</th><th>计划</th><th>实际</th><th>状态</th><th>操作</th></tr></thead><tbody>' + tasks.map(function (t) {
-        var links = [t.courseId ? '课程' : '', t.chapterId ? '章节' : '', (t.tagIds || []).length ? '知识点' : '', t.examId ? '试卷' : ''].filter(Boolean).join(' / ');
-        var stageText = (t.stages || []).map(function (s) { return (STAGE_LABEL[s.type] || s.type) + ' ' + s.minutes + '分'; }).join(' → ');
-        var planText = t.planId ? ('计划：' + (t.planTitle || t.planId) + (t.subject ? ' · ' + t.subject : '') + (t.learningMode ? ' · ' + (MODE_LABEL[t.learningMode] || t.learningMode) : '')) : '';
-        if (t.courseInfo && !t.courseId) links += (links ? ' / ' : '') + '课程待关联';
-        if (t.materialInfo && t.materialInfo.name && !t.textbookId) links += (links ? ' / ' : '') + '教材待关联';
-        return '<tr><td>' + esc(t.date) + (t.time ? '<div class="learn-sub">' + esc(t.time) + (t.end ? '–' + esc(t.end) : '') + '</div>' : '') + '</td><td>' + esc(TYPE[t.type] || t.type) + '</td><td><b>' + esc(t.title) + '</b>' + (planText ? '<div class="learn-sub">' + esc(planText) + '</div>' : '') + (stageText ? '<div class="learn-sub">' + esc(stageText) + '</div>' : '') + '<div class="learn-sub">' + esc(links) + '</div></td><td>' + esc(t.priority === 'high' ? '高' : t.priority === 'low' ? '低' : '中') + '</td><td>' + esc(t.dueDate || '—') + '</td><td>' + (t.planMinutes != null ? t.planMinutes + ' 分钟' : '—') + ' / ' + (t.planQuestions != null ? t.planQuestions + ' 题' : '—') + '</td><td>' + (t.status === 'completed' ? ((t.actualMinutes != null ? t.actualMinutes + ' 分钟' : '—') + ' / ' + (t.actualQuestions != null ? t.actualQuestions + ' 题' : '—') + '<div class="learn-sub">' + (t.actualSource === 'software' ? '软件带入' : '用户确认') + '</div>') : '—') + '</td><td><span class="learn-badge ' + (t.status === 'completed' ? 'ok' : t.status === 'postponed' ? 'warn' : '') + '">' + esc(STATUS[t.status] || t.status) + '</span></td><td><button class="learn-btn" data-complete-task="' + esc(t.id) + '">' + (t.status === 'completed' ? '更新实际' : '完成') + '</button>' + ((t.stages || []).length ? ' <button class="learn-btn" data-stage-task="' + esc(t.id) + '">阶段记录</button>' : '') + ' <button class="learn-btn" data-edit-task="' + esc(t.id) + '">编辑</button> <button class="learn-btn" data-postpone-task="' + esc(t.id) + '">顺延</button> <button class="learn-btn danger" data-del-task="' + esc(t.id) + '">删除</button></td></tr>';
-      }).join('') + '</tbody></table></div>' : '<div class="learn-empty">暂无计划任务。可创建每日/每周听课、刷题、错题复测、模考任务。</div>') + '</div>';
+    var baseTasks = state.tasks.filter(function (t) { return !filter || t.date >= filter && t.date <= addDays(filter, 6); });
+    var active = baseTasks.filter(function (t) { return t.status !== 'completed' && t.status !== 'cancelled'; });
+    var completed = sortCompleted(baseTasks.filter(function (t) { return t.status === 'completed'; }));
+    var view = state.planView || 'pending';
+    var date = today();
+    var todayActive = active.filter(function (t) { return t.date === date; });
+    var pendingList = sortActive(active, date);
+    var viewTasks = view === 'pending' ? pendingList : view === 'today' ? todayActive : view === 'all' ? pendingList.concat(completed) : completed;
+    var done = completed.length;
+    var plannedMinutes = baseTasks.reduce(function (n, t) { return n + (Number(t.planMinutes) || 0); }, 0);
+    var modes = [...new Set(baseTasks.map(function (t) { return t.planMode; }).filter(Boolean))];
+    var due = root.PlanScheduler ? PlanScheduler.dueReviews(state.tasks, date) : { selected: [], deferred: [], totalMinutes: 0, maxMinutes: 25 };
+    var advice = root.LearningAdvisor ? LearningAdvisor.recommend({ tasks: state.tasks, attempts: state.engine && state.engine.attempts || [] }) : { recommendations: [], sample: {} };
+    var dueHtml = '<div class="learn-card"><h3>今日背诵 / 到期复测</h3>' + (due.selected.length ? '<div class="learn-note">到期 ' + due.selected.length + ' 项，建议先做 ' + due.totalMinutes + ' 分钟（上限 ' + due.maxMinutes + ' 分钟）' + (due.recallMinutes ? '，另留 ' + due.recallMinutes + ' 分钟闭卷验证' : '') + (due.deferred.length ? '；另 ' + due.deferred.length + ' 项顺延，避免无限叠加' : '') + '。</div><table class="learn-table"><thead><tr><th>日期</th><th>类型</th><th>任务</th><th>计划</th></tr></thead><tbody>' + due.selected.map(function (x) { return '<tr><td>' + esc(x.dueDate) + '</td><td>间隔复测</td><td>' + esc(x.title) + '</td><td>' + x.planMinutes + ' 分钟</td></tr>'; }).join('') + '</tbody></table>' : '<div class="learn-empty">今天没有到期复测；完成背诵任务后自动生成 D+1/D+3/D+7 复测。</div>') + '</div>';
+    var adviceHtml = '<div class="learn-card"><h3>系统建议 <span class="learn-sub">仅建议，不自动改计划</span></h3>' + (advice.recommendations.length ? advice.recommendations.map(function (r, ri) { return '<div class="issue-line ' + (r.confidence === 'low' ? 'warn' : 'ok') + '"><b>' + esc(r.title) + '</b>：' + esc(r.reason) + '<span class="learn-sub"> 样本 ' + (r.evidence && r.evidence.questions != null ? r.evidence.questions : '—') + ' 题 · 置信度 ' + esc(r.confidence) + '</span><div class="learn-actions-row"><button class="learn-btn" data-rec-accept="' + ri + '">采用建议</button><button class="learn-btn" data-rec-dismiss="' + ri + '">忽略</button></div></div>'; }).join('') : '<div class="learn-empty">有效样本不足（至少 ' + (root.LearningAdvisor ? LearningAdvisor.MIN_SAMPLE : 5) + ' 题），暂不生成掌握结论。</div>') + '<div class="learn-note">建议依据含样本量、来源、限时和重复错误；未确认/未批改数据不参与。</div></div>';
+    var viewTabs = '<div class="learn-view-tabs">' + [['pending', '待完成', pendingList.length], ['today', '今天', todayActive.length], ['all', '全部', baseTasks.length], ['completed', '已完成', done]].map(function (x) { return '<button class="learn-btn ' + (view === x[0] ? 'primary' : '') + '" data-plan-view="' + x[0] + '">' + x[1] + '（' + x[2] + '）</button>'; }).join('') + '</div>';
+    var mainHtml = '';
+    if (view === 'completed') {
+      mainHtml = '<div class="learn-card"><h3>已完成任务 · 按完成日期归档</h3>' + (completed.length ? completedArchive(completed) : '<div class="learn-empty">还没有已完成任务。</div>') + '</div>';
+    } else if (view === 'all') {
+      mainHtml = '<div class="learn-card"><h3>全部任务</h3>' + (viewTasks.length ? taskTable(viewTasks, 'active') : '<div class="learn-empty">没有任务。</div>') + '</div>';
+    } else {
+      mainHtml = '<div class="learn-card"><h3>' + (view === 'pending' ? '待完成任务 · 逾期优先' : '今天任务') + '</h3>' + (viewTasks.length ? taskTable(viewTasks, 'active') : '<div class="learn-empty">' + (view === 'today' ? '今天没有待完成任务。' : '没有待完成任务。') + '</div>') + completedArchive(completed) + '</div>';
+    }
+    var html = '<div class="learn-grid"><div class="learn-stat"><div class="k">待完成</div><div class="v">' + active.length + '</div><div class="learn-sub">含逾期未完成</div></div><div class="learn-stat"><div class="k">已完成</div><div class="v">' + done + '</div></div><div class="learn-stat"><div class="k">完成率</div><div class="v">' + (baseTasks.length ? Math.round(done / baseTasks.length * 1000) / 10 : 0) + '%</div></div><div class="learn-stat"><div class="k">计划分钟</div><div class="v">' + plannedMinutes + '</div><div class="learn-sub">' + (modes.length ? modes.map(function (m) { return PLAN_MODE_LABEL[m] || m; }).join('、') : '未指定模式') + '</div></div></div>' + dueHtml + adviceHtml + '<div class="learn-card"><div class="learn-filter"><button id="learnNewTask" class="learn-btn primary">＋ 新建任务</button><button id="learnImportPlan" class="learn-btn">导入学习计划</button><button id="learnPlanTemplate" class="learn-btn">下载模板</button><input id="learnPlanFile" type="file" accept=".json,.csv,application/json,text/csv" class="hidden"><label>周起始<input id="learnWeek" type="date" class="learn-input" value="' + esc(filter) + '"></label><button id="learnClearWeek" class="learn-btn">全部日期</button><span class="learn-note">计划完成量与实际完成量分列；创建任务不算完成。</span></div>' + viewTabs + mainHtml + '</div>';
     $('learnBody').innerHTML = html;
     $('learnNewTask').addEventListener('click', function () { editTask(null); });
     $('learnImportPlan').addEventListener('click', function () { $('learnPlanFile').click(); });
@@ -183,9 +258,14 @@
     $('learnPlanTemplate').addEventListener('click', openTemplateDialog);
     $('learnWeek').addEventListener('change', function () { state.planWeek = this.value; renderPlans(); });
     $('learnClearWeek').addEventListener('click', function () { state.planWeek = ''; renderPlans(); });
+    $('learnBody').querySelectorAll('[data-plan-view]').forEach(function (b) { b.addEventListener('click', function () { state.planView = b.getAttribute('data-plan-view'); state.completedOpen = state.planView === 'completed'; renderPlans(); }); });
+    var archive = $('learnBody').querySelector('.learn-completed-archive'); if (archive) archive.addEventListener('toggle', function () { state.completedOpen = archive.open; });
+    $('learnBody').querySelectorAll('[data-rec-dismiss]').forEach(function (b) { b.addEventListener('click', function () { var card = b.closest('.issue-line'); if (card) card.remove(); toast('已忽略该建议，不改动计划'); }); });
+    $('learnBody').querySelectorAll('[data-rec-accept]').forEach(function (b) { b.addEventListener('click', async function () { try { var r = advice.recommendations[Number(b.getAttribute('data-rec-accept'))]; if (!r) return; var sg = r.suggested || {}; await LearningStore.saveTask({ id: null, title: r.title, type: TASK_TYPE_LEGACY[sg.taskType] || 'questions', taskType: sg.taskType || 'practice', planMode: (modes[0] || null), date: addDays(today(), 1), dueDate: addDays(today(), 1), priority: 'normal', planMinutes: sg.planMinutes || 30, planQuestions: null, status: 'pending', tagIds: [], questionIds: [], notes: '由系统建议人工采用；可编辑或删除' }); await load(); toast('建议已采纳为待办任务；未覆盖原计划'); } catch (e) { toast('采纳失败：' + (e.message || e)); } }); });
     $('learnBody').querySelectorAll('[data-stage-task]').forEach(function (b) { b.addEventListener('click', function () { openStageRecord(state.tasks.filter(function (t) { return t.id === b.getAttribute('data-stage-task'); })[0]); }); });
     $('learnBody').querySelectorAll('[data-edit-task]').forEach(function (b) { b.addEventListener('click', function () { editTask(state.tasks.filter(function (t) { return t.id === b.getAttribute('data-edit-task'); })[0]); }); });
     $('learnBody').querySelectorAll('[data-complete-task]').forEach(function (b) { b.addEventListener('click', function () { completeTask(state.tasks.filter(function (t) { return t.id === b.getAttribute('data-complete-task'); })[0]); }); });
+    $('learnBody').querySelectorAll('[data-undo-task]').forEach(function (b) { b.addEventListener('click', function () { undoTask(state.tasks.filter(function (t) { return t.id === b.getAttribute('data-undo-task'); })[0]); }); });
     $('learnBody').querySelectorAll('[data-postpone-task]').forEach(function (b) { b.addEventListener('click', async function () { var t = state.tasks.filter(function (x) { return x.id === b.getAttribute('data-postpone-task'); })[0]; if (!t) return; var baseDate = t.date || today(); var baseDue = t.dueDate || baseDate; t.date = addDays(baseDate, 1); t.dueDate = addDays(baseDue, 1); t.status = 'postponed'; t.postponedCount = (t.postponedCount || 0) + 1; await LearningStore.saveTask(t); await load(); toast('已顺延一天，计划/实际均保留'); }); });
     $('learnBody').querySelectorAll('[data-del-task]').forEach(function (b) { b.addEventListener('click', function () { confirmBox('删除任务', '删除任务不影响真实练习/成绩。确定？', async function () { await LearningStore.deleteTask(b.getAttribute('data-del-task')); await load(); }); }); });
   }
@@ -193,8 +273,8 @@
 
 
   function openTemplateDialog() {
-    openModal('<h3>下载学习计划模板</h3><p class="learn-note">模板只包含计划示例，不代表实际完成；修改日期和内容后可直接导入。</p><div class="learn-actions-row"><button class="learn-btn primary" id="learnTplJson">下载 JSON 模板</button><button class="learn-btn primary" id="learnTplCsv">下载 CSV 模板</button><button class="learn-btn" id="learnTplCancel">取消</button></div>', true);
-    $('learnTplJson').addEventListener('click', function () { download('ExamCard-每日学习计划模板.json', DailyPlanImport.jsonTemplate(), 'application/json;charset=utf-8'); closeModal(); toast('JSON 模板已下载'); });
+    openModal('<h3>下载学习计划模板</h3><p class="learn-note">选择计划模式生成结构模板；模板只包含计划示例，不代表实际完成。修改日期和内容后可直接导入。</p><div class="learn-form-row"><label>计划模式<select id="learnTplMode" class="learn-select">' + PLAN_MODES.map(function (m) { return '<option value="' + m + '">' + PLAN_MODE_LABEL[m] + '</option>'; }).join('') + '</select></label></div><div class="learn-actions-row"><button class="learn-btn primary" id="learnTplJson">下载 JSON 模板</button><button class="learn-btn primary" id="learnTplCsv">下载 CSV 模板（基础）</button><button class="learn-btn" id="learnTplCancel">取消</button></div>', true);
+    $('learnTplJson').addEventListener('click', function () { var mode = $('learnTplMode').value; download('ExamCard-每日计划-' + mode + '.json', DailyPlanImport.planTemplate(mode), 'application/json;charset=utf-8'); closeModal(); toast('JSON 模板已下载'); });
     $('learnTplCsv').addEventListener('click', function () { download('ExamCard-每日学习计划模板.csv', DailyPlanImport.csvTemplate(), 'text/csv;charset=utf-8'); closeModal(); toast('CSV 模板已下载'); });
     $('learnTplCancel').addEventListener('click', closeModal);
   }
@@ -226,14 +306,14 @@
       var stages = (r.stages || []).map(function (s) { return (STAGE_LABEL[s.type] || s.type) + ' ' + s.minutes + '分'; }).join(' → ');
       var course = r.courseInfo ? (r.courseInfo.video_title || r.courseInfo.topic || '') : '';
       var material = r.materialInfo && r.materialInfo.name ? (r.materialInfo.name + (r.materialInfo.chapter ? ' · ' + r.materialInfo.chapter : '')) : '';
-      return '<tr><td>' + esc(r.subject || '—') + '</td><td><b>' + esc(r.topic || r.title || '—') + '</b></td><td>' + esc(r.start || '') + '–' + esc(r.end || '') + '</td><td>' + esc(MODE_LABEL[r.learningMode] || r.learningMode) + '</td><td>' + esc(stages || '—') + '</td><td>' + esc(course || '—') + '</td><td>' + esc(material || '—') + '</td><td>' + esc(r.planMinutes != null ? r.planMinutes + ' 分钟' : '—') + '</td><td>' + esc(state) + '</td></tr>';
+      return '<tr><td>' + esc(r.subject || '—') + '</td><td>' + esc(TASK_TYPE_LABEL[r.taskType] || r.taskType || '—') + '</td><td><b>' + esc(r.topic || r.title || '—') + '</b></td><td>' + esc(r.start || '') + '–' + esc(r.end || '') + '</td><td>' + esc(MODE_LABEL[r.learningMode] || r.learningMode) + '</td><td>' + esc(stages || '—') + '</td><td>' + esc(course || '—') + '</td><td>' + esc(material || '—') + '</td><td>' + esc(r.planMinutes != null ? r.planMinutes + ' 分钟' : '—') + '</td><td>' + esc(state) + '</td></tr>';
     }).join('');
     openModal('<h3>导入学习计划 · 预览</h3>' +
-      '<div class="learn-plan-meta"><div><span>计划日期</span><b>' + esc(plan.date) + '</b></div><div><span>考试类别</span><b>' + esc(plan.exam_type) + '</b></div><div><span>任务数量</span><b>' + plan.tasks.length + '</b></div><div><span>计划总时长</span><b>' + totalMin + ' 分钟</b></div></div>' +
+      '<div class="learn-plan-meta"><div><span>计划日期</span><b>' + esc(plan.date) + '</b></div><div><span>计划模式</span><b>' + esc(PLAN_MODE_LABEL[plan.plan_mode] || plan.plan_mode || '未指定') + '</b></div><div><span>考试类别</span><b>' + esc(plan.exam_type) + '</b></div><div><span>任务数量</span><b>' + plan.tasks.length + '</b></div><div><span>计划总时长</span><b>' + totalMin + ' 分钟</b></div></div>' +
       '<div class="learn-note">' + esc(plan.title || '') + (plan.goal ? ' · ' + esc(plan.goal) : '') + '</div>' +
       '<div class="learn-plan-diff">新增 ' + changes + ' · 更新 ' + updates + ' · 未变化 ' + same + ' · 已完成跳过 ' + skipped + '</div>' +
       ((prepared.normalizationWarnings && prepared.normalizationWarnings.length) ? '<div class="learn-warn">拆分计划模式已按实际阶段调整（未补造缺失阶段，未编造分钟）：' + prepared.normalizationWarnings.map(function (w) { return '“' + esc(w.topic) + '” course_first → ' + esc(w.to) + '（' + esc(w.reason) + '）'; }).join('；') + '。请确认后再导入。</div>' : '') +
-      '<div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>科目</th><th>任务</th><th>时间</th><th>模式</th><th>阶段</th><th>课程</th><th>教材</th><th>计划</th><th>预览</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      '<div class="learn-table-wrap"><table class="learn-table"><thead><tr><th>科目</th><th>业务类型</th><th>任务</th><th>时间</th><th>学习模式</th><th>阶段</th><th>课程</th><th>教材</th><th>计划</th><th>预览</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
       (prepared.warnings.length ? '<div class="learn-warn">待关联：' + prepared.warnings.map(esc).join('；') + '。仍可导入，之后可在任务编辑中关联。</div>' : '') +
       '<div class="learn-note">导入只写计划；实际完成、正确题数和复盘记录不会被覆盖。已完成任务不会被重置。</div>' +
       '<div class="actions"><button class="learn-btn" data-cancel>取消</button><button class="learn-btn primary" data-ok>确认导入</button></div>', true);
@@ -284,17 +364,67 @@
   }
 
   function editTask(t) {
-    t = t || { date: today(), dueDate: today(), type: 'questions', title: '', priority: 'normal', planMinutes: '', planQuestions: '', status: 'pending', tagIds: [], questionIds: [] };
-    openModal('<h3>' + (t.id ? '编辑任务' : '新建学习任务') + '</h3><div class="learn-form-row"><label>标题<input id="learnTaskTitle" class="learn-input" value="' + esc(t.title) + '"></label><label>类型<select id="learnTaskType" class="learn-select">' + Object.keys(TYPE).map(function (k) { return '<option value="' + k + '"' + (t.type === k ? ' selected' : '') + '>' + TYPE[k] + '</option>'; }).join('') + '</select></label><label>日期<input id="learnTaskDate" type="date" class="learn-input" value="' + esc(t.date) + '"></label><label>时间<input id="learnTaskTime" type="time" class="learn-input" value="' + esc(t.time || '') + '"></label><label>截止<input id="learnTaskDue" type="date" class="learn-input" value="' + esc(t.dueDate || '') + '"></label></div>' +
-      '<div class="learn-form-row"><label>优先级<select id="learnTaskPriority" class="learn-select"><option value="high"' + (t.priority === 'high' ? ' selected' : '') + '>高</option><option value="normal"' + (t.priority === 'normal' ? ' selected' : '') + '>中</option><option value="low"' + (t.priority === 'low' ? ' selected' : '') + '>低</option></select></label><label>计划分钟<input id="learnTaskPlanMin" type="number" min="0" class="learn-input" value="' + (t.planMinutes == null ? '' : t.planMinutes) + '"></label><label>计划题数<input id="learnTaskPlanQ" type="number" min="0" class="learn-input" value="' + (t.planQuestions == null ? '' : t.planQuestions) + '"></label><label>复测题集/题号<input id="learnTaskQids" class="learn-input" value="' + esc((t.questionIds || []).join(',')) + '" placeholder="可选，逗号分隔"></label></div>' +
+    var typeToTask = { course: 'video', textbook: 'examples', questions: 'practice', retest: 'retest', mock: 'mock_exam', memory: 'memorization', essay: 'essay', mock_review: 'mock_review' };
+    t = t || { date: today(), dueDate: today(), type: 'questions', taskType: 'practice', planMode: '', title: '', priority: 'normal', planMinutes: '', planQuestions: '', status: 'pending', tagIds: [], questionIds: [], memorization: null };
+    var initialTaskType = t.taskType || typeToTask[t.type] || 'practice';
+    var initialPlanMode = t.planMode || '';
+    var mem = t.memorization || {};
+    var taskOptions = TASK_TYPES.map(function (k) { return '<option value="' + k + '"' + (initialTaskType === k ? ' selected' : '') + '>' + TASK_TYPE_LABEL[k] + '</option>'; }).join('');
+    var modeOptions = '<option value="">未指定</option>' + PLAN_MODES.map(function (k) { return '<option value="' + k + '"' + (initialPlanMode === k ? ' selected' : '') + '>' + PLAN_MODE_LABEL[k] + '</option>'; }).join('');
+    openModal('<h3>' + (t.id ? '编辑任务' : '新建学习任务') + '</h3>' +
+      '<div class="learn-form-row"><label>标题<input id="learnTaskTitle" class="learn-input" value="' + esc(t.title) + '"></label>' +
+      '<label>业务类型<select id="learnTaskTaskType" class="learn-select">' + taskOptions + '</select></label>' +
+      '<label>计划模式<select id="learnTaskPlanMode" class="learn-select">' + modeOptions + '</select></label>' +
+      '<label>内部类型<select id="learnTaskType" class="learn-select">' + Object.keys(TYPE).map(function (k) { return '<option value="' + k + '"' + (t.type === k ? ' selected' : '') + '>' + TYPE[k] + '</option>'; }).join('') + '</select></label>' +
+      '<label>日期<input id="learnTaskDate" type="date" class="learn-input" value="' + esc(t.date) + '"></label><label>时间<input id="learnTaskTime" type="time" class="learn-input" value="' + esc(t.time || '') + '"></label><label>截止<input id="learnTaskDue" type="date" class="learn-input" value="' + esc(t.dueDate || '') + '"></label></div>' +
+      '<div class="learn-form-row"><label>优先级<select id="learnTaskPriority" class="learn-select"><option value="high"' + (t.priority === 'high' ? ' selected' : '') + '>高</option><option value="normal"' + (t.priority === 'normal' ? ' selected' : '') + '>中</option><option value="low"' + (t.priority === 'low' ? ' selected' : '') + '>低</option></select></label><label>计划分钟<input id="learnTaskPlanMin" type="number" min="0" class="learn-input" value="' + (t.planMinutes == null ? '' : t.planMinutes) + '"></label><label>计划题数<input id="learnTaskPlanQ" type="number" min="0" class="learn-input" value="' + (t.planQuestions == null ? '' : t.planQuestions) + '"></label><label>目标正确率<input id="learnTaskAccuracy" type="number" step="0.01" min="0" max="1" class="learn-input" value="' + (t.targetAccuracy == null ? '' : t.targetAccuracy) + '"></label><label>限时（秒）<input id="learnTaskTimeLimit" type="number" min="0" class="learn-input" value="' + (t.timeLimitSeconds == null ? '' : t.timeLimitSeconds) + '"></label></div>' +
+      '<div class="learn-form-row"><label>模块<input id="learnTaskModule" class="learn-input" value="' + esc(t.module || '') + '"></label><label>知识点<input id="learnTaskKnowledge" class="learn-input" value="' + esc(t.knowledgePoint || '') + '"></label><label>复测题集/题号<input id="learnTaskQids" class="learn-input" value="' + esc((t.questionIds || []).join(',')) + '" placeholder="可选，逗号分隔"></label></div>' +
+      '<div class="learn-form-row"><label>背诵主题<input id="learnTaskMemTopic" class="learn-input" value="' + esc(mem.topic || '') + '"></label><label>材料来源<input id="learnTaskMemSource" class="learn-input" value="' + esc(mem.source || '') + '"></label><label>关键词<input id="learnTaskMemKeywords" class="learn-input" value="' + esc((mem.keywords || []).join('，')) + '" placeholder="逗号分隔"></label><label>闭卷正确率<input id="learnTaskMemAccuracy" type="number" step="0.01" min="0" max="1" class="learn-input" value="' + (mem.recall_accuracy == null ? '' : mem.recall_accuracy) + '"></label></div>' +
       '<div class="learn-form-row"><label>教材<select id="learnTaskTextbook" class="learn-select"><option value="">无</option>' + state.textbooks.map(function (b) { return '<option value="' + esc(b.id) + '"' + (t.textbookId === b.id ? ' selected' : '') + '>' + esc(b.name) + '</option>'; }).join('') + '</select></label><label>章节<select id="learnTaskChapter" class="learn-select"><option value="">无</option>' + state.chapters.map(function (c) { return '<option value="' + esc(c.id) + '"' + (t.chapterId === c.id ? ' selected' : '') + '>' + esc(c.title) + '</option>'; }).join('') + '</select></label><label>课程<select id="learnTaskCourse" class="learn-select"><option value="">无</option>' + state.courses.map(function (c) { return '<option value="' + esc(c.id) + '"' + (t.courseId === c.id ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '</select></label>' +
       '<label>试卷<select id="learnTaskExam" class="learn-select"><option value="">无</option>' + state.exams.map(function (e) { return '<option value="' + esc(e.id) + '"' + (t.examId === e.id ? ' selected' : '') + '>' + esc(e.name) + '</option>'; }).join('') + '</select></label></div>' +
-      '<div class="learn-form-row"><label style="flex:1">知识点<div class="learn-taglist">' + state.tags.map(function (tag) { return '<label class="learn-check"><input type="checkbox" value="' + esc(tag.id) + '"' + ((t.tagIds || []).indexOf(tag.id) >= 0 ? ' checked' : '') + '> ' + esc(tag.name) + '</label>'; }).join('') + '</div></label></div><div class="learn-form-row"><label style="flex:1">备注<textarea id="learnTaskNotes" class="learn-textarea">' + esc(t.notes || '') + '</textarea></label></div>' +
-      '<div class="learn-note">任务计划是用户填写目标；实际完成需点击“完成”并确认。</div><div class="actions"><button class="learn-btn" data-cancel>取消</button><button class="learn-btn primary" data-ok>保存任务</button></div>', true);
+      '<div class="learn-form-row"><label style="flex:1">知识点标签<div class="learn-taglist">' + state.tags.map(function (tag) { return '<label class="learn-check"><input type="checkbox" value="' + esc(tag.id) + '"' + ((t.tagIds || []).indexOf(tag.id) >= 0 ? ' checked' : '') + '> ' + esc(tag.name) + '</label>'; }).join('') + '</div></label></div>' +
+      '<div class="learn-form-row"><label style="flex:1">备注<textarea id="learnTaskNotes" class="learn-textarea">' + esc(t.notes || '') + '</textarea></label></div>' +
+      '<div class="learn-note">任务计划是用户填写目标；实际完成需点击“完成”并确认。计划模式只影响模板/展示，不覆盖手工调整。</div><div class="actions"><button class="learn-btn" data-cancel>取消</button><button class="learn-btn primary" data-ok>保存任务</button></div>', true);
     wireModal(async function () {
-      var save = Object.assign({}, t, { id: t.id, title: $('learnTaskTitle').value, type: $('learnTaskType').value, date: $('learnTaskDate').value || today(), time: $('learnTaskTime').value || null, dueDate: $('learnTaskDue').value || null, priority: $('learnTaskPriority').value, planMinutes: $('learnTaskPlanMin').value, planQuestions: $('learnTaskPlanQ').value, textbookId: $('learnTaskTextbook').value || null, chapterId: $('learnTaskChapter').value || null, courseId: $('learnTaskCourse').value || null, examId: $('learnTaskExam').value || null, tagIds: [].slice.call($('learnModalRoot').querySelectorAll('.learn-taglist input:checked')).map(function (x) { return x.value; }), questionIds: $('learnTaskQids').value.split(',').map(function (x) { return x.trim(); }).filter(Boolean), notes: $('learnTaskNotes').value, status: t.status || 'pending', actualMinutes: t.actualMinutes, actualQuestions: t.actualQuestions, actualCorrect: t.actualCorrect, actualSource: t.actualSource, completedAt: t.completedAt });
+      var taskType = $('learnTaskTaskType').value;
+      var keywords = $('learnTaskMemKeywords').value.split(/[,，]/).map(function (x) { return x.trim(); }).filter(Boolean);
+      var memTopic = $('learnTaskMemTopic').value.trim(), memSource = $('learnTaskMemSource').value.trim(), memAcc = $('learnTaskMemAccuracy').value;
+      var memorization = (memTopic || memSource || keywords.length || memAcc !== '') ? { topic: memTopic || null, source: memSource || null, keywords: keywords, recall_accuracy: memAcc === '' ? null : Number(memAcc) } : null;
+      var save = Object.assign({}, t, { id: t.id, title: $('learnTaskTitle').value, type: TASK_TYPE_LEGACY[taskType] || $('learnTaskType').value, taskType: taskType, planMode: $('learnTaskPlanMode').value || null, date: $('learnTaskDate').value || today(), time: $('learnTaskTime').value || null, dueDate: $('learnTaskDue').value || null, priority: $('learnTaskPriority').value, planMinutes: $('learnTaskPlanMin').value, planQuestions: $('learnTaskPlanQ').value, targetAccuracy: $('learnTaskAccuracy').value === '' ? null : Number($('learnTaskAccuracy').value), timeLimitSeconds: $('learnTaskTimeLimit').value === '' ? null : Number($('learnTaskTimeLimit').value), module: $('learnTaskModule').value.trim() || null, knowledgePoint: $('learnTaskKnowledge').value.trim() || null, textbookId: $('learnTaskTextbook').value || null, chapterId: $('learnTaskChapter').value || null, courseId: $('learnTaskCourse').value || null, examId: $('learnTaskExam').value || null, tagIds: [].slice.call($('learnModalRoot').querySelectorAll('.learn-taglist input:checked')).map(function (x) { return x.value; }), questionIds: $('learnTaskQids').value.split(',').map(function (x) { return x.trim(); }).filter(Boolean), memorization: memorization, notes: $('learnTaskNotes').value, status: t.status || 'pending', actualMinutes: t.actualMinutes, actualQuestions: t.actualQuestions, actualCorrect: t.actualCorrect, actualSource: t.actualSource, completedAt: t.completedAt });
       await LearningStore.saveTask(save);
       closeModal(); await load(); toast('任务已保存');
+    });
+  }
+  async function ensureMemorizationReviews(t) {
+    if (!root.PlanScheduler || !t) return [];
+    var existing = await LearningStore.listTasks();
+    var created = [];
+    var reviews = PlanScheduler.reviewTasks(t, {});
+    for (var i = 0; i < reviews.length; i++) {
+      var r = reviews[i];
+      if (existing.some(function (x) { return x.reviewKey === r.reviewKey; })) continue;
+      r.id = r.taskId;
+      r.planMode = t.planMode || null;
+      r.sourceTaskId = t.id;
+      r.memorization = t.memorization || null;
+      r.createdAt = Date.now(); r.updatedAt = Date.now();
+      await LearningStore.saveTask(r);
+      created.push(r.id);
+    }
+    return created;
+  }
+
+  function undoTask(t) {
+    if (!t) return;
+    confirmBox('撤销完成', '将任务恢复为待完成；不会删除实际时长、阶段记录、答案或成绩。继续？', async function () {
+      var oldCompletedAt = t.completedAt || null;
+      t.status = 'pending';
+      t.completedAt = null;
+      t.undoHistory = (t.undoHistory || []).concat([{ completedAt: oldCompletedAt, undoneAt: Date.now(), previousStatus: 'completed' }]);
+      t.updatedAt = Date.now();
+      await LearningStore.saveTask(t);
+      await load();
+      toast('已撤销完成，证据保留并重新进入待办');
     });
   }
 
@@ -320,7 +450,9 @@
       t.actualQuestions = $('learnActualQ').value === '' ? null : Number($('learnActualQ').value);
       t.actualCorrect = $('learnActualC').value === '' ? null : Number($('learnActualC').value);
       t.notes = $('learnActualNote').value;
-      await LearningStore.saveTask(t); closeModal(); await load(); toast('实际完成已记录（' + (auto ? '软件带入' : '用户确认') + '）');
+      await LearningStore.saveTask(t);
+      if (t.taskType === 'memorization' || t.type === 'memory') await ensureMemorizationReviews(t);
+      closeModal(); await load(); toast('实际完成已记录（' + (auto ? '软件带入' : '用户确认') + '）');
     });
   }
 

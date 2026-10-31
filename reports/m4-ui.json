@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "checks": [
+    "four-size assembly form and shortage UI",
+    "generate actual material group",
+    "start/pause",
+    "answer and mark",
+    "jump",
+    "exit and resume actual selected answer",
+    "snapshot picture and material display",
+    "submit confirmation and explanation",
+    "completed session stays completed",
+    "explicit practice-history clear preserves bank",
+    "four window sizes without overflow"
+  ],
+  "pageErrors": []
+}

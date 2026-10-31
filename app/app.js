@@ -110,6 +110,10 @@
         onPageChange: function (page, count) {
           ui.pdfPageInfo.textContent = '第 ' + page + ' / ' + count + ' 页';
           ui.pdfPageInput.placeholder = '页码 1-' + count;
+          ui.pdfPageInput.max = count;
+          ui.pdfPageInput.value = page;
+          ui.pdfPrev.disabled = page <= 1;
+          ui.pdfNext.disabled = page >= count;
         },
         onStatus: function (txt) { ui.pdfPageInfo.textContent = txt; }
       });
@@ -584,17 +588,22 @@
       '<span class="muted small">共 ' + exam.pageCount + ' 页 · 识别到 <b id="impCount">' + state.draftQuestions.length + '</b> 题</span>' +
       '</div>' +
       importQualitySummary(state.draftQuestions) +
+      '<label class="help-text"><input type="checkbox" id="impAddBank"> 同时加入独立题库（需先启用 v6；识别题须再核对完整内容）</label>' +
       '<label class="help-text" id="impIssueAckWrap"><input type="checkbox" id="impIssueAck"> 我已逐题核对缺少选项/待确认题目，理解不会自动补齐选项；确认按当前识别/修正结果导入</label>' +
       '<div class="issue-box">' + issues + dupHtml + '</div>' +
-      '<div class="review-wrap"><table class="review-table"><thead><tr>' +
-      '<th>#</th><th>题号</th><th>题型</th><th>模块</th><th>页码</th><th>纵向位置(%)</th><th>选项</th><th>识别状态</th><th>题干预览</th><th></th>' +
+      '<div class="review-wrap import-review-wrap"><table class="review-table import-review-table"><colgroup><col class="col-n"><col><col class="col-type"><col class="col-module"><col class="col-status"></colgroup><thead><tr>' +
+      '<th>题号</th><th>题干预览</th><th>题型</th><th>模块</th><th>状态 / 操作</th>' +
       '</tr></thead><tbody id="impRows"></tbody></table></div>' +
+      '<datalist id="impModuleOptions"></datalist>' +
       '<p class="help-text">选项格式：A、选项内容 | B、选项内容。异常题目需人工核对；确认导入即表示你接受当前识别/修正结果。</p>' +
       '<div class="modal-actions" style="justify-content:space-between">' +
       '<div><button class="btn" id="impAdd">＋ 添加题目</button> <button class="btn ghost" id="impReset">重新识别</button></div>' +
       '<div><button class="btn" data-close>取消</button><button class="btn primary" id="impConfirm">确认导入</button></div></div>',
       'wide'
     );
+    var importModal = ui.modalRoot.querySelector('.modal');
+    if (importModal) importModal.classList.add('import-review-modal');
+    setupImportDetail();
     renderImportRows();
     state.importAckSignature = null;
     $('impIssueAck').addEventListener('change', function () { state.importAckSignature = this.checked ? importReviewSignature() : null; });
@@ -619,28 +628,146 @@
     $('impConfirm').addEventListener('click', confirmImport);
   }
 
+  var IMPORT_MODULE_NAMES = ['政治理论', '常识判断', '言语理解与表达', '数量关系', '判断推理', '资料分析', '科学推理', '深圳特色专项'];
+
+  function importStatusInfo(q) {
+    var issues = q.issues || [];
+    var codes = issues.map(function (x) { return x.code; });
+    var error = issues.some(function (x) {
+      return /^(type-review|module-review|answer-conflict|options-missing|options-incomplete|missing-material|missing-assets|material-review)$/.test(x.code);
+    });
+    var warn = issues.some(function (x) {
+      return /^(options-partial|page-jump|page-back|manual-review|material-review)$/.test(x.code);
+    });
+    if (q.reviewStatus === 'needs-confirm' && !error) warn = true;
+    var label = error ? '异常' : (warn || q.reviewStatus === 'needs-confirm' ? '待确认' : '完整');
+    var cls = error ? 'err' : (label === '待确认' ? 'warn' : 'ok');
+    var detail = issues.length ? issues.map(function (x) { return x.message || x.code; }).join('；') : '可进入下一步';
+    return { label: label, cls: cls, detail: detail, codes: codes };
+  }
+  function importStatusContent(q) {
+    var s = importStatusInfo(q);
+    return '<span class="badge ' + s.cls + '">' + escapeHtml(s.label) + '</span><span class="import-status-note" title="' + escapeAttr(s.detail) + '">' + escapeHtml(s.detail) + '</span>';
+  }
+  function importModuleChoices(qs) {
+    var names = IMPORT_MODULE_NAMES.slice();
+    (qs || []).forEach(function (q) { var m = q.module || '未分类'; if (names.indexOf(m) < 0) names.push(m); });
+    var dl = $('impModuleOptions');
+    if (dl) dl.innerHTML = names.map(function (m) { return '<option value="' + escapeAttr(m) + '"></option>'; }).join('');
+  }
+  function updateImportStatusCell(tr, q) {
+    var cell = tr && tr.querySelector('.import-status');
+    if (cell) cell.innerHTML = importStatusContent(q);
+  }
+
+  function setupImportDetail() {
+    var dlg = document.createElement('dialog');
+    dlg.id = 'impDetailDialog';
+    dlg.className = 'import-detail-dialog';
+    dlg.setAttribute('aria-label', '单题详情');
+    dlg.innerHTML = '<h3>单题详情</h3>' +
+      '<div class="import-detail-body">' +
+      '<div class="form-row">' +
+      '<label>题号 <input data-detail-field="n" type="number" min="1" style="width:76px"></label>' +
+      '<label>原题号 <span data-detail-printed>—</span></label>' +
+      '<label>题型 <select data-detail-field="type">' + ['single', 'multi', 'judge'].map(function (t) { return '<option value="' + t + '">' + TYPE_LABEL[t] + '</option>'; }).join('') + '</select></label>' +
+      '<label>模块 <input data-detail-field="module" list="impModuleOptions" style="min-width:150px"></label>' +
+      '<label>页码 <input data-detail-field="page" type="number" min="1" style="width:70px"></label>' +
+      '<label>纵向位置 <input data-detail-field="yRatioPct" type="number" step="0.1" style="width:76px">%</label>' +
+      '</div>' +
+      '<label class="import-detail-block">完整题干<textarea data-detail-field="fullStem" rows="4"></textarea></label>' +
+      '<label class="import-detail-block">选项（A、内容 | B、内容）<textarea data-detail-field="options" rows="3" placeholder="A、... | B、..."></textarea></label>' +
+      '<div class="form-row"><label>答案 <input data-detail-field="answer" type="text" style="width:120px" placeholder="A / AC / 正确"></label>' +
+      '<label class="import-detail-block">解析<textarea data-detail-field="explanation" rows="2" style="min-width:260px"></textarea></label></div>' +
+      '<div class="form-row"><label><input type="checkbox" data-detail-field="requiresMaterial"> 需要共享材料</label>' +
+      '<label><input type="checkbox" data-detail-field="requiresAssets"> 需要图表/图片</label>' +
+      '<span class="muted small" data-detail-meta></span></div>' +
+      '<div class="issue-box" data-detail-issues></div>' +
+      '<p role="status" data-detail-status></p>' +
+      '</div>' +
+      '<div class="modal-actions"><button class="btn" type="button" data-detail-close>取消</button><button class="btn primary" type="button" data-detail-save>保存本题</button></div>';
+    dlg.querySelector('[data-detail-close]').onclick = function () { dlg.close(); };
+    dlg.querySelector('[data-detail-save]').onclick = function () {
+      try {
+        var i = parseInt(dlg.dataset.i, 10);
+        var q = state.draftQuestions[i];
+        if (!q) throw Error('题目已不存在');
+        var n = parseInt(dlg.querySelector('[data-detail-field="n"]').value, 10);
+        if (!isFinite(n) || n < 1) throw Error('题号必须为正整数');
+        var type = dlg.querySelector('[data-detail-field="type"]').value;
+        var module = dlg.querySelector('[data-detail-field="module"]').value.trim() || '未分类';
+        var page = parseInt(dlg.querySelector('[data-detail-field="page"]').value, 10) || 1;
+        page = clamp(page, 1, state.pendingImport && state.pendingImport.exam ? state.pendingImport.exam.pageCount || 1 : page);
+        var yPct = parseFloat(dlg.querySelector('[data-detail-field="yRatioPct"]').value);
+        if (!isFinite(yPct)) yPct = 10;
+        var fullStem = dlg.querySelector('[data-detail-field="fullStem"]').value.trim();
+        var options = parseOptionsText(dlg.querySelector('[data-detail-field="options"]').value);
+        q.n = n;
+        q.type = type;
+        q.typeStatus = 'confirmed';
+        q.module = module;
+        q.moduleStatus = 'manual';
+        q.issues = (q.issues || []).filter(function (x) { return x.code !== 'module-review'; });
+        q.page = page;
+        q.yRatio = clamp(yPct, 0, 100) / 100;
+        q.fullStem = fullStem;
+        q.preview = (fullStem || q.preview || '').slice(0, 90);
+        q.options = options;
+        q.answer = dlg.querySelector('[data-detail-field="answer"]').value.trim() || null;
+        q.explanation = dlg.querySelector('[data-detail-field="explanation"]').value.trim();
+        q.requiresMaterial = dlg.querySelector('[data-detail-field="requiresMaterial"]').checked;
+        q.requiresAssets = dlg.querySelector('[data-detail-field="requiresAssets"]').checked;
+        q.manualEdited = true;
+        refreshQuestion(q);
+        dlg.close();
+        renderImportRows();
+        refreshImportQuality();
+      } catch (e) {
+        dlg.querySelector('[data-detail-status]').textContent = e.message;
+      }
+    };
+    if (ui.modalRoot) ui.modalRoot.appendChild(dlg);
+  }
+
+  function openImportDetail(i) {
+    var q = state.draftQuestions[i];
+    var dlg = $('impDetailDialog');
+    if (!q || !dlg) return;
+    dlg.dataset.i = i;
+    dlg.querySelector('[data-detail-field="n"]').value = q.n == null ? '' : q.n;
+    dlg.querySelector('[data-detail-printed]').textContent = q.printedNumber != null && q.printedNumber !== q.n ? ('第 ' + q.printedNumber + ' 题（已重排）') : '—';
+    dlg.querySelector('[data-detail-field="type"]').value = q.type || 'single';
+    dlg.querySelector('[data-detail-field="module"]').value = q.module || '未分类';
+    dlg.querySelector('[data-detail-field="page"]').value = q.page || 1;
+    dlg.querySelector('[data-detail-field="yRatioPct"]').value = ((q.yRatio == null ? 0.1 : q.yRatio) * 100).toFixed(1);
+    dlg.querySelector('[data-detail-field="fullStem"]').value = q.fullStem || '';
+    dlg.querySelector('[data-detail-field="options"]').value = (q.options || []).map(function (o) { return o.key + '、' + (o.text || ''); }).join(' | ');
+    dlg.querySelector('[data-detail-field="answer"]').value = q.answer || '';
+    dlg.querySelector('[data-detail-field="explanation"]').value = q.explanation || '';
+    dlg.querySelector('[data-detail-field="requiresMaterial"]').checked = !!q.requiresMaterial;
+    dlg.querySelector('[data-detail-field="requiresAssets"]').checked = !!q.requiresAssets;
+    dlg.querySelector('[data-detail-meta]').textContent = '选项状态：' + (q.optionStatus || 'n/a') + ' · 页码：' + (q.page || 1) + ' · 纵向：' + (((q.yRatio == null ? 0.1 : q.yRatio) * 100).toFixed(1)) + '%' + (q.materialText ? ' · 材料：' + q.materialText.slice(0, 80) : '');
+    dlg.querySelector('[data-detail-issues]').innerHTML = (q.issues || []).map(function (x) { return '<div class="issue-line ' + (x.severity === 'error' ? 'error' : 'warn') + '">' + escapeHtml(x.message || x.code) + '</div>'; }).join('') || '<div class="issue-line ok">暂无质量问题</div>';
+    dlg.querySelector('[data-detail-status]').textContent = '';
+    dlg.showModal();
+  }
+
   function renderImportRows() {
     var tbody = $('impRows');
     if (!tbody) return;
     var qs = state.draftQuestions || [];
+    importModuleChoices(qs);
     tbody.innerHTML = qs.map(function (q, i) {
       refreshQuestion(q);
-      var issueLabels = (q.issues || []).map(function (x) { return x.message || x.code; }).join('；');
-      var status = (q.optionStatus === 'missing' || q.optionStatus === 'partial') ? '缺少选项：' + issueLabels : (q.reviewStatus === 'needs-confirm' ? '待确认：' + issueLabels : '完整');
-      var opts = (q.options || []).map(function (o) { return o.key + '、' + (o.text || ''); }).join(' | ');
+      var typeLabel = q.typeStatus === 'needs-review' ? '待确认' : (TYPE_LABEL[q.type] || TYPE_LABEL.single);
+      var preview = q.preview || q.fullStem || '';
       return '<tr data-i="' + i + '">' +
-        '<td class="num">' + (i + 1) + '</td>' +
-        '<td><input class="small" type="number" data-f="n" value="' + (q.n == null ? '' : q.n) + '"></td>' +
-        '<td><select data-f="type">' +
-        ['single', 'judge', 'multi'].map(function (t) { return '<option value="' + t + '"' + (q.type === t ? ' selected' : '') + '>' + TYPE_LABEL[t] + '</option>'; }).join('') +
-        '</select></td>' +
-        '<td><input type="text" data-f="module" value="' + escapeAttr(q.module || '') + '"></td>' +
-        '<td><input class="small" type="number" data-f="page" value="' + (q.page || 1) + '"></td>' +
-        '<td><input class="small" type="number" step="0.1" data-f="yRatioPct" value="' + ((q.yRatio == null ? 0.1 : q.yRatio) * 100).toFixed(1) + '"></td>' +
-        '<td><textarea data-f="options" rows="2" title="' + escapeAttr(opts) + '" placeholder="A、... | B、..." style="min-width:230px;min-height:44px">' + escapeHtml(opts) + '</textarea></td>' +
-        '<td><div class="preview">' + escapeHtml(status) + '</div></td>' +
-        '<td><div class="preview">' + escapeHtml(q.preview || '') + '</div></td>' +
-        '<td><button class="row-del" data-del="1" type="button">删除</button></td></tr>';
+        '<td class="num import-number">' + (q.n == null ? '' : q.n) + (q.printedNumber != null && q.printedNumber !== q.n ? '<small>原 ' + q.printedNumber + '</small>' : '') + '</td>' +
+        '<td><div class="import-stem" title="' + escapeAttr(preview) + '">' + escapeHtml(preview) + '</div></td>' +
+        '<td><span class="badge ' + (q.typeStatus === 'needs-review' ? 'warn' : 'gray') + '">' + escapeHtml(typeLabel) + '</span></td>' +
+        '<td><input class="import-module-input" type="text" data-f="module" list="impModuleOptions" value="' + escapeAttr(q.module || '') + '" aria-label="一级模块"></td>' +
+        '<td class="import-status-cell"><div class="import-status">' + importStatusContent(q) + '</div><div class="import-actions"><button class="bank-btn" type="button" data-detail="1">详情</button><button class="row-del" data-del="1" type="button">删除</button></div></td>' +
+        '</tr>';
     }).join('');
     var cnt = $('impCount'); if (cnt) cnt.textContent = qs.length;
   }
@@ -652,29 +779,27 @@
     if (!q) return;
     var f = e.target.getAttribute('data-f');
     if (!f) return;
-    var v = e.target.value;
-    if (f === 'n') q.n = parseInt(v, 10) || 0;
-    else if (f === 'type') q.type = v;
-    else if (f === 'module') q.module = v.trim() || '未分类';
-    else if (f === 'page') q.page = parseInt(v, 10) || 1;
-    else if (f === 'yRatioPct') q.yRatio = clamp(parseFloat(v) || 0, 0, 100) / 100;
-    else if (f === 'options') {
-      q.options = parseOptionsText(v);
-      q.optionStatus = q.options.length >= 4 ? 'manual' : (q.options.length ? 'partial' : 'missing');
+    if (f === 'module') {
+      q.module = e.target.value.trim() || '未分类';
+      q.moduleStatus = 'manual';
+      q.issues = (q.issues || []).filter(function (x) { return x.code !== 'module-review'; });
+      q.manualEdited = true;
+    } else {
+      return;
     }
-    q.manualEdited = true;
     refreshQuestion(q);
     state.importCorrections = (state.importCorrections || 0) + 1;
-    var statusCell = tr.children[7];
-    if (statusCell) statusCell.innerHTML = '<div class="preview">' + (q.reviewStatus === 'needs-confirm' ? '待确认（已编辑）' : '完整（已编辑）') + '</div>';
+    updateImportStatusCell(tr, q);
     refreshImportQuality();
   }
 
   function onImportRowClick(e) {
-    if (!e.target.closest('[data-del]')) return;
     var tr = e.target.closest('tr[data-i]');
     if (!tr) return;
-    state.draftQuestions.splice(parseInt(tr.getAttribute('data-i'), 10), 1);
+    var i = parseInt(tr.getAttribute('data-i'), 10);
+    if (e.target.closest('[data-detail]')) { openImportDetail(i); return; }
+    if (!e.target.closest('[data-del]')) return;
+    state.draftQuestions.splice(i, 1);
     state.importCorrections = (state.importCorrections || 0) + 1;
     renderImportRows();
     refreshImportQuality();
@@ -692,10 +817,14 @@
     if (unresolved && (!$('impIssueAck') || !$('impIssueAck').checked || state.importAckSignature !== importReviewSignature())) { toast('还有 ' + unresolved + ' 道待确认题目；请先勾选“我已逐题核对”'); return; }
     var qs = (state.draftQuestions || []).map(function (q) {
       return {
-        n: parseInt(q.n, 10), type: q.type || 'single', module: (q.module || '未分类').trim() || '未分类',
+        n: parseInt(q.n, 10), printedNumber: q.printedNumber == null ? parseInt(q.n, 10) : parseInt(q.printedNumber, 10),
+        type: q.type || 'single', typeStatus: q.typeStatus || 'confirmed', module: (q.module || '未分类').trim() || '未分类',
+        moduleStatus: q.moduleStatus || 'auto',
         page: clamp(parseInt(q.page, 10) || 1, 1, ctx.exam.pageCount || 1),
         yRatio: clamp(q.yRatio == null ? 0.1 : q.yRatio, 0, 1), xRatio: q.xRatio == null ? 0.1 : q.xRatio,
+        fullStem: q.fullStem || '', requiresAssets: !!q.requiresAssets, requiresMaterial: !!q.requiresMaterial,
         preview: q.preview || '', options: (q.options || []).slice(),
+        answer: q.answer || null, explanation: q.explanation || '',
         optionStatus: q.optionStatus || 'n/a', issues: (q.issues || []).slice(),
         reviewStatus: q.reviewStatus || 'ok', manualEdited: !!q.manualEdited
       };
@@ -717,7 +846,10 @@
     var blob = new Blob([ctx.buf], { type: 'application/pdf' });
     state.importSaving = true;
     try {
+      var addToBank = $('impAddBank') && $('impAddBank').checked;
+      if (addToBank && (await ExamStore.open()).version !== 6) throw Error('请先在独立题库保存备份并启用 v6，再重新导入');
       await ExamStore.putExamBundle(exam, blob);
+      if (addToBank) { try { await BankStore.importExam(exam.id); } catch(bankError) { toast('原试卷已保存；题库事务未完成：'+bankError.message); throw Error('原试卷已保存，请从题库管理重试入库：'+bankError.message); } }
       state.pendingImport = null;
       state.draftQuestions = null;
       closeModal();
@@ -1425,6 +1557,8 @@
     if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (ui.modalRoot && ui.modalRoot.firstChild) return;
+    if (e.key === 'PageUp') { if (state.viewer && state.viewer.page > 1) state.viewer.prevPage(); e.preventDefault(); return; }
+    if (e.key === 'PageDown') { if (state.viewer && state.viewer.page < state.viewer.pageCount) state.viewer.nextPage(); e.preventDefault(); return; }
     if (e.key === 'ArrowLeft') { stepQuestion(-1); e.preventDefault(); return; }
     if (e.key === 'ArrowRight') { stepQuestion(1); e.preventDefault(); return; }
     if (state.session.status === 'running' && /^[a-dA-D]$/.test(e.key)) {

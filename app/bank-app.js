@@ -24,7 +24,7 @@
     if ($('bankRoot')) return;
     var w = document.createElement('div'); w.id = 'bankRoot'; w.className = 'bank-root hidden';
     w.innerHTML = '<header class="bank-top"><div class="bank-brand"><img src="assets/examcard-wordmark.png"><span class="t">题库管理</span></div>' +
-      '<div class="bank-tabs">' + [['questions', '题目管理'], ['profiles', '考试配置'], ['quality', '导入质量']].map(function (x) { return '<button data-btab="' + x[0] + '"' + (x[0] === 'questions' ? ' class="active"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="bank-tabs">' + [['diagnostics', '题库诊断'], ['practice', '随机练习'], ['independent', '独立题库'], ['questions', '原试卷题目'], ['profiles', '考试配置'], ['quality', '导入质量']].map(function (x) { return '<button data-btab="' + x[0] + '"' + (x[0] === 'questions' ? ' class="active"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div>' +
       '<div class="bank-actions"><button id="bankClose" class="bank-btn ghost">关闭</button></div></header>' +
       '<main id="bankBody" class="bank-body"></main><div id="bankModalRoot"></div>';
     document.body.appendChild(w);
@@ -37,7 +37,7 @@
     var examView = $('examView'); if (examView && !examView.classList.contains('hidden')) { toast('请先返回试卷库，再打开题库管理'); return; }
     buildRoot(); state.open = true; $('bankRoot').classList.remove('hidden'); document.querySelectorAll('[data-btab]').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-btab') === state.tab); }); load();
   }
-  function close() { state.open = false; var r = $('bankRoot'); if (r) r.classList.add('hidden'); }
+  function close() { if(root.BankDiagnosticsUI) BankDiagnosticsUI.leave(); if(root.BankPracticeUI) BankPracticeUI.leave(); state.open = false; var r = $('bankRoot'); if (r) r.classList.add('hidden'); }
   async function load() {
     try {
       await DiagnosisStore.ensureModuleTags();
@@ -77,7 +77,13 @@
 
   function render() {
     if (!state.engine && false) return;
-    if (state.tab === 'questions') renderQuestions();
+    if(root.BankPracticeUI) BankPracticeUI.leave();
+    if(root.BankDiagnosticsUI) BankDiagnosticsUI.leave();
+    if (state.tab !== 'independent') $('bankBody')._independentToken = null;
+    if (state.tab === 'diagnostics') BankDiagnosticsUI.render($('bankBody')).catch(function(e){if(state.tab==='diagnostics')$('bankBody').textContent=e.message;});
+    else if (state.tab === 'practice') BankPracticeUI.render($('bankBody')).catch(function(e){if(state.tab==='practice')$('bankBody').textContent=e.message;});
+    else if (state.tab === 'independent') IndependentBankUI.render($('bankBody')).catch(function(e){if(state.tab==='independent')$('bankBody').textContent=e.message;});
+    else if (state.tab === 'questions') renderQuestions();
     else if (state.tab === 'profiles') renderProfiles();
     else renderQuality();
   }

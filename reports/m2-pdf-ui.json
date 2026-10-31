@@ -1,0 +1,18 @@
+{
+  "status": "pass",
+  "questionsContentMatched": 20,
+  "optionsExactMatched": 80,
+  "source": "original authored fixture",
+  "checks": [
+    "full actual stems",
+    "all options exactly matched",
+    "PDF questions quarantined pending review",
+    "search",
+    "full edit dialog",
+    "cancel removes dialog",
+    "UI edit/save actual content",
+    "UI batch classification and tag filter",
+    "four viewport document overflow"
+  ],
+  "screenshots": "reports/m2-ui; review candidates only"
+}

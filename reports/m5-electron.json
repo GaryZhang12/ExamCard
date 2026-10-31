@@ -1,0 +1,59 @@
+{
+  "status": "pass",
+  "checks": [
+    "normal AppShell route exposes new diagnostics",
+    "actual wrong submission counted",
+    "diagnostic action creates independent retest",
+    "correct retest updates exact accuracy and retest result",
+    "latest wrong resolved without altering legacy history"
+  ],
+  "actual": {
+    "questions": [
+      {
+        "bankQuestionId": "fd885dbb-7fb4-4806-b7b7-ebb38cea1821",
+        "attempts": 2,
+        "correct": 1,
+        "wrong": 1,
+        "ungraded": 0,
+        "elapsedMs": 2000,
+        "lastAt": 1793460411634,
+        "lastCorrect": true,
+        "events": [
+          {
+            "at": 1793460411385,
+            "correct": false,
+            "elapsedMs": 0
+          },
+          {
+            "at": 1793460411634,
+            "correct": true,
+            "elapsedMs": 2000
+          }
+        ],
+        "tags": [
+          "工程"
+        ],
+        "accuracy": 0.5,
+        "retestCorrect": 1
+      }
+    ],
+    "knowledge": [
+      {
+        "tag": "工程",
+        "correct": 1,
+        "wrong": 1,
+        "ungraded": 0,
+        "elapsedMs": 2000,
+        "accuracy": 0.5
+      }
+    ],
+    "wrong": [],
+    "totals": {
+      "attempts": 2,
+      "answers": 2,
+      "correct": 1,
+      "wrong": 1,
+      "ungraded": 0
+    }
+  }
+}

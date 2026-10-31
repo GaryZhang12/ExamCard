@@ -14,13 +14,48 @@
     'practice_question_count', 'question_set_id', 'review_minutes',
     'target_correct', 'target_total', 'require_error_review'
   ];
-  var TOP_FIELDS = ['schema_version', 'plan_id', 'date', 'timezone', 'exam_type', 'status', 'title', 'goal', 'mem_suspended', 'schedule', 'tasks'];
-  var TASK_FIELDS = ['task_id', 'subject', 'topic', 'priority', 'start', 'end', 'planned_minutes', 'learning_mode', 'course', 'material', 'stages', 'acceptance'];
+  var TOP_FIELDS = ['schema_version', 'plan_id', 'date', 'timezone', 'exam_type', 'status', 'title', 'goal', 'mem_suspended', 'schedule', 'tasks', 'plan_mode', 'plan_submode'];
+  var TASK_FIELDS = ['task_id', 'subject', 'topic', 'priority', 'start', 'end', 'planned_minutes', 'learning_mode', 'course', 'material', 'stages', 'acceptance', 'task_type', 'module', 'knowledge_point', 'target_accuracy', 'time_limit_seconds', 'question_count', 'question_set_id', 'memorization'];
   var STAGE_TYPES = ['video', 'examples', 'practice', 'review', 'mock', 'reading', 'other'];
   var STATUSES = ['planned', 'active', 'paused', 'completed', 'cancelled'];
   var PRIORITIES = ['high', 'normal', 'low'];
   var MODES = ['course_first', 'mock', 'practice', 'review', 'textbook', 'other'];
   var MODE_LABEL = { course_first: '听课优先', mock: '模考', practice: '刷题', review: '错题复盘', textbook: '教材阅读', other: '其他' };
+  var TASK_TYPES = ['video', 'examples', 'practice', 'review', 'memorization', 'retest', 'timed_drill', 'essay', 'mock_exam', 'mock_review'];
+  var TASK_TYPE_LABEL = { video: '课程学习', examples: '教材例题', practice: '专项练习', review: '错题复盘', memorization: '背诵记忆', retest: '间隔复测', timed_drill: '限时训练', essay: '申论写作', mock_exam: '整卷模考', mock_review: '模考分析' };
+  var PLAN_MODES = ['foundation', 'reinforcement', 'speed_training', 'mock_exam', 'review_adjustment'];
+  var PLAN_MODE_LABEL = { foundation: '新知识学习日', reinforcement: '专项强化日', speed_training: '混合提速日', mock_exam: '整卷模考日', review_adjustment: '模考复盘／考前调整日' };
+  var PLAN_SUBMODES = ['mock_review', 'pre_exam_adjustment'];
+  var TASK_TYPE_LEGACY_TYPE = { video: 'course', examples: 'textbook', practice: 'questions', review: 'retest', memorization: 'memory', retest: 'retest', timed_drill: 'questions', essay: 'essay', mock_exam: 'mock', mock_review: 'mock_review' };
+  function inferTaskType(t) {
+    if (!t) return 'practice';
+    if (TASK_TYPES.indexOf(t.task_type) >= 0) return t.task_type;
+    var stages = Array.isArray(t.stages) ? t.stages : [];
+    var types = stages.map(function (s) { return s && s.type; });
+    if (t.learning_mode === 'mock' || types.indexOf('mock') >= 0) return 'mock_exam';
+    if (t.learning_mode === 'review') return 'review';
+    if (t.learning_mode === 'course_first') return 'video';
+    if (types.indexOf('video') >= 0) return 'video';
+    if (types.indexOf('examples') >= 0) return 'examples';
+    if (types.indexOf('practice') >= 0) return (t.time_limit_seconds != null ? 'timed_drill' : 'practice');
+    if (types.indexOf('review') >= 0) return 'review';
+    if (types.indexOf('reading') >= 0) return 'memorization';
+    if (t.learning_mode === 'textbook') return 'examples';
+    if (t.learning_mode === 'practice') return 'practice';
+    return 'practice';
+  }
+  function inferPlanMode(plan) {
+    if (plan && PLAN_MODES.indexOf(plan.plan_mode) >= 0) return plan.plan_mode;
+    var tasks = (plan && plan.tasks) || [];
+    var types = tasks.map(inferTaskType);
+    if (types.some(function (x) { return x === 'mock_exam'; })) return 'mock_exam';
+    if (types.some(function (x) { return x === 'mock_review'; })) return 'review_adjustment';
+    if (types.indexOf('video') >= 0) return 'foundation';
+    if (types.some(function (x) { return x === 'timed_drill' || x === 'essay' || x === 'memorization'; })) return 'speed_training';
+    return 'reinforcement';
+  }
+  function legacyTypeForTaskType(taskType) { return TASK_TYPE_LEGACY_TYPE[taskType] || 'questions'; }
+
   var STAGE_LABEL = { video: '听课', examples: '教材例题', practice: '限时练习', review: '错题复盘', mock: '模考', reading: '阅读', other: '其他' };
 
   function esc(s) { return String(s == null ? '' : s); }
@@ -67,6 +102,8 @@
     if (plan.timezone !== TZ) err(errors, 'timezone', '时区必须为 ' + TZ);
     if (!plan.exam_type || typeof plan.exam_type !== 'string' || plan.exam_type.length > 40) err(errors, 'exam_type', '考试类别必填');
     if (STATUSES.indexOf(plan.status) < 0) err(errors, 'status', '状态必须为 ' + STATUSES.join('/'));
+    if (plan.plan_mode != null && PLAN_MODES.indexOf(plan.plan_mode) < 0) err(errors, 'plan_mode', '计划模式必须为 ' + PLAN_MODES.join('/') + '，收到 ' + JSON.stringify(plan.plan_mode));
+    if (plan.plan_submode != null && PLAN_SUBMODES.indexOf(plan.plan_submode) < 0) err(errors, 'plan_submode', '计划子模式必须为 ' + PLAN_SUBMODES.join('/') + '，收到 ' + JSON.stringify(plan.plan_submode));
     if (!plan.title || typeof plan.title !== 'string') err(errors, 'title', '计划标题必填');
     safeText(plan.title, 'title', errors, 300);
     if (typeof plan.goal !== 'string') err(errors, 'goal', '计划目标必须为字符串'); else safeText(plan.goal, 'goal', errors, 2000);
@@ -93,7 +130,21 @@
       ids[t.task_id] = true;
       safeText(t.subject, p + '.subject', errors, 200);
       if (!t.topic || typeof t.topic !== 'string') err(errors, p + '.topic', 'topic 必填'); else safeText(t.topic, p + '.topic', errors, 1000);
-      if (PRIORITIES.indexOf(t.priority) < 0) err(errors, p + '.priority', '优先级必须为 high/normal/low');
+      if (PRIORITIES.indexOf(t.priority) < 0) err(errors, p + '.priority', '优先级必须为 high/normal/low，收到 ' + JSON.stringify(t.priority));
+      if (t.task_type != null && TASK_TYPES.indexOf(t.task_type) < 0) err(errors, p + '.task_type', '任务类型必须为 ' + TASK_TYPES.join('/') + '，收到 ' + JSON.stringify(t.task_type));
+      ['module', 'knowledge_point', 'question_set_id'].forEach(function (k) { if (t[k] != null) safeText(t[k], p + '.' + k, errors, k === 'question_set_id' ? 120 : 300); });
+      if (t.target_accuracy != null && (typeof t.target_accuracy !== 'number' || !isFinite(t.target_accuracy) || t.target_accuracy < 0 || t.target_accuracy > 1)) err(errors, p + '.target_accuracy', '目标正确率必须为 0~1 的数字');
+      if (t.time_limit_seconds != null && (!isInt(t.time_limit_seconds) || t.time_limit_seconds < 0)) err(errors, p + '.time_limit_seconds', '限时秒数必须为非负整数');
+      if (t.question_count != null && (!isInt(t.question_count) || t.question_count < 0)) err(errors, p + '.question_count', '计划题数必须为非负整数');
+      if (t.memorization != null) {
+        var mem = t.memorization;
+        checkUnknown(mem, ['topic', 'source', 'keywords', 'first_learned_at', 'last_reviewed_at', 'next_review_at', 'recall_accuracy', 'confusions'], p + '.memorization', errors);
+        ['topic', 'source'].forEach(function (k) { if (mem[k] != null) safeText(mem[k], p + '.memorization.' + k, errors, 500); });
+        ['first_learned_at', 'last_reviewed_at', 'next_review_at'].forEach(function (k) { if (mem[k] != null && !isDate(mem[k])) err(errors, p + '.memorization.' + k, '必须为 YYYY-MM-DD'); });
+        if (mem.keywords != null && (!Array.isArray(mem.keywords) || mem.keywords.some(function (x) { return typeof x !== 'string' || x.length > 80; }))) err(errors, p + '.memorization.keywords', '关键词必须为字符串数组');
+        if (mem.confusions != null && (!Array.isArray(mem.confusions) || mem.confusions.some(function (x) { return typeof x !== 'string' || x.length > 300; }))) err(errors, p + '.memorization.confusions', '易混淆点必须为字符串数组');
+        if (mem.recall_accuracy != null && (typeof mem.recall_accuracy !== 'number' || !isFinite(mem.recall_accuracy) || mem.recall_accuracy < 0 || mem.recall_accuracy > 1)) err(errors, p + '.memorization.recall_accuracy', '闭卷回忆正确率必须为 0~1 的数字');
+      }
       if (!isTime(t.start)) err(errors, p + '.start', '开始时间应为 HH:MM');
       if (!isTime(t.end)) err(errors, p + '.end', '结束时间应为 HH:MM');
       if (isTime(t.start) && isTime(t.end)) {
@@ -353,6 +404,7 @@
   function planQuestions(t) {
     var p = (t.stages || []).filter(function (s) { return s.type === 'practice'; })[0];
     if (p && p.count != null) return p.count;
+    if (t.question_count != null) return t.question_count;
     if (t.acceptance && t.acceptance.target_total != null) return t.acceptance.target_total;
     return null;
   }
@@ -399,12 +451,13 @@
     var warnings = [];
     var records = [];
     var planHash = hash(canonical(plan));
+    var planMode = inferPlanMode(plan), planSubmode = plan.plan_submode || null;
     plan.tasks.forEach(function (t) {
       var existing = tasks.filter(function (x) { return x.planId === plan.plan_id && x.planTaskId === t.task_id; })[0];
       var cm = findCourse(t, courses), course = cm.course;
       var mat = findMaterial(t, textbooks, chapters);
       var questionSet = null;
-      var qid = ((t.stages || []).filter(function (s) { return s.type === 'practice'; })[0] || {}).question_set_id || null;
+      var qid = t.question_set_id || ((t.stages || []).filter(function (s) { return s.type === 'practice'; })[0] || {}).question_set_id || null;
       if (qid) {
         var qExact = exams.filter(function (e) { return e.id === qid; }).length ? exams.filter(function (e) { return e.id === qid; }) : exams.filter(function (e) { return e.name === qid; });
         if (qExact.length === 1) questionSet = qExact[0];
@@ -425,7 +478,11 @@
         planId: plan.plan_id, planTaskId: t.task_id, planSchema: SCHEMA,
         planTitle: plan.title, planGoal: plan.goal || '', planDate: plan.date, timezone: plan.timezone,
         examType: plan.exam_type, planStatus: plan.status, memSuspended: !!plan.mem_suspended,
-        title: t.topic, subject: t.subject, topic: t.topic, type: typeForMode(t.learning_mode),
+        title: t.topic, subject: t.subject, topic: t.topic, type: legacyTypeForTaskType(inferTaskType(t)),
+        taskType: inferTaskType(t), planMode: planMode, planSubmode: planSubmode,
+        module: t.module || null, knowledgePoint: t.knowledge_point || null,
+        targetAccuracy: t.target_accuracy == null ? null : t.target_accuracy, timeLimitSeconds: t.time_limit_seconds == null ? null : t.time_limit_seconds,
+        memorization: t.memorization ? JSON.parse(JSON.stringify(t.memorization)) : null,
         date: plan.date, time: t.start, dueDate: plan.date, priority: t.priority,
         start: t.start, end: t.end, learningMode: t.learning_mode, stages: t.stages || [],
         acceptance: t.acceptance || null, courseInfo: t.course || null, materialInfo: t.material || null,
@@ -451,9 +508,9 @@
     var plan = {
       schema_version: SCHEMA, plan_id: 'demo-' + date.replace(/-/g, ''), date: date, timezone: TZ,
       exam_type: 'gd', status: 'planned', title: '每日学习计划示例', goal: '示例计划，可修改日期和内容后导入；不代表真实完成记录。',
-      mem_suspended: false, schedule: [],
+      plan_mode: 'foundation', plan_submode: null, mem_suspended: false, schedule: [],
       tasks: [{
-        task_id: 'demo-01', subject: '资料分析', topic: '增长率与比重综合练习', priority: 'high',
+        task_id: 'demo-01', task_type: 'video', subject: '资料分析', topic: '增长率与比重综合练习', priority: 'high',
         start: '09:00', end: '10:30', planned_minutes: 90, learning_mode: 'course_first',
         course: { topic: '资料分析基础', provider: '示例课程平台', video_title: '增长率与比重', url: 'https://example.com/course/demo', verified: false },
         material: { name: '示例教材', chapter: '第一章 资料分析', pages: null },
@@ -466,6 +523,54 @@
         acceptance: { target_correct: 16, target_total: 20, require_error_review: true }
       }]
     };
+    return JSON.stringify(plan, null, 2);
+  }
+
+  function planTemplate(mode) {
+    if (PLAN_MODES.indexOf(mode) < 0) throw new Error('未知计划模式：' + mode);
+    var todayStr = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
+    var id = 'template-' + mode + '-' + todayStr.replace(/-/g, '');
+    function task(taskId, taskType, subject, topic, start, end, learningMode, stages, extra) {
+      var x = { task_id: taskId, task_type: taskType, subject: subject, topic: topic, priority: 'normal', start: start, end: end, planned_minutes: stages.reduce(function (a, s) { return a + (Number(s.minutes) || 0); }, 0), learning_mode: learningMode, course: null, material: null, stages: stages, acceptance: null };
+      Object.keys(extra || {}).forEach(function (k) { x[k] = extra[k]; });
+      return x;
+    }
+    var tasks = [];
+    if (mode === 'foundation') {
+      tasks = [
+        task('foundation-video', 'video', '资料分析', '课程学习与方法建立', '19:30', '20:15', 'other', [{ type: 'video', minutes: 45 }], { module: '资料分析' }),
+        task('foundation-examples', 'examples', '资料分析', '教材例题与方法巩固', '20:15', '20:45', 'textbook', [{ type: 'examples', minutes: 30, count: 5 }], { module: '资料分析' }),
+        task('foundation-practice', 'practice', '资料分析', '基础专项练习', '21:15', '22:15', 'practice', [{ type: 'practice', minutes: 60, count: 20 }], { module: '资料分析', question_count: 20, target_accuracy: 0.8 }),
+        task('foundation-review', 'review', '资料分析', '错题复盘与方法修正', '22:15', '22:35', 'review', [{ type: 'review', minutes: 20 }], { module: '资料分析' })
+      ];
+    } else if (mode === 'reinforcement') {
+      tasks = [
+        task('reinforcement-review', 'review', '资料分析', '薄弱知识回顾', '19:30', '19:50', 'review', [{ type: 'review', minutes: 20 }], { module: '资料分析', knowledge_point: '平均数增长率' }),
+        task('reinforcement-practice', 'practice', '资料分析', '中高难专项练习', '19:50', '20:50', 'practice', [{ type: 'practice', minutes: 60, count: 20 }], { module: '资料分析', question_count: 20, target_accuracy: 0.85 }),
+        task('reinforcement-timed', 'timed_drill', '资料分析', '限时训练', '21:20', '22:00', 'practice', [{ type: 'practice', minutes: 40, count: 20 }], { module: '资料分析', question_count: 20, time_limit_seconds: 2400, target_accuracy: 0.85 }),
+        task('reinforcement-retest', 'retest', '资料分析', '错题复测', '22:00', '22:20', 'review', [{ type: 'review', minutes: 20 }], { module: '资料分析', knowledge_point: '平均值' })
+      ];
+    } else if (mode === 'speed_training') {
+      tasks = [
+        task('speed-timed', 'timed_drill', '行测', '多模块混合限时训练', '19:30', '20:20', 'practice', [{ type: 'practice', minutes: 50, count: 30 }], { module: '混合模块', question_count: 30, time_limit_seconds: 3000, target_accuracy: 0.8 }),
+        task('speed-essay', 'essay', '申论', '申论小题限时写作', '20:20', '21:00', 'practice', [{ type: 'practice', minutes: 40, count: 1 }], { module: '申论表达' }),
+        task('speed-review', 'review', '行测', '超时题与错题复盘', '21:30', '21:50', 'review', [{ type: 'review', minutes: 20 }], { module: '混合模块' }),
+        task('speed-memory', 'memorization', '申论', '申论表达背诵', '21:50', '22:10', 'textbook', [{ type: 'reading', minutes: 15 }], { module: '申论表达', memorization: { topic: '申论表达素材', source: '自建素材', keywords: ['规范表达', '对策'], recall_accuracy: null } })
+      ];
+    } else if (mode === 'mock_exam') {
+      tasks = [
+        task('mock-xingce', 'mock_exam', '行测', '行测整卷模考', '09:00', '10:30', 'mock', [{ type: 'mock', minutes: 90, count: 100 }], { module: null, question_count: 100 }),
+        task('mock-shenlun', 'mock_exam', '申论', '申论整卷模考', '14:00', '16:30', 'mock', [{ type: 'mock', minutes: 150, count: 4 }], { module: '申论', question_count: 4 })
+      ];
+    } else {
+      tasks = [
+        task('review-mock-review', 'mock_review', '行测', '模考模块失分与时间策略分析', '19:30', '20:30', 'review', [{ type: 'review', minutes: 60 }], { module: '混合模块' }),
+        task('review-review', 'review', '行测', '高频错题复盘', '20:30', '21:10', 'review', [{ type: 'review', minutes: 40 }], { module: '混合模块' }),
+        task('review-retest', 'retest', '行测', '错题复测', '21:10', '21:30', 'review', [{ type: 'review', minutes: 20 }], { module: '混合模块' }),
+        task('review-memory', 'memorization', '申论', '考前表达与素材背诵', '21:30', '21:45', 'textbook', [{ type: 'reading', minutes: 15, count: 3 }], { module: '申论表达' })
+      ];
+    }
+    var plan = { schema_version: SCHEMA, plan_id: id, date: todayStr, timezone: TZ, exam_type: 'gd', status: 'planned', plan_mode: mode, plan_submode: mode === 'review_adjustment' ? 'mock_review' : null, title: PLAN_MODE_LABEL[mode] + '示例', goal: '该模板只包含计划结构示例，不代表真实完成或成绩。', mem_suspended: false, schedule: [], tasks: tasks };
     return JSON.stringify(plan, null, 2);
   }
 
@@ -501,9 +606,9 @@
   function csvTemplate() { return planToCsv(JSON.parse(jsonTemplate())); }
 
   root.DailyPlanImport = {
-    SCHEMA: SCHEMA, TZ: TZ, CSV_COLUMNS: CSV_COLUMNS, MODE_LABEL: MODE_LABEL, STAGE_LABEL: STAGE_LABEL,
+    SCHEMA: SCHEMA, TZ: TZ, CSV_COLUMNS: CSV_COLUMNS, MODE_LABEL: MODE_LABEL, STAGE_LABEL: STAGE_LABEL, TASK_TYPES: TASK_TYPES, TASK_TYPE_LABEL: TASK_TYPE_LABEL, PLAN_MODES: PLAN_MODES, PLAN_MODE_LABEL: PLAN_MODE_LABEL, PLAN_SUBMODES: PLAN_SUBMODES, TASK_TYPE_LEGACY_TYPE: TASK_TYPE_LEGACY_TYPE,
     parseText: parseText, parseJson: parseJson, parseCsv: parseCsv, validatePlan: validatePlan,
     prepare: prepare, jsonTemplate: jsonTemplate, csvTemplate: csvTemplate, planToCsv: planToCsv,
-    stableTaskId: stableTaskId, typeForMode: typeForMode
+    stableTaskId: stableTaskId, typeForMode: typeForMode, planTemplate: planTemplate, inferTaskType: inferTaskType, inferPlanMode: inferPlanMode, legacyTypeForTaskType: legacyTypeForTaskType
   };
 })(typeof window !== 'undefined' ? window : globalThis);

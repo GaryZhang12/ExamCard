@@ -1,7 +1,7 @@
 {
   "environment": {
-    "version": "1.0.1",
-    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-ykYm5f",
+    "version": "1.1.0",
+    "userData": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.1.0-work\\.test-runs\\tmp\\examcard-work-test-ymfVO7",
     "electron": "43.3.0",
     "sandbox": false,
     "displays": [
@@ -21,8 +21,8 @@
       }
     ]
   },
-  "profile": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-ykYm5f",
-  "target": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.0.1-work",
+  "profile": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.1.0-work\\.test-runs\\tmp\\examcard-work-test-ymfVO7",
+  "target": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.1.0-work",
   "results": [
     {
       "name": "v5 schema: gd_exam_v2 / 22 stores",
@@ -101,14 +101,14 @@
       "status": "pass",
       "detail": {
         "repeat": {
-          "planId": "demo-20261028",
+          "planId": "demo-20261031",
           "created": 0,
           "updated": 0,
           "unchanged": 1,
           "skippedCompleted": 0
         },
         "updated": {
-          "planId": "demo-20261028",
+          "planId": "demo-20261031",
           "created": 0,
           "updated": 1,
           "unchanged": 0,

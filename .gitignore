@@ -12,3 +12,8 @@ reports/final-e2e/
 reports/portable-running.png
 
 reports/release-integration/*.png
+reports/import77/
+reports/import77v2/
+reports/_*
+.reports-staging/
+

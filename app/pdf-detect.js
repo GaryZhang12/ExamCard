@@ -79,6 +79,7 @@
   function isGenericTitle(t) {
     if (!t) return true;
     if (t.length < 2) return true;
+    if (/^(?:data|blob|https?):/i.test(t)) return true;
     return GENERIC_TITLES.test(t);
   }
 
@@ -199,40 +200,82 @@
 
   var CN_NUM = '一二三四五六七八九十百零〇两';
 
-  function moduleNameFromLine(text) {
-    var t = text.trim();
-
-    // 一.政治理论: / 二、常识判断： / 三．言语理解与表达
-    var m = new RegExp('^([' + CN_NUM + ']{1,4})\\s*[.．、]\\s*([\\u4e00-\\u9fa5A-Za-z]{2,20})\\s*[:：]').exec(t);
-    if (m) {
-      var name = cleanTitle(m[2]);
-      if (isValidModuleName(name)) return name;
+  var MODULE_ALIASES = [
+    { name: '政治理论', aliases: ['政治理论', '政治常识', '政治理论专项'] },
+    { name: '常识判断', aliases: ['常识判断', '常识应用', '公共基础知识', '常识'] },
+    { name: '言语理解与表达', aliases: ['言语理解与表达', '言语理解', '言语表达', '言语'] },
+    { name: '数量关系', aliases: ['数量关系', '数学运算', '数字推理'] },
+    { name: '判断推理', aliases: ['判断推理', '判断推理能力'] },
+    { name: '资料分析', aliases: ['资料分析'] },
+    { name: '科学推理', aliases: ['科学推理'] },
+    { name: '深圳特色专项', aliases: ['深圳特色专项', '深圳特色', '深圳专项', '深圳市考特色'] }
+  ];
+  function canonicalModuleName(raw) {
+    var t = cleanTitle(raw || '');
+    if (!t) return null;
+    t = t.replace(/[（(][^）)]*[）)]\s*$/, '').replace(/[：:，,。；;]+$/g, '').replace(/\s+/g, '');
+    if (!t || t.length > 60) return null;
+    for (var i = 0; i < MODULE_ALIASES.length; i++) {
+      var def = MODULE_ALIASES[i];
+      if (t === def.name) return def.name;
+      for (var a = 0; a < def.aliases.length; a++) if (t === def.aliases[a]) return def.name;
+      var base = t.replace(/(?:专项练习|专项训练|专项|练习|精讲|强化|模块)$/g, '');
+      if (base === def.name) return def.name;
+      for (var b = 0; b < def.aliases.length; b++) if (base === def.aliases[b]) return def.name;
     }
-    // 一、政治理论（无冒号）
-    m = new RegExp('^([' + CN_NUM + ']{1,4})\\s*[.．、]\\s*([\\u4e00-\\u9fa5A-Za-z]{2,20})(?:\\s|$)').exec(t);
-    if (m) {
-      var name2 = cleanTitle(m[2]);
-      if (isValidModuleName(name2)) return name2;
-    }
-    // 第一部分 政治理论 / 第1部分：常识判断
-    m = new RegExp('^第\\s*([\\d' + CN_NUM + ']{1,4})\\s*部分\\s*[:：]?\\s*([\\u4e00-\\u9fa5A-Za-z]{2,20})').exec(t);
-    if (m) {
-      var name3 = cleanTitle(m[2]);
-      if (isValidModuleName(name3)) return name3;
-    }
-    // 模块一：政治理论
-    m = new RegExp('^(?:模块|板块)\\s*[' + CN_NUM + '\\d]{1,3}\\s*[:：]\\s*([\\u4e00-\\u9fa5A-Za-z]{2,20})').exec(t);
-    if (m) {
-      var name4 = cleanTitle(m[1]);
-      if (isValidModuleName(name4)) return name4;
+    // 广东真题常见写法：“一.常识判断:根据题目要求……”。标题正文会
+    // 紧跟说明文字，因此识别开头的规范模块名，而不是要求整行精确匹配。
+    for (var j = 0; j < MODULE_ALIASES.length; j++) {
+      var d = MODULE_ALIASES[j];
+      var names = [d.name].concat(d.aliases);
+      for (var n = 0; n < names.length; n++) {
+        var lead = names[n];
+        if (t.indexOf(lead) !== 0) continue;
+        var rest = t.slice(lead.length);
+        if (!rest) return d.name;
+        if (/^[：:，,。；;、（(]/.test(rest)) return d.name;
+        if (/^(专项练习|专项训练|专项|练习|精讲|强化|模块)/.test(rest)) return d.name;
+      }
     }
     return null;
   }
-
-  function isValidModuleName(name) {
-    if (!name || name.length < 2 || name.length > 20) return false;
-    if (/^[.．、:：，,。;；]+$/.test(name)) return false;
-    if (/^(题|答案|解析|选项|根据|本部分)$/.test(name)) return false;
+  function sectionTitleRest(text) {
+    var t = cleanTitle(text || '');
+    var m = new RegExp('^第\\s*([\\d' + CN_NUM + ']{1,4})\\s*部分\\s*[:：]?\\s*(.*)$').exec(t);
+    if (m) return m[2];
+    m = new RegExp('^([\\d' + CN_NUM + ']{1,4})\\s*[.．、]\\s*(.*)$').exec(t);
+    if (m) return m[2];
+    m = new RegExp('^(?:模块|板块)\\s*[\\d' + CN_NUM + ']{1,3}\\s*[:：]\\s*(.*)$').exec(t);
+    if (m) return m[1];
+    return null;
+  }
+  function looksLikeSectionTitle(text) {
+    var rest = sectionTitleRest(text);
+    if (rest == null) return false;
+    var r = cleanTitle(rest);
+    if (!r || r.length < 2 || r.length > 24) return false;
+    if (/^(根据|下列|以下|阅读|材料|回答|本部分|请|关于)/.test(r)) return false;
+    if (/^(题|答案|解析|选项)/.test(r)) return false;
+    return true;
+  }
+  function moduleNameFromLine(text) {
+    var rest = sectionTitleRest(text);
+    if (rest != null) return canonicalModuleName(rest);
+    // A bare major-section title is accepted only when it is exactly a known
+    // canonical name/alias (e.g. “资料分析专项练习”), never arbitrary prose.
+    return canonicalModuleName(text);
+  }
+  function isModuleHeaderLine(line) {
+    if (!line) return false;
+    var text = cleanTitle(line.text || '');
+    if (!text) return false;
+    if (/[.．。…·]{3,}/.test(text)) return false; // TOC dot leaders
+    if (/\s\d{1,3}\s*$/.test(text)) return false; // TOC page number
+    if (line.yRatio < 0.03 || line.yRatio > 0.95) return false; // running header/footer
+    // Top-of-page small type is usually a running header; a real section title
+    // at the same position is normally set in a larger body/heading face.
+    if (line.yRatio < 0.06 && line.fontSize && line.fontSize < 11) return false;
+    if (line.fontSize && line.fontSize < 7) return false;
     return true;
   }
 
@@ -343,7 +386,7 @@
       var nextStart2 = nextMarker ? nextMarker.start : text.length;
       var optionText2 = text.slice(marker2.end, nextStart2).replace(/\s+/g, ' ').trim();
       optionText2 = optionText2.replace(/^[、,，;；:：.．]+/, '').trim();
-      options.push({ key: marker2.letter, text: optionText2.slice(0, 500) });
+      options.push({ key: marker2.letter, text: optionText2 });
     }
     options.sort(function (a, b) { return a.key.localeCompare(b.key); });
     var firstMarker2 = selected.length ? selected[0].start : text.length;
@@ -355,9 +398,36 @@
     for (var i = 0; i < TYPE_MARKERS.length; i++) {
       if (TYPE_MARKERS[i].re.test(blockText)) return TYPE_MARKERS[i].type;
     }
-    if (countOptionLetters(blockText) >= 2) return 'single';
-    if (/判断|正确|错误|对错|是否/.test(blockText)) return 'judge';
-    return 'single';
+    if (countOptionLetters(blockText) >= 4) return 'single';
+    if (/判断题|判断正误|请判断|判断[：:]|对错|是否正确|正确与否/.test(blockText)) return 'judge';
+    return 'unknown';
+  }
+  function detectTypeStatus(blockText, type) {
+    for (var i = 0; i < TYPE_MARKERS.length; i++) if (TYPE_MARKERS[i].re.test(blockText)) return 'confirmed';
+    if (type === 'single' && countOptionLetters(blockText) >= 4) return 'confirmed';
+    if (type === 'judge') return 'confirmed';
+    return 'needs-review';
+  }
+
+  function materialHeading(text) {
+    var t = cleanTitle(text);
+    if (/^材料[一二三四五六七八九十\d]+(?:\s|$|[（(：:])/i.test(t)) return true;
+    if (/^根据以下(?:资料|材料)/.test(t)) return true;
+    if (/^[（(][一二三四五六七八九十\d]+[）)]\s*\S/.test(t) && t.length >= 8) return true;
+    return false;
+  }
+  function materialTextFor(all, acceptedSeqs, headerSeq) {
+    var lines = [], nextQ = null;
+    for (var i = 0; i < acceptedSeqs.length; i++) { if (acceptedSeqs[i] > headerSeq) { nextQ = acceptedSeqs[i]; break; } }
+    var end = nextQ == null ? all.length : nextQ;
+    for (var j = 0; j < all.length; j++) {
+      var l = all[j]; if (l.seq < headerSeq || l.seq >= end) continue;
+      var text = cleanTitle(l.text); if (!text) continue;
+      if (moduleNameFromLine(text)) continue;
+      if (/^第\s*\d+\s*页\s*[/／]\s*共\s*\d+\s*页/.test(text)) continue;
+      lines.push(text);
+    }
+    return lines.join(' ').replace(/\s+/g, ' ').trim().slice(0, 4000);
   }
 
   /* ------------------------------------------------------------------ *
@@ -530,14 +600,22 @@
       if (!(l.page in leftByPage) || l.x < leftByPage[l.page]) leftByPage[l.page] = l.x;
     }
 
-    // ---- 第一遍：收集候选行 + 模块标题 ----
+    // ---- 第一遍：收集候选行 + 模块标题（排除目录/页眉页脚/材料标题） ----
     var candidates = [];
-    var headers = [];
+    var rawHeaders = [];
+    var ambiguousHeaders = [];
     for (var k = 0; k < all.length; k++) {
       var line = all[k];
       var modName = moduleNameFromLine(line.text);
       if (modName) {
-        headers.push({ seq: line.seq, name: modName, page: line.page, yRatio: line.yRatio });
+        // Keep every module-like line as a question-block boundary; only
+        // validated body titles become the active module. A running header
+        // must not be swallowed into the previous question's last option.
+        rawHeaders.push({ seq: line.seq, name: modName, page: line.page, yRatio: line.yRatio, text: cleanTitle(line.text), valid: isModuleHeaderLine(line) });
+        continue;
+      }
+      if (looksLikeSectionTitle(line.text) && isModuleHeaderLine(line) && !matchQuestion(line.text)) {
+        ambiguousHeaders.push({ seq: line.seq, page: line.page, yRatio: line.yRatio, text: cleanTitle(line.text) });
         continue;
       }
       var qm = matchQuestion(line.text);
@@ -561,26 +639,65 @@
       });
     }
 
-    // ---- 第二遍：按题号序列过滤误报（正文中的“12.1”“3.93%”等） ----
+    // 同一标题在页眉/页脚重复出现时不是大题标题。
+    var headerTextCount = {};
+    rawHeaders.forEach(function (h) { headerTextCount[h.text] = (headerTextCount[h.text] || 0) + 1; });
+    var headers = rawHeaders.filter(function (h) {
+      return h.valid && !(headerTextCount[h.text] >= 3 && h.yRatio < 0.15);
+    });
+    headers.sort(function (a, b) { return a.seq - b.seq; });
+    var boundarySeqs = rawHeaders.map(function (h) { return h.seq; }).concat(ambiguousHeaders.map(function (h) { return h.seq; }));
+    boundarySeqs.sort(function (a, b) { return a - b; });
+
+    function sectionForSeq(seq) {
+      var found = null;
+      for (var hi = 0; hi < headers.length; hi++) {
+        if (headers[hi].seq < seq) found = headers[hi]; else break;
+      }
+      return found;
+    }
+    function ambiguousForSeq(seq) {
+      var found = null;
+      for (var ai = 0; ai < ambiguousHeaders.length; ai++) {
+        if (ambiguousHeaders[ai].seq < seq) found = ambiguousHeaders[ai]; else break;
+      }
+      return found;
+    }
+    candidates.forEach(function (cand) {
+      var section = sectionForSeq(cand.seq);
+      var ambiguous = ambiguousForSeq(cand.seq);
+      cand.sectionSeq = section ? section.seq : -1;
+      cand.sectionName = section ? section.name : '未分类';
+      cand.sectionPage = section ? section.page : null;
+      cand.moduleAmbiguous = !!(ambiguous && (!section || ambiguous.seq > section.seq));
+    });
+
+    // ---- 第二遍：按题号序列过滤误报；大题标题边界内允许题号从 1 重新开始 ----
     var accepted = [];
     var acceptedMap = {};
     var invalid = [];
-    var lastN = 0;
+    var lastSectionSeq = -999;
+    var lastLocalN = 0;
     for (var c = 0; c < candidates.length; c++) {
       var cand = candidates[c];
+      var sectionStart = accepted.length === 0 || cand.sectionSeq !== lastSectionSeq;
+      if (cand.sectionSeq !== lastSectionSeq) {
+        lastSectionSeq = cand.sectionSeq;
+        lastLocalN = 0;
+      }
       if (accepted.length === 0) {
         accepted.push(cand);
-        acceptedMap[cand.n] = (acceptedMap[cand.n] || 0) + 1;
-        lastN = cand.n;
+        acceptedMap[cand.sectionSeq + ':' + cand.n] = (acceptedMap[cand.sectionSeq + ':' + cand.n] || 0) + 1;
+        lastLocalN = cand.n;
         continue;
       }
-      var isNext = cand.n === lastN + 1;
-      var isGap = cand.n > lastN + 1 && cand.n <= lastN + MAX_GAP;
-      var isDup = !!acceptedMap[cand.n];
-      if (isNext || isGap || isDup) {
+      var isNext = cand.n === lastLocalN + 1;
+      var isGap = cand.n > lastLocalN + 1 && cand.n <= lastLocalN + MAX_GAP;
+      var isDup = !!acceptedMap[cand.sectionSeq + ':' + cand.n];
+      if (sectionStart || isNext || isGap || isDup) {
         accepted.push(cand);
-        acceptedMap[cand.n] = (acceptedMap[cand.n] || 0) + 1;
-        if (cand.n > lastN) lastN = cand.n;
+        acceptedMap[cand.sectionSeq + ':' + cand.n] = (acceptedMap[cand.sectionSeq + ':' + cand.n] || 0) + 1;
+        if (cand.n > lastLocalN) lastLocalN = cand.n;
       } else {
         invalid.push(cand);
       }
@@ -597,16 +714,28 @@
       for (var a = 0; a < acceptedSeqs.length; a++) {
         if (acceptedSeqs[a] > seq && acceptedSeqs[a] < best) { best = acceptedSeqs[a]; break; }
       }
-      for (var h3 = 0; h3 < headerSeqs.length; h3++) {
-        if (headerSeqs[h3] > seq && headerSeqs[h3] < best) best = headerSeqs[h3];
+      for (var h3 = 0; h3 < boundarySeqs.length; h3++) {
+        if (boundarySeqs[h3] > seq && boundarySeqs[h3] < best) { best = boundarySeqs[h3]; break; }
       }
       return best;
     }
 
+    var materialHeaders = [];
+    for (var mh = 0; mh < all.length; mh++) {
+      if (!materialHeading(all[mh].text)) continue;
+      var mt = materialTextFor(all, acceptedSeqs, all[mh].seq);
+      if (mt) materialHeaders.push({ seq: all[mh].seq, heading: cleanTitle(all[mh].text), text: mt });
+    }
+
     var questions = [];
     var previousQuestion = null;
+    var globalN = 0;
     for (var q = 0; q < accepted.length; q++) {
       var ac = accepted[q];
+      var printedN = ac.n;
+      if (printedN > globalN) globalN = printedN; else globalN += 1;
+      ac.globalN = globalN;
+      ac.printedN = printedN;
       var stop = nextBoundarySeq(ac.seq);
       var blockLines = [];
       for (var seq = ac.seq; seq < stop; seq++) {
@@ -616,10 +745,14 @@
 
       var firstRest = ac.rest;
       var type = detectQuestionType(blockText);
+      var typeStatus = detectTypeStatus(blockText, type);
+      if (type === 'unknown') type = 'single';
       var optionResult = extractOptions(blockLines);
       var options = optionResult.options;
       var qIssues = [];
       var optionStatus = 'n/a';
+      if (ac.moduleAmbiguous) qIssues.push({ code: 'module-review', severity: 'warning', message: '大题标题存在歧义，请人工确认一级模块' });
+      if (typeStatus === 'needs-review') qIssues.push({ code: 'type-review', severity: 'warning', message: '无法确认作答类型，请人工审核（不默认为单选）' });
       if (type !== 'judge') {
         var nonEmptyOptions = options.filter(function (o) { return o.text && o.text.trim(); }).length;
         if (!options.length) { optionStatus = 'missing'; qIssues.push({ code: 'options-missing', severity: 'warning', message: '未识别到 A-D 选项，请人工确认' }); }
@@ -648,12 +781,21 @@
       preview = cleanTitle(preview).slice(0, 90);
 
       var questionObj = {
-        n: ac.n,
+        n: ac.globalN,
+        printedNumber: ac.printedN,
+        sectionNumber: printedN,
         type: type,
-        module: '未分类',
+        typeStatus: typeStatus,
+        module: ac.sectionName || '未分类',
+        moduleStatus: ac.moduleAmbiguous ? 'needs-review' : (ac.sectionSeq >= 0 ? 'auto' : 'unclassified'),
+        modulePage: ac.sectionPage || ac.page,
         page: ac.page,
         yRatio: clamp01(ac.yRatio),
         xRatio: clamp01(ac.xRatio),
+        fullStem: stripTypeMarker(stemText),
+        requiresAssets: /(?:如下图|如图|下图|图表|见图)/.test(stemText),
+        materialText: (function () { var found = null; for (var mi = 0; mi < materialHeaders.length; mi++) if (materialHeaders[mi].seq < ac.seq) found = materialHeaders[mi]; return found ? found.text : null; })(),
+        materialHeading: (function () { var found = null; for (var mi2 = 0; mi2 < materialHeaders.length; mi2++) if (materialHeaders[mi2].seq < ac.seq) found = materialHeaders[mi2]; return found ? found.heading : null; })(),
         preview: preview,
         options: options,
         optionStatus: optionStatus,
@@ -666,44 +808,27 @@
       previousQuestion = questionObj;
     }
 
-    // ---- 模块归属 ----
+    // ---- 模块归属：按大题标题分段；同名模块只保留一个范围 ----
     var moduleList = [];
-    var current = null;
+    var moduleMap = {};
     for (var q2 = 0; q2 < questions.length; q2++) {
       var qq = questions[q2];
-      // 找到该题之前最近的模块标题
-      var lastHeader = null;
-      for (var h4 = 0; h4 < headers.length; h4++) {
-        if (headers[h4].seq < qq._seq) lastHeader = headers[h4];
-        else break;
-      }
-      if (!current || (lastHeader && lastHeader.seq > (current._headerSeq == null ? -1 : current._headerSeq))) {
-        if (lastHeader) {
-          current = {
-            name: lastHeader.name,
-            page: lastHeader.page,
-            start: null,
-            end: null,
-            _headerSeq: lastHeader.seq
-          };
-          moduleList.push(current);
-        } else if (!current) {
-          current = { name: '未分类', page: qq.page, start: null, end: null, _headerSeq: -1 };
-          moduleList.push(current);
-        }
-      }
-      qq.module = current ? current.name : '未分类';
-      if (current) {
-        if (current.start === null) current.start = qq.n;
-        current.end = qq.n;
+      var mn = qq.module || '未分类';
+      if (!moduleMap[mn]) {
+        moduleMap[mn] = { name: mn, start: qq.n, end: qq.n, page: qq.modulePage || qq.page };
+        moduleList.push(moduleMap[mn]);
+      } else {
+        moduleMap[mn].start = Math.min(moduleMap[mn].start, qq.n);
+        moduleMap[mn].end = Math.max(moduleMap[mn].end, qq.n);
+        moduleMap[mn].page = Math.min(moduleMap[mn].page, qq.modulePage || qq.page);
       }
     }
+    var modules = moduleList.filter(function (m2) { return m2.start !== null && m2.end !== null; });
 
-    var modules = moduleList.filter(function (m2) {
-      return m2.start !== null && m2.end !== null;
-    }).map(function (m3) {
-      return { name: m3.name, start: m3.start, end: m3.end, page: m3.page };
-    });
+    // 标题歧义只提示，不静默覆盖；用户可在预览中修改模块。
+    for (var amb = 0; amb < ambiguousHeaders.length && amb < 10; amb++) {
+      warnings.push({ type: 'module-ambiguous', message: '第 ' + ambiguousHeaders[amb].page + ' 页疑似大题标题“' + ambiguousHeaders[amb].text.slice(0, 30) + '”未匹配到一级模块，已标记待确认' });
+    }
 
     // ---- warnings：缺号 / 重号 / 无效题号 ----
     var nums = [];

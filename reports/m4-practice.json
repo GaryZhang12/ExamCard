@@ -1,0 +1,16 @@
+{
+  "status": "pass",
+  "profile": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.1.0-work\\.test-runs\\tmp\\examcard-work-test-MtsGSu",
+  "checks": [
+    "cross-exam complete frozen snapshots survive source deletion and bank edits",
+    "restart resumes exact order, actual answer, mark, index and time",
+    "stale revision rejected",
+    "recorded question time cannot be deleted",
+    "submission failure rejects",
+    "submission failure atomically preserves session and history",
+    "duplicate submission is idempotent",
+    "actual answers grade against frozen standards and retain per-question time",
+    "history uses stable bankQuestionId",
+    "shortage does not persist a fabricated practice"
+  ]
+}

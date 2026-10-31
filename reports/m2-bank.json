@@ -1,0 +1,30 @@
+{
+  "status": "pass",
+  "checks": [
+    "full stem >90 retained, unknown difficulty",
+    "complete authored question eligible",
+    "immutable ID, multi-source dedup independent of numbering",
+    "material semantic context prevents false merge",
+    "answer conflict quarantined without overwriting snapshot",
+    "manual edit preserves stable identity and resolves acknowledged conflict",
+    "reimport preserves manual correction",
+    "stale revision rejected",
+    "unknown answer not auto-gradable",
+    "missing necessary graphic excluded",
+    "local asset Blob persisted",
+    "invalid batch has zero partial writes",
+    "actual write exception rolls back whole import",
+    "source exam deletion cannot delete bank content",
+    "batch labels/classification preserve content",
+    "corrupt graphic rejected before writing",
+    "current standard answer and explanation safely snapshotted",
+    "deleted historical answer set is not revived",
+    "shared material ignores per-question screenshots",
+    "judge normalized to true/false options",
+    "approval rejects missing required assets",
+    "approval rejects unresolved question type",
+    "28-store backup roundtrip preserves actual image Blob",
+    "practice clear removes only dedicated history, preserves original session",
+    "clear practice preserves bank content"
+  ]
+}

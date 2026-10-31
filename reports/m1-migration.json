@@ -1,0 +1,38 @@
+{
+  "status": "pass",
+  "environment": {
+    "version": "1.1.0",
+    "userData": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.1.0-work\\.test-runs\\tmp\\examcard-work-test-dlq9JG",
+    "electron": "43.3.0",
+    "sandbox": false,
+    "displays": [
+      {
+        "size": {
+          "width": 1080,
+          "height": 1920
+        },
+        "scaleFactor": 1
+      },
+      {
+        "size": {
+          "width": 2560,
+          "height": 1440
+        },
+        "scaleFactor": 1
+      }
+    ]
+  },
+  "checks": [
+    "cancel acknowledgement leaves v5",
+    "no upgrade after cancellation",
+    "v5 to v6 real versionchange",
+    "22 original + six new stores",
+    "actual original content retained",
+    "repeated migration idempotent",
+    "complete v6 backup",
+    "implicit v5 restore rejected",
+    "explicit v5 restore content",
+    "missing old store rejected",
+    "v6 restore exact content"
+  ]
+}

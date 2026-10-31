@@ -7,7 +7,7 @@
   var DB_NAME = 'gd_exam_v2';
   var FORMAT = 'ExamCardBackup';
   var FORMAT_VERSION = 1;
-  var APP_VERSION = '1.0.1';
+  var APP_VERSION = '1.1.0';
 
   function BackupError(message, detail) {
     var e = new Error(message);
@@ -241,7 +241,8 @@
     }
   }
 
-  async function assertBackupStoreCompatibility(backup) {
+  async function assertBackupStoreCompatibility(backup, options) {
+    var legacy = backup.dbVersion === 5 && options && options.allowV5 === true && root.BankMigration;
     var db = await openDb();
     try {
       var currentStores = Array.prototype.slice.call(db.objectStoreNames);
@@ -249,12 +250,13 @@
       var unknownStores = backupStoreNames.filter(function (name) { return currentStores.indexOf(name) < 0; });
       if (unknownStores.length) throw BackupError('备份包含当前版本未知的数据表：' + unknownStores.join('、') + '。已拒绝恢复，当前数据未修改。', { unknownStores: unknownStores });
       var missingStores = currentStores.filter(function (name) { return !Object.prototype.hasOwnProperty.call(backup.stores, name); });
+      if (legacy) missingStores = missingStores.filter(function(n){return root.BankMigration.stores.indexOf(n)<0;});
       if (missingStores.length) throw BackupError('备份不完整：缺少当前版本的数据表 ' + missingStores.join('、') + '。没有执行任何写入，当前数据未修改。', { missingStores: missingStores, currentDbVersion: db.version, backupDbVersion: backup.dbVersion });
       return { currentStores: currentStores, dbVersion: db.version };
     } finally { db.close(); }
   }
 
-  async function verifyBackupIntegrity(backup) {
+  async function verifyBackupIntegrity(backup, options) {
     if (!backup || typeof backup !== 'object') throw BackupError('不是有效的备份对象');
     if (backup.format !== FORMAT) throw BackupError('不是 ExamCard 备份文件');
     if (backup.formatVersion !== FORMAT_VERSION) throw BackupError('不支持的备份格式版本：' + backup.formatVersion);
@@ -262,7 +264,7 @@
     if (!backup.counts || !backup.checksums || !backup.recordChecksums) throw BackupError('备份缺少完整性信息');
     if (!Number.isInteger(backup.dbVersion) || backup.dbVersion < 1) throw BackupError('备份缺少有效的 IndexedDB 版本');
     if (typeof backup.integrity !== 'string' || !backup.integrity.length) throw BackupError('备份缺少整体校验值');
-    await assertBackupStoreCompatibility(backup);
+    await assertBackupStoreCompatibility(backup, options);
 
     var digest = await sha256Text(canonical({
       format: backup.format,
@@ -286,6 +288,7 @@
       // A backup must contain every current table. Older/incomplete backups are rejected
       // before any readwrite transaction; no table is cleared and no partial restore occurs.
       var missingStores = currentStores.filter(function (name) { return !Object.prototype.hasOwnProperty.call(backup.stores, name); });
+      if (backup.dbVersion === 5 && options && options.allowV5 === true && root.BankMigration) missingStores = missingStores.filter(function(n){return root.BankMigration.stores.indexOf(n)<0;});
       if (missingStores.length) throw BackupError('备份不完整：缺少当前版本的数据表 ' + missingStores.join('、') + '。没有执行任何写入，当前数据未修改。', { missingStores: missingStores, currentDbVersion: db.version, backupDbVersion: backup.dbVersion });
       var schemaNames = (backup.schema || []).map(function (x) { return x && x.name; }).filter(Boolean);
       var schemaMissing = backupStoreNames.filter(function (name) { return schemaNames.indexOf(name) < 0; });
@@ -347,8 +350,10 @@
     return verifyBackupIntegrity(backup);
   }
 
-  async function restoreBackup(backup) {
-    var info = await verifyBackupIntegrity(backup);
+  async function restoreBackup(backup, options) {
+    var info = await verifyBackupIntegrity(backup, options);
+    if (root.BankStore) root.BankStore.stopForClear();
+      if (root.BankPractice) root.BankPractice.stopForClear();
     var decoded = {};
     Object.keys(backup.stores).forEach(function (name) {
       decoded[name] = backup.stores[name].map(deserializeValue);
@@ -509,6 +514,7 @@
 
   root.ExamBackup = {
     createBackup: createBackup,
+    verifySnapshot: async function(records, keyPath, name, expected) { var result = await checksumsForRecords(records,keyPath,name); if(result.digest !== expected) throw BackupError("升级前数据变化："+name); },
     validateBackup: validateBackup,
     restoreBackup: restoreBackup,
     getStoreCounts: getStoreCounts,

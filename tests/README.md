@@ -1,3 +1,15 @@
+# M5 / M6 final candidate additions
+
+Unified regression now runs 20 suites, including two pure diagnosis tests, real diagnosis/retest, actual source 1.0.1 upgrade, 24 normal-AppShell new-page matrix cases and navigation pause. Optional EXAMCARD_BASELINE101 selects verified 1.0.1 source; if unavailable the upgrade suite reports SKIP. EXAMCARD_LEGACY_ROOT and EXAMCARD_SIX_TASK_PLAN retain their existing explicit semantics. Final Windows builds use `node scripts/build-candidate.cjs`; EXAMCARD_ELECTRON_DIST optionally selects an offline Electron43.3 distribution. The script never publishes. `node tests/portable-smoke.cjs` launches the actual 1.1.0 wrapper with a new isolated profile. Existing v5 opens behind the explicit migration/backup gate; this is expected before activation. Source and packaged evidence are separated under reports/m6-source and reports/m6-packaged. See docs/M6_CANDIDATE_REPORT.md and 使用说明.md for upgrade and manual acceptance limits.
+
+# M3 / M4 additions
+
+The unified command also runs seven seeded-assembly unit tests and m4-practice, m4-safety, m4-ui. All launches use isolated profiles. The M4 UI runs actual timing, pause stability, cross-question answering, marked navigation, exit/resume, submission and four-size layout checks. Snapshots include content/material/local image bytes independent of original PDFs. Explicit Exit waits for a saved checkpoint; active UI checkpoints every two seconds. Abrupt process termination may lose the final unsaved interval; it does not add offline time on resume. M5 diagnostics and M6 packaging are not implemented yet. Earlier M2 documentation below is historical scope.
+
+# 1.1.0 M1/M2 regression
+
+The existing unified command now includes six new suites: m1-migration, m1-failures, m1-safety, m2-bank, m2-cancellation and m2-pdf-ui. Tests always create isolated Profiles. Read docs/M2_DELIVERY.md for current scope, migration and manual-review limitations. `node scripts/run-isolated.cjs` opens an isolated development session. Random assembly/practice is not implemented yet.
+
 # 1.0.1 regression tests
 
 Installed upgrade acceptance: `node tests/installed-upgrade.cjs seed` requires `EXAMCARD_PACKAGED=1` and `EXAMCARD_ELECTRON` pointing to the actual installed 1.0.0. The command creates a new safe temporary profile and snapshot. After an attended Setup upgrade, run `verify` against the installed 1.0.1. After uninstall, run `after-uninstall` against the unpacked candidate; after restoring the original installation, run `verify100` against installed 1.0.0. It checks all 21 non-meta stores by deep equality, including unchanged empty stores; it does not claim 21 categories of populated data. Installation, UAC and uninstallation require separate observed/human steps and system-state checks. This is not part of the unattended unified command. See reports/release-integration/WINDOWS_INSTALL_ACCEPTANCE.md for the unresolved ordinary-launch uninstall path.

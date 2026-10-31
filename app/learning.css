@@ -56,6 +56,15 @@
 .learn-modal h3 { margin: 0 0 8px; font-size: 16px; }
 .learn-modal .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 .learn-warn { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.7; }
+
+  .learn-view-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 2px; }
+  .learn-completed-archive { margin-top: 12px; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: #fbfcfe; }
+  .learn-completed-archive > summary { cursor: pointer; font-weight: 700; color: var(--ink-2); padding: 4px 0; }
+  .learn-completed-archive > summary:hover { color: var(--primary); }
+  .learn-completed-group { margin-top: 10px; }
+  .learn-completed-group h4 { margin: 8px 0 4px; font-size: 13px; color: var(--ink-2); }
+  .learn-task-table td { vertical-align: top; }
+  @media (max-width: 900px) { .learn-view-tabs { gap: 4px; } .learn-view-tabs .learn-btn { padding: 5px 8px; } }
 .learn-empty { background: #fff; border: 1px dashed #dbe3ef; border-radius: 10px; padding: 24px; text-align: center; color: #64748b; }
 .learn-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #0f172a; color: #fff; border-radius: 99px; padding: 8px 14px; font-size: 13px; z-index: 12000; max-width: 80vw; }
 @media (max-width: 820px) {

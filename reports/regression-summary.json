@@ -32,6 +32,111 @@
     },
     {
       "name": "legacy",
+      "status": "skip",
+      "exitCode": 0
+    },
+    {
+      "name": "m2-cancellation",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m1-safety",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m1-migration",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m1-failures",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m2-bank",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m2-pdf-ui",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m4-practice",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m4-safety",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m4-ui",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m5-electron",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m6-upgrade101",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m6-ui",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "m6-navigation",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "pdf-navigation",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "import-preview",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "review-state",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "answer-preview",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "judge-ui",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "plan-ui",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "plan-archive",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "capacity",
       "status": "pass",
       "exitCode": 0
     }

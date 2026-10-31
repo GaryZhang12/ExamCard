@@ -1,0 +1,23 @@
+{
+  "status": "pass",
+  "rows": 4,
+  "columns": 5,
+  "modules": [
+    "数量关系（人工确认）",
+    "数量关系",
+    "资料分析",
+    "资料分析"
+  ],
+  "printedNumbers": [
+    1,
+    2,
+    1,
+    2
+  ],
+  "screenshots": [
+    "import-1280x720.png",
+    "import-1366x768.png",
+    "import-1920x1080.png"
+  ],
+  "nativeBankQuestions": 4
+}

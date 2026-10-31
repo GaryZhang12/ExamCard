@@ -4,11 +4,12 @@
 
 [简体中文](#简体中文) · [English](#english)
 
-**Version:** 1.0.1 Stable / 正式版  
+**Version:** 1.1.0  
+**Released:** 2026-10-31  
 **Platform:** Windows 10 / 11 (x64)  
 **License:** Apache License 2.0  
 **Repository:** https://github.com/GaryZhang12/ExamCard  
-**Latest Release:** [ExamCard v1.0.1](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.1)
+**Latest Release:** [ExamCard v1.1.0](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.1.0) · [更新日志 / Changelog](CHANGELOG.md)
 
 ---
 
@@ -32,17 +33,9 @@ ExamCard 将试卷训练、申论写作、教材管理、课程学习、每日�
 
 ExamCard 不提供在线 AI 自动生成或在线同步服务。用户可以借助 ChatGPT 等外部工具生成学习计划，然后手动导入软件。
 
-### 1.0.1 主要修复
+### 版本更新
 
-- 行测 PDF：保留粘连数字、百分数及分数选项；减少题干 A/B/C/D 误识别和页末选项吞入后续材料的问题。
-- 人工核对：修改题号、模块或页码不能解除缺选项确认；编辑后重算质量，提交前重新校验。
-- 教材目录：按物理 PDF 页和栏目校验阅读顺序；修复跨页页码归属、质量缓存及非法范围；阻断循环、自引用和孤立父级。
-- 合并和来源：保留已有章节的人工修正，追踪多个来源 PDF；明确替换前保存快照。
-- OCR：取消会停止当前识别及剩余教材队列；保留退出、清空后禁止旧任务回写的保护。OCR 仍可能识错，必须人工核对，不自动补造标题。
-- 每日计划：仅兼容有充分依据的 video-only 和 examples → practice → review 两类旧拆分形状；严格校验分钟并保护已完成任务及实际记录。
-- 数据和界面：加强导入/恢复事务异常回滚，修复弹窗残留、键盘焦点和窄窗口导航遮罩问题。
-
-1.0.1 沿用 IndexedDB v5 / 22 表、`gd_exam_v2`、原用户数据目录和 `examcard.daily-plan/v1`。Windows 安装与正常卸载已由用户实机确认；这不代表全部 DPI、真实教材内容或视觉基准均已验收。
+各版本新增功能、修复与兼容性变更统一维护在 [CHANGELOG.md](CHANGELOG.md)，README 只保留当前软件使用说明。
 
 ### 主要功能
 
@@ -123,7 +116,18 @@ ExamCard 支持导入由 ChatGPT 或其他工具生成的结构化学习计划�
 - [ChatGPT 计划生成提示词](DAILY_PLAN_CHATGPT_PROMPT.md)
 - [计划模板目录](templates/)
 
-#### 6. 错题复盘与学习诊断
+#### 6. 新版计划、背诵复测与任务归档（1.1.0）
+
+- **10 种任务类型**：`video`、`examples`、`practice`、`review`、`memorization`、`retest`、`timed_drill`、`essay`、`mock_exam`、`mock_review`。
+- **5 种计划模式**：`foundation`、`reinforcement`、`speed_training`、`mock_exam`、`review_adjustment`。模式影响模板和展示，不会覆盖手工任务。
+- **间隔复测**：完成背诵任务后可生成 D+1、D+3、D+7 复测；使用稳定标识避免重复创建。
+- **学习建议**：基于样本量达到要求且来源为软件有效作答的成绩生成建议；用户可采用或忽略，不自动覆盖原计划。
+- **自动收纳**：已完成任务进入默认折叠的历史区域；待办视图保留逾期未完成任务，支持撤销完成且不丢失实际记录。
+- **状态分离**：保存学习记录不等于完成任务；综合任务中尚有未完成阶段时不会提前归档。
+
+JSON/CSV 导入应以应用提供的模板与实际 Schema 为准。`examcard.daily-plan/v1` 使用 `learning_mode` 和 `stages`，不是 `phase`；优先级仅使用 `high`、`normal`、`low`。导入学习计划不会自动导入或关联 PDF、课程视频和题库。
+
+#### 7. 错题复盘与学习诊断
 
 - 自动整理行测训练中的错题。
 - 支持按模块、知识点等条件筛选。
@@ -132,7 +136,7 @@ ExamCard 支持导入由 ChatGPT 或其他工具生成的结构化学习计划�
 - 查看历史成绩与训练趋势。
 - 查看诊断事件及相关记录。
 
-#### 7. 数据管理
+#### 8. 数据管理
 
 - 导出完整学习数据备份。
 - 从有效备份中恢复数据。
@@ -157,30 +161,30 @@ ExamCard 支持导入由 ChatGPT 或其他工具生成的结构化学习计划�
 
 #### 下载地址
 
-**[前往 GitHub 下载 ExamCard v1.0.1](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.1)**
+**[前往 GitHub 下载 ExamCard v1.1.0](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.1.0)**
 
 | 文件 | 说明 |
 |---|---|
-| `ExamCard-1.0.1-win-portable.exe` | Windows 便携版，无需安装 |
-| `ExamCard-1.0.1-win-setup.exe` | Windows 安装版 |
-| `ExamCard-1.0.1-source.zip` | 对应版本的源码压缩包 |
+| `ExamCard-1.1.0-win-portable.exe` | Windows 便携版，无需安装 |
+| `ExamCard-1.1.0-win-setup.exe` | Windows 安装版 |
+| `ExamCard-1.1.0-source.zip` | 对应版本的源码压缩包 |
 | `SHA256SUMS.txt` | 发行文件 SHA-256 校验值 |
 
 #### 便携版
 
-1. 下载 `ExamCard-1.0.1-win-portable.exe`。
+1. 下载 `ExamCard-1.1.0-win-portable.exe`。
 2. 保存到普通用户有权访问的目录。
 3. 双击启动软件。
 4. 无需执行安装程序。
 
 #### 安装版
 
-1. 下载 `ExamCard-1.0.1-win-setup.exe`。
+1. 下载 `ExamCard-1.1.0-win-setup.exe`。
 2. 运行安装程序。
 3. 按照安装向导完成安装。
 4. 从桌面或开始菜单启动 ExamCard。
 
-1.0.1 安装方式：选择“仅为我安装”无需管理员权限；选择“所有用户”后，安装向导会请求 Windows 管理员授权。若原版本为全机安装，覆盖升级请保持选择“所有用户”。日常启动应用不需要管理员权限。
+安装方式：选择“仅为我安装”无需管理员权限；选择“所有用户”后，安装向导会请求 Windows 管理员授权。若原版本为全机安装，覆盖升级请保持选择“所有用户”。日常启动应用不需要管理员权限。
 
 #### Windows 安全提示
 
@@ -248,13 +252,13 @@ ExamCard 默认使用本地存储，不需要云端账户。
 |---|---|
 | 存储技术 | IndexedDB |
 | 数据库名称 | `gd_exam_v2` |
-| 数据库 Schema | v5 |
-| 数据表数量 | 22 |
+| 数据库 Schema | v6 |
+| 数据表数量 | 28 |
 | 数据位置 | Windows 本地用户数据目录 |
 
-为了兼容早期版本，ExamCard 1.0.1 继续沿用原来的数据库名称和用户数据目录。
+ExamCard 1.1.0 沿用原数据库名称和用户数据目录，并使用 IndexedDB v6 / 28 个对象存储。
 
-更新至 1.0.1 时，软件不会主动删除已有试卷、申论草稿、学习任务和历史记录。
+更新至 1.1.0 时，软件不会主动删除已有试卷、申论草稿、学习任务和历史记录。
 
 #### 备份与恢复
 
@@ -264,8 +268,8 @@ ExamCard 默认使用本地存储，不需要云端账户。
 
 - 恢复操作会覆盖当前学习数据。
 - 恢复之前建议先导出当前数据备份。
-- 当前版本要求备份包含完整的 22 张数据表，以及有效的结构和完整性校验信息。
-- 缺少数据表的旧备份，包括旧版 15 表格式，将在执行数据写入前被拒绝。
+- 1.1.0 的完整备份覆盖28个对象存储；恢复时须通过格式及完整性校验。旧版备份应按程序实际支持的兼容流程处理。
+- 旧版备份（例如15-store或22-store格式）的恢复方式需以程序实际支持的迁移路径为准，不能直接作为28-store完整备份导入。
 - 不完整备份不会被静默恢复。
 - 备份可能包含 PDF 文件、答题记录及其他个人学习资料，请妥善保存。
 
@@ -420,17 +424,9 @@ ExamCard brings together aptitude test practice, essay writing, PDF processing, 
 
 ExamCard does not include an online AI generation service or cloud synchronization. Users may generate study plans using ChatGPT or other external tools and import them manually.
 
-### Main Fixes in ExamCard 1.0.1
+### Release History
 
-- PDF imports retain joined numeric, percentage, and fraction options while reducing false A/B/C/D references and trailing-material contamination.
-- Review acknowledgements remain tied to current content: changing question metadata cannot bypass missing-option review, and content is revalidated before saving.
-- Catalog checks respect physical PDF pages and columns, reject invalid ranges, refresh quality after edits, and block cyclic, self-referencing, or orphaned chapter relationships.
-- Catalog merges preserve existing manual corrections and track multiple PDF sources; explicit replacement retains snapshot protection.
-- Cancelling OCR stops the current task and remaining textbook queue. Exit/clear protections prevent stale writes. OCR can still misread text and requires manual review; titles are never invented.
-- Daily-plan compatibility is limited to the evidenced video-only and examples → practice → review split shapes. Minute totals, completed tasks, and actual records remain protected.
-- Import/restore transactions roll back on synchronous errors; modal cleanup, keyboard focus, and narrow-window navigation overlays are hardened.
-
-IndexedDB v5 / 22 stores, `gd_exam_v2`, the user data directory, and `examcard.daily-plan/v1` remain unchanged. The owner has confirmed real Windows installation and normal uninstallation; this is not a claim that every DPI, textbook sample, or visual baseline has been validated.
+Version-specific changes, fixes, and migration notes are maintained in [CHANGELOG.md](CHANGELOG.md). This README focuses on current usage.
 
 ### Features
 
@@ -512,7 +508,18 @@ Documentation:
 - [ChatGPT Generation Prompt](DAILY_PLAN_CHATGPT_PROMPT.md)
 - [Plan Templates](templates/)
 
-#### 6. Mistake Review and Learning Analytics
+#### 6. Study Plan Modes, Spaced Reviews, and Task Archive (1.1.0)
+
+- **10 task types:** `video`, `examples`, `practice`, `review`, `memorization`, `retest`, `timed_drill`, `essay`, `mock_exam`, `mock_review`.
+- **5 plan modes:** `foundation`, `reinforcement`, `speed_training`, `mock_exam`, `review_adjustment`. Modes affect templates and presentation, not existing manually created tasks.
+- **Spaced recall:** Completing memorization can generate D+1, D+3, and D+7 review tasks with duplicate prevention.
+- **Study suggestions:** Recommendations use sufficient valid software-based answer data and never replace a plan without user action.
+- **Task archive:** Completed tasks are collapsed by default; overdue unfinished tasks remain visible and completion can be undone without deleting recorded progress.
+- **Separate completion state:** Saving a study log does not mark a task complete; incomplete stages prevent premature archiving.
+
+Use the templates and actual schema shipped with the application. `examcard.daily-plan/v1` uses `learning_mode` and `stages`, not `phase`. Allowed priorities are `high`, `normal`, and `low`. Importing a plan does not automatically import PDF papers, video files, or question banks.
+
+#### 7. Mistake Review and Learning Analytics
 
 - Organize incorrectly answered questions.
 - Filter mistakes by category and knowledge area.
@@ -521,7 +528,7 @@ Documentation:
 - Review historical performance trends.
 - Access learning diagnosis records.
 
-#### 7. Local Data Management
+#### 8. Local Data Management
 
 - Export complete local backups.
 - Restore data from valid backups.
@@ -546,13 +553,13 @@ Documentation:
 
 #### Download
 
-**[Download ExamCard v1.0.1 from GitHub Releases](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.1)**
+**[Download ExamCard v1.1.0 from GitHub Releases](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.1.0)**
 
 | File | Description |
 |---|---|
-| `ExamCard-1.0.1-win-portable.exe` | Portable Windows executable |
-| `ExamCard-1.0.1-win-setup.exe` | Windows installer |
-| `ExamCard-1.0.1-source.zip` | Release source archive |
+| `ExamCard-1.1.0-win-portable.exe` | Portable Windows executable |
+| `ExamCard-1.1.0-win-setup.exe` | Windows installer |
+| `ExamCard-1.1.0-source.zip` | Release source archive |
 | `SHA256SUMS.txt` | SHA-256 checksum list |
 
 #### Portable Version
@@ -569,7 +576,7 @@ Documentation:
 3. Follow the installation wizard.
 4. Launch ExamCard from the desktop or Start menu.
 
-For ExamCard 1.0.1, “Only for me” installs without administrator privileges. Selecting “All users” requests Windows administrator approval. Keep “All users” when upgrading an existing machine-wide installation. Everyday app use does not require administrator privileges.
+For ExamCard 1.1.0, “Only for me” installs without administrator privileges. Selecting “All users” requests Windows administrator approval. Keep “All users” when upgrading an existing machine-wide installation. Everyday app use does not require administrator privileges.
 
 #### Windows Security Notice
 
@@ -639,13 +646,13 @@ ExamCard stores learning data locally.
 |---|---|
 | Storage technology | IndexedDB |
 | Database name | `gd_exam_v2` |
-| Schema version | v5 |
-| Object stores | 22 |
+| Schema version | v6 |
+| Object stores | 28 |
 | Storage location | Local Windows user data directory |
 
 The original database name and application data directory are preserved for compatibility with previous ExamCard versions.
 
-Upgrading to ExamCard 1.0.1 does not automatically delete existing exam papers, essay drafts, tasks, or learning history.
+Upgrading to ExamCard 1.1.0 does not automatically delete existing exam papers, essay drafts, tasks, or learning history.
 
 #### Backup and Restore
 
@@ -655,8 +662,8 @@ Complete backups can be exported and restored from the Data Management section.
 
 - Restoring a backup overwrites current application data.
 - Export a backup of your current data before restoring another backup.
-- The current restore operation requires all 22 database stores and valid schema/integrity metadata.
-- Incomplete older backups, including the legacy 15-store format, are rejected before any data is cleared or written.
+- The v1.1.0 database has 28 object stores. Backup and restore require a compatible backup format and integrity validation; older backups must follow the supported migration path.
+- Do not assume that legacy 15-store or 22-store backups can be restored as native v6/28-store backups without verification.
 - Backup files may contain PDF documents, answers, and personal learning records.
 
 Keep backup files secure and do not publish them without appropriate review and redaction.
@@ -783,9 +790,9 @@ For general feedback, visit [GitHub Issues](https://github.com/GaryZhang12/ExamC
 
 ### Release Status
 
-**Current stable release: v1.0.1**
+**Current release: v1.1.0 · 2026-10-31**
 
-**Previous release retained: [ExamCard v1.0.0](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.0).**
+**Previous releases:** [v1.0.1](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.1) · [v1.0.0](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.0).
 
 ExamCard is publicly available as an open-source project under the Apache License 2.0 license.
 
@@ -793,7 +800,7 @@ The Windows binaries are currently unsigned. PDF extraction and automatic questi
 
 For official downloads, checksums, and release information, visit:
 
-[ExamCard v1.0.1 — GitHub Releases](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.1)
+[ExamCard v1.1.0 — GitHub Releases](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.1.0)
 
 ---
 
