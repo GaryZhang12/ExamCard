@@ -1,10 +1,49 @@
 {
   "status": "pass",
-  "after1k": 97.29999999701977,
-  "after10k": 799.6000000014901,
-  "list10k": 84.5,
-  "assemble10k": 49.100000001490116,
-  "questions": 10000,
-  "selected": 100,
-  "shortage": 0
+  "method": "profile/IndexedDB byte scan after app close; backup JSON Blob byte size; duplicate applied to same content hashes",
+  "baseline": {
+    "indexedDB": 43086,
+    "localStorage": 480,
+    "total": 1919629
+  },
+  "empty": {
+    "indexedDB": 43086,
+    "localStorage": 480,
+    "total": 1919629
+  },
+  "after1k": {
+    "indexedDB": 2698612,
+    "localStorage": 480,
+    "total": 4542684
+  },
+  "after10k": {
+    "indexedDB": 7752222,
+    "localStorage": 914,
+    "total": 9597217
+  },
+  "afterDuplicateImport": {
+    "indexedDB": 7752283,
+    "localStorage": 955,
+    "total": 9597427
+  },
+  "duplicateDelta": 61,
+  "oneK": {
+    "importMs": 179.10000000149012,
+    "backupBytes": 907640,
+    "assetIds": 0
+  },
+  "tenK": {
+    "appendMs": 1793.8999999985099,
+    "listMs": 1227.5,
+    "assembleMs": 51,
+    "questions": 10000,
+    "selected": 100,
+    "shortage": 0,
+    "backupBytes": 8996391,
+    "assetIds": 0
+  },
+  "duplicate": {
+    "duplicateMs": 264,
+    "count": 10000
+  }
 }

@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "checks": [
+    "open/cancel keeps unreviewed",
+    "ordinary save keeps review gate",
+    "explicit approval only after validation",
+    "content edit invalidates approval",
+    "missing answer rejected"
+  ]
+}

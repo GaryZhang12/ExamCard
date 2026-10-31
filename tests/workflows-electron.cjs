@@ -4,9 +4,16 @@ const{launch}=require('./launch.cjs'),fs=require('node:fs'),path=require('node:p
  const nav=async key=>{await page.locator(`[data-nav="${key}"]`).click();await page.waitForFunction(key=>!document.querySelector('#appRail.routing')&&document.querySelector(`[data-nav="${key}"].active`),key);};
  try{
   await check('PDF import UI current-content acknowledgement and duplicate-click guard',async()=>{
-   await nav('library');await page.locator('#importPdfInput').setInputFiles(path.join(__dirname,'fixtures/original20.pdf'));await page.locator('#impConfirm').waitFor();
-   await page.locator('[data-f="options"]').first().fill('');await page.locator('#impRows [data-f="page"]').first().fill('2');await page.locator('#impConfirm').click();
-   assert.equal(await page.evaluate(async()=>(await ExamStore.listExams()).length),0);
+    await nav('library');await page.locator('#importPdfInput').setInputFiles(path.join(__dirname,'fixtures/original20.pdf'));await page.locator('#impConfirm').waitFor();
+    assert.equal(await page.locator('#impRows tr').first().locator('td').count(),5);
+    assert.equal(await page.locator('#impRows [data-f="options"]').count(),0);
+    assert.equal(await page.locator('#impRows [data-f="page"]').count(),0);
+    await page.locator('#impRows [data-detail]').first().click();
+    await page.locator('#impDetailDialog [data-detail-field="options"]').fill('');
+    await page.locator('#impDetailDialog [data-detail-field="page"]').fill('2');
+    await page.locator('#impDetailDialog [data-detail-save]').click();
+    await page.locator('#impConfirm').click();
+    assert.equal(await page.evaluate(async()=>(await ExamStore.listExams()).length),0);
    await page.locator('#impIssueAck').check();await page.locator('#impRows [data-f="module"]').first().fill('人工模块');assert.equal(await page.locator('#impIssueAck').isChecked(),false);
    await page.locator('#impIssueAck').check();await page.locator('#impConfirm').evaluate(e=>{e.click();e.click();});await page.waitForFunction(async()=>(await ExamStore.listExams()).length===1);
    assert.equal(await page.evaluate(async()=>(await ExamStore.listExams()).length),1);

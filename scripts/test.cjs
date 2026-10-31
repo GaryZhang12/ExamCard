@@ -1,6 +1,6 @@
 const fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:child_process');
 const root=path.resolve(__dirname,'..');fs.mkdirSync(path.join(root,'reports'),{recursive:true});
-const runs=[['unit',['--test','--test-reporter=tap','tests/reproductions.test.cjs','tests/invariants.test.cjs','tests/release-readme.test.cjs','tests/m3-assembly.test.cjs','tests/m5-diagnostics.test.cjs','tests/keyword-classifier.test.cjs','tests/pdf-material.test.cjs','tests/type-detection.test.cjs','tests/review-scheduler.test.cjs','tests/capacity.test.cjs']],['data',['tests/data-electron.cjs']],['ui',['tests/ui-electron.cjs']]];
+const runs=[['unit',['--test','--test-reporter=tap','tests/reproductions.test.cjs','tests/invariants.test.cjs','tests/release-readme.test.cjs','tests/m3-assembly.test.cjs','tests/m5-diagnostics.test.cjs','tests/keyword-classifier.test.cjs','tests/pdf-material.test.cjs','tests/type-detection.test.cjs','tests/pdf-modules.test.cjs','tests/review-scheduler.test.cjs','tests/capacity.test.cjs']],['data',['tests/data-electron.cjs']],['ui',['tests/ui-electron.cjs']]];
  runs.splice(2,0,['golden',['tests/golden-electron.cjs']]);
  runs.push(['final-e2e',['tests/final-electron.cjs']]);
  runs.push(['workflows',['tests/workflows-electron.cjs']]);
@@ -11,6 +11,10 @@ runs.push(['m5-electron',['tests/m5-electron.cjs']]);
 runs.push(['m6-upgrade101',['tests/m6-upgrade101.cjs']],['m6-ui',['tests/m6-ui.cjs']]);
 runs.push(['m6-navigation',['tests/m6-navigation.cjs']]);
 runs.push(['pdf-navigation',['tests/pdf-navigation.cjs']]);
+runs.push(['import-preview',['tests/import-preview-ui.cjs']]);
+runs.push(['review-state',['tests/review-state-ui.cjs']]);
+runs.push(['answer-preview',['tests/answer-preview-ui.cjs']]);
+runs.push(['judge-ui',['tests/judge-ui.cjs']]);
 runs.push(['capacity',['tests/capacity-electron.cjs']]);
 const results=[];
 for(const [name,args] of runs){

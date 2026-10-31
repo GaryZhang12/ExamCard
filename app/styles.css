@@ -520,6 +520,41 @@ b { font-weight: 700; }
 .review-table tr.row-invalid td { background: #fff8f7; }
 .review-table tr.row-missing td { background: #fffbf2; }
 .review-table .row-del { color: var(--danger); border: 0; background: none; cursor: pointer; font-size: 12px; }
+
+  /* EC-UI-002 · 五列导入预览；详情、选项和坐标不挤占默认表格 */
+  .modal.import-review-modal { display: flex; flex-direction: column; overflow: hidden; }
+  .import-review-modal > h3, .import-review-modal > .form-row, .import-review-modal > .help-text, .import-review-modal > .issue-line { flex: 0 0 auto; }
+  .import-review-wrap { flex: 1 1 auto; min-height: 150px; max-height: 52vh; overflow: auto; }
+  .import-review-table { table-layout: fixed; min-width: 680px; }
+  .import-review-table col.col-n { width: 66px; }
+  .import-review-table col.col-type { width: 96px; }
+  .import-review-table col.col-module { width: 158px; }
+  .import-review-table col.col-status { width: 232px; }
+  .import-review-table th:nth-child(5), .import-review-table td:nth-child(5) { position: sticky; right: 0; background: #fff; box-shadow: -6px 0 10px rgba(15, 23, 42, .05); z-index: 2; }
+  .import-review-table th:nth-child(5) { background: #f6f8fc; z-index: 3; }
+  .import-review-table td.num, .import-number { width: 66px; padding-left: 8px; padding-right: 8px; white-space: nowrap; }
+  .import-number small { display: block; color: var(--muted); font-size: 10px; font-weight: 400; }
+  .import-stem { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; line-height: 1.45; max-height: 2.9em; overflow-wrap: anywhere; }
+  .import-module-input { min-width: 0; }
+  .import-status-cell { vertical-align: top; }
+  .import-status { display: flex; gap: 5px; align-items: flex-start; min-height: 22px; }
+  .import-status .badge { flex: 0 0 auto; }
+  .import-status-note { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; color: var(--muted); font-size: 11px; line-height: 1.35; overflow-wrap: anywhere; }
+  .import-actions { display: flex; gap: 4px; margin-top: 5px; align-items: center; }
+  .import-actions .bank-btn, .import-actions .row-del { padding: 2px 7px; font-size: 11px; min-height: 0; }
+  .import-review-modal .modal-actions { flex: 0 0 auto; position: sticky; bottom: 0; z-index: 4; background: #fff; border-top: 1px solid var(--line); padding-top: 8px; padding-bottom: 2px; }
+  .import-detail-dialog { width: min(780px, 94vw); max-height: 88vh; overflow: auto; border: 1px solid #c9d2e0; border-radius: 12px; padding: 16px 18px; box-shadow: 0 20px 60px rgba(15, 23, 42, .28); background: #fff; color: var(--ink); }
+  .import-detail-dialog::backdrop { background: rgba(15, 23, 42, .45); }
+  .import-detail-dialog h3 { margin: 0 0 10px; }
+  .import-detail-body { display: flex; flex-direction: column; gap: 6px; }
+  .import-detail-block { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink-2); }
+  .import-detail-block textarea { width: 100%; font: inherit; font-size: 12px; padding: 6px; border: 1px solid #c9d2e0; border-radius: 6px; box-sizing: border-box; }
+  @media (max-width: 900px) {
+    .import-review-table col.col-status { width: 205px; }
+    .import-review-table col.col-module { width: 130px; }
+    .import-review-modal > .form-row input[type=text] { min-width: 0; }
+  }
+
 .issue-box { margin: 8px 0; display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow: auto; }
 .issue-line { font-size: 12px; border-radius: 6px; padding: 4px 8px; line-height: 1.5; }
 .issue-line.warn { background: #fff7ed; color: #9a4a05; border: 1px solid #fbd7a8; }

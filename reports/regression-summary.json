@@ -106,6 +106,26 @@
       "exitCode": 0
     },
     {
+      "name": "import-preview",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "review-state",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "answer-preview",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "judge-ui",
+      "status": "pass",
+      "exitCode": 0
+    },
+    {
       "name": "capacity",
       "status": "pass",
       "exitCode": 0

@@ -21,6 +21,8 @@
     "deleted historical answer set is not revived",
     "shared material ignores per-question screenshots",
     "judge normalized to true/false options",
+    "approval rejects missing required assets",
+    "approval rejects unresolved question type",
     "28-store backup roundtrip preserves actual image Blob",
     "practice clear removes only dedicated history, preserves original session",
     "clear practice preserves bank content"
