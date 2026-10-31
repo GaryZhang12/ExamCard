@@ -13,9 +13,6 @@
 **Repository:** https://github.com/GaryZhang12/ExamCard  
 **Latest Release:** [ExamCard v1.0.1](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.1)
 
-> **ExamCard v1.0.1 Stable。** 用户已亲自在 Windows 验证“仅当前用户”和“所有用户”安装、正常卸载、程序移除及卸载后学习数据保留。真实高 DPI 和真实教材 OCR 内容仍有验收边界，识别结果需人工核对。
-> **ExamCard v1.0.1 Stable.** The owner reports successful Windows current-user and all-user installation, normal uninstallation, program removal, and learning-data retention. Real high-DPI and real-textbook OCR validation remain limited; review recognized content manually.
-
 ---
 
 ## 简体中文
