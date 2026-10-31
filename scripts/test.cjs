@@ -1,6 +1,6 @@
 const fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:child_process');
 const root=path.resolve(__dirname,'..');fs.mkdirSync(path.join(root,'reports'),{recursive:true});
-const runs=[['unit',['--test','--test-reporter=tap','tests/reproductions.test.cjs','tests/invariants.test.cjs','tests/release-readme.test.cjs','tests/m3-assembly.test.cjs','tests/m5-diagnostics.test.cjs']],['data',['tests/data-electron.cjs']],['ui',['tests/ui-electron.cjs']]];
+const runs=[['unit',['--test','--test-reporter=tap','tests/reproductions.test.cjs','tests/invariants.test.cjs','tests/release-readme.test.cjs','tests/m3-assembly.test.cjs','tests/m5-diagnostics.test.cjs','tests/keyword-classifier.test.cjs','tests/pdf-material.test.cjs','tests/type-detection.test.cjs','tests/review-scheduler.test.cjs','tests/capacity.test.cjs']],['data',['tests/data-electron.cjs']],['ui',['tests/ui-electron.cjs']]];
  runs.splice(2,0,['golden',['tests/golden-electron.cjs']]);
  runs.push(['final-e2e',['tests/final-electron.cjs']]);
  runs.push(['workflows',['tests/workflows-electron.cjs']]);
@@ -10,6 +10,8 @@ runs.push(['m4-practice',['tests/m4-practice.cjs']],['m4-safety',['tests/m4-safe
 runs.push(['m5-electron',['tests/m5-electron.cjs']]);
 runs.push(['m6-upgrade101',['tests/m6-upgrade101.cjs']],['m6-ui',['tests/m6-ui.cjs']]);
 runs.push(['m6-navigation',['tests/m6-navigation.cjs']]);
+runs.push(['pdf-navigation',['tests/pdf-navigation.cjs']]);
+runs.push(['capacity',['tests/capacity-electron.cjs']]);
 const results=[];
 for(const [name,args] of runs){
  const r=spawnSync(process.execPath,args,{cwd:root,env:process.env,encoding:'utf8'});

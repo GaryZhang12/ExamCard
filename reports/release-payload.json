@@ -1,8 +1,8 @@
 {
   "status": "pass",
-  "payloadFilesMatched": 100,
+  "payloadFilesMatched": 102,
   "version": "1.1.0",
   "license": "Apache-2.0",
   "forbiddenPayloads": 0,
-  "asarSha256": "58b9f19fb10d1c7b8b474af6f5de30b1df40bcd45d1bcd55eec28885205aa42d"
+  "asarSha256": "a82e6fbc62d8fc59320346772429d95dd1fb63c2e9358cc759fe0032c9956993"
 }

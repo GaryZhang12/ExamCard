@@ -110,6 +110,10 @@
         onPageChange: function (page, count) {
           ui.pdfPageInfo.textContent = '第 ' + page + ' / ' + count + ' 页';
           ui.pdfPageInput.placeholder = '页码 1-' + count;
+          ui.pdfPageInput.max = count;
+          ui.pdfPageInput.value = page;
+          ui.pdfPrev.disabled = page <= 1;
+          ui.pdfNext.disabled = page >= count;
         },
         onStatus: function (txt) { ui.pdfPageInfo.textContent = txt; }
       });
@@ -1429,6 +1433,8 @@
     if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (ui.modalRoot && ui.modalRoot.firstChild) return;
+    if (e.key === 'PageUp') { if (state.viewer && state.viewer.page > 1) state.viewer.prevPage(); e.preventDefault(); return; }
+    if (e.key === 'PageDown') { if (state.viewer && state.viewer.page < state.viewer.pageCount) state.viewer.nextPage(); e.preventDefault(); return; }
     if (e.key === 'ArrowLeft') { stepQuestion(-1); e.preventDefault(); return; }
     if (e.key === 'ArrowRight') { stepQuestion(1); e.preventDefault(); return; }
     if (state.session.status === 'running' && /^[a-dA-D]$/.test(e.key)) {

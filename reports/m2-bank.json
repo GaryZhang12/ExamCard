@@ -19,6 +19,8 @@
     "corrupt graphic rejected before writing",
     "current standard answer and explanation safely snapshotted",
     "deleted historical answer set is not revived",
+    "shared material ignores per-question screenshots",
+    "judge normalized to true/false options",
     "28-store backup roundtrip preserves actual image Blob",
     "practice clear removes only dedicated history, preserves original session",
     "clear practice preserves bank content"

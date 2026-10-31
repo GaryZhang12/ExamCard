@@ -1,0 +1,35 @@
+const{launch}=require('./launch.cjs'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+(async()=>{const c=await launch();const {page}=c;try{
+  await page.locator('[data-nav="library"]').click();
+  await page.locator('#importPdfInput').setInputFiles(path.join(__dirname,'fixtures/original20.pdf'));
+  await page.locator('#impConfirm').waitFor();
+  const ack=page.locator('#impIssueAck');if(await ack.count())await ack.check();
+  await page.locator('#impConfirm').click();
+  await page.waitForFunction(async()=>(await ExamStore.listExams()).length===1);
+  await page.locator('[data-act="start"]').first().click();await page.locator('#startGo').click();await page.locator('#pdfCanvas').waitFor();
+  await page.waitForTimeout(700);
+  await page.locator('.opt-btn').first().click();
+  const before=await page.evaluate(()=>{const s=__GD_V2__.state.session;return {answer:JSON.stringify(s.answers),timer:document.getElementById('timer').textContent,question:s.current};});
+  const pageState=()=>page.evaluate(()=>{const v=__GD_V2__.state.viewer;return {page:v.page,count:v.pageCount,info:document.getElementById('pdfPageInfo').textContent,scroll:document.getElementById('pdfViewport').scrollTop,scrollHeight:document.getElementById('pdfViewport').scrollHeight,clientHeight:document.getElementById('pdfViewport').clientHeight,prevDisabled:document.getElementById('pdfPrev').disabled,nextDisabled:document.getElementById('pdfNext').disabled};});
+  const hashes=[];const canvasHash=()=>page.evaluate(async()=>{const d=document.getElementById('pdfCanvas').toDataURL();return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(d)))].map(x=>x.toString(16).padStart(2,'0')).join('').slice(0,16);});
+  hashes.push(await canvasHash());
+  await page.locator('#pdfNext').click();await page.waitForTimeout(900);const p2=await pageState();hashes.push(await canvasHash());
+  await page.locator('#pdfNext').click();await page.waitForTimeout(900);const p3=await pageState();hashes.push(await canvasHash());
+  await page.locator('#pdfPrev').click();await page.waitForTimeout(900);const p2b=await pageState();
+  await page.locator('#pdfPageInput').fill('4');await page.locator('#pdfPageInput').press('Enter');await page.waitForTimeout(1000);const p4=await pageState();hashes.push(await canvasHash());
+  assert.equal(p2.page,2);assert.equal(p3.page,3);assert.equal(p2b.page,2);assert.equal(p4.page,4);assert.ok(p4.info.includes('4 / 4'));assert.notEqual(hashes[0],hashes[1]);assert.notEqual(hashes[1],hashes[2]);assert.notEqual(hashes[2],hashes[3]);
+  const after=await page.evaluate(()=>{const s=__GD_V2__.state.session;return {answer:JSON.stringify(s.answers),timer:document.getElementById('timer').textContent,question:s.current};});
+  assert.equal(after.answer,before.answer);assert.equal(after.question,before.question);const sec=x=>{const p=x.split(':').map(Number);return p[0]*60+p[1];};assert.ok(sec(after.timer)<=sec(before.timer)+1,'timer not reset');
+  const vp=page.locator('#pdfViewport');await vp.hover();await page.mouse.wheel(0,500);await page.waitForTimeout(300);assert.ok((await pageState()).scroll>0);
+  await page.locator('#libraryBtn').click();await page.waitForTimeout(500);
+  // Essay PDF viewer page input + no answer loss
+  const bytes=[...fs.readFileSync(path.join(__dirname,'fixtures/original20.pdf'))];
+  await page.evaluate(async bytes=>EssayStore.saveExam({id:'essay-pdf-nav',title:'合成申论翻页',pageCount:4,prompts:[{id:'p',number:1,type:'essay',text:'材料阅读测试',score:20,wordLimit:500}]},new Blob([new Uint8Array(bytes)],{type:'application/pdf'}),4),bytes);
+  await page.locator('[data-nav="essay"]').click();await page.locator('#essayRoot [data-act="start"]').first().click();await page.locator('[data-essay-ok]').click();await page.locator('#essayText').waitFor();await page.locator('#essayText').fill('申论翻页保留答案');
+  await page.waitForFunction(()=>document.getElementById('essayPageInput')&&document.getElementById('essayPageInput').max==='4');
+  await page.locator('#essayPageInput').fill('3');await page.locator('#essayJumpPage').click();await page.waitForTimeout(700);
+  assert.equal(await page.locator('#essayPageInput').inputValue(),'3');assert.ok((await page.locator('#essayPageInfo').textContent()).includes('3 / 4'));assert.equal(await page.locator('#essayText').inputValue(),'申论翻页保留答案');
+  fs.mkdirSync('reports/pdf-navigation',{recursive:true});await page.screenshot({path:'reports/pdf-navigation/essay-page-jump.png'});
+  fs.writeFileSync('reports/pdf-navigation.json',JSON.stringify({status:'pass',objective:{pages:[1,2,3,2,4],canvasHashes:hashes,answerPreserved:true},essay:{page:3,total:4,answerPreserved:true},wheel:true},null,2));
+  console.log('PASS PDF navigation objective + essay');
+}finally{await c.app.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

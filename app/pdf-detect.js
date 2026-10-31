@@ -355,9 +355,36 @@
     for (var i = 0; i < TYPE_MARKERS.length; i++) {
       if (TYPE_MARKERS[i].re.test(blockText)) return TYPE_MARKERS[i].type;
     }
-    if (countOptionLetters(blockText) >= 2) return 'single';
-    if (/判断|正确|错误|对错|是否/.test(blockText)) return 'judge';
-    return 'single';
+    if (countOptionLetters(blockText) >= 4) return 'single';
+    if (/判断题|判断正误|请判断|判断[：:]|对错|是否正确|正确与否/.test(blockText)) return 'judge';
+    return 'unknown';
+  }
+  function detectTypeStatus(blockText, type) {
+    for (var i = 0; i < TYPE_MARKERS.length; i++) if (TYPE_MARKERS[i].re.test(blockText)) return 'confirmed';
+    if (type === 'single' && countOptionLetters(blockText) >= 4) return 'confirmed';
+    if (type === 'judge') return 'confirmed';
+    return 'needs-review';
+  }
+
+  function materialHeading(text) {
+    var t = cleanTitle(text);
+    if (/^材料[一二三四五六七八九十\d]+(?:\s|$|[（(：:])/i.test(t)) return true;
+    if (/^根据以下(?:资料|材料)/.test(t)) return true;
+    if (/^[（(][一二三四五六七八九十\d]+[）)]\s*\S/.test(t) && t.length >= 8) return true;
+    return false;
+  }
+  function materialTextFor(all, acceptedSeqs, headerSeq) {
+    var lines = [], nextQ = null;
+    for (var i = 0; i < acceptedSeqs.length; i++) { if (acceptedSeqs[i] > headerSeq) { nextQ = acceptedSeqs[i]; break; } }
+    var end = nextQ == null ? all.length : nextQ;
+    for (var j = 0; j < all.length; j++) {
+      var l = all[j]; if (l.seq < headerSeq || l.seq >= end) continue;
+      var text = cleanTitle(l.text); if (!text) continue;
+      if (moduleNameFromLine(text)) continue;
+      if (/^第\s*\d+\s*页\s*[/／]\s*共\s*\d+\s*页/.test(text)) continue;
+      lines.push(text);
+    }
+    return lines.join(' ').replace(/\s+/g, ' ').trim().slice(0, 4000);
   }
 
   /* ------------------------------------------------------------------ *
@@ -603,6 +630,13 @@
       return best;
     }
 
+    var materialHeaders = [];
+    for (var mh = 0; mh < all.length; mh++) {
+      if (!materialHeading(all[mh].text)) continue;
+      var mt = materialTextFor(all, acceptedSeqs, all[mh].seq);
+      if (mt) materialHeaders.push({ seq: all[mh].seq, heading: cleanTitle(all[mh].text), text: mt });
+    }
+
     var questions = [];
     var previousQuestion = null;
     for (var q = 0; q < accepted.length; q++) {
@@ -616,10 +650,13 @@
 
       var firstRest = ac.rest;
       var type = detectQuestionType(blockText);
+      var typeStatus = detectTypeStatus(blockText, type);
+      if (type === 'unknown') type = 'single';
       var optionResult = extractOptions(blockLines);
       var options = optionResult.options;
       var qIssues = [];
       var optionStatus = 'n/a';
+      if (typeStatus === 'needs-review') qIssues.push({ code: 'type-review', severity: 'warning', message: '无法确认作答类型，请人工审核（不默认为单选）' });
       if (type !== 'judge') {
         var nonEmptyOptions = options.filter(function (o) { return o.text && o.text.trim(); }).length;
         if (!options.length) { optionStatus = 'missing'; qIssues.push({ code: 'options-missing', severity: 'warning', message: '未识别到 A-D 选项，请人工确认' }); }
@@ -650,12 +687,15 @@
       var questionObj = {
         n: ac.n,
         type: type,
+        typeStatus: typeStatus,
         module: '未分类',
         page: ac.page,
         yRatio: clamp01(ac.yRatio),
         xRatio: clamp01(ac.xRatio),
         fullStem: stripTypeMarker(stemText),
         requiresAssets: /(?:如下图|如图|下图|图表|见图)/.test(stemText),
+        materialText: (function () { var found = null; for (var mi = 0; mi < materialHeaders.length; mi++) if (materialHeaders[mi].seq < ac.seq) found = materialHeaders[mi]; return found ? found.text : null; })(),
+        materialHeading: (function () { var found = null; for (var mi2 = 0; mi2 < materialHeaders.length; mi2++) if (materialHeaders[mi2].seq < ac.seq) found = materialHeaders[mi2]; return found ? found.heading : null; })(),
         preview: preview,
         options: options,
         optionStatus: optionStatus,

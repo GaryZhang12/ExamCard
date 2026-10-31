@@ -1,7 +1,7 @@
 {
   "environment": {
     "version": "1.1.0",
-    "userData": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-hsaBk8",
+    "userData": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.1.0-work\\.test-runs\\tmp\\examcard-work-test-b6kWDe",
     "electron": "43.3.0",
     "sandbox": false,
     "displays": [
@@ -21,7 +21,7 @@
       }
     ]
   },
-  "profile": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-hsaBk8",
+  "profile": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.1.0-work\\.test-runs\\tmp\\examcard-work-test-b6kWDe",
   "target": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.1.0-work",
   "results": [
     {
@@ -101,14 +101,14 @@
       "status": "pass",
       "detail": {
         "repeat": {
-          "planId": "demo-20261029",
+          "planId": "demo-20261031",
           "created": 0,
           "updated": 0,
           "unchanged": 1,
           "skippedCompleted": 0
         },
         "updated": {
-          "planId": "demo-20261029",
+          "planId": "demo-20261031",
           "created": 0,
           "updated": 1,
           "unchanged": 0,

@@ -2,7 +2,7 @@
   "status": "pass",
   "oldVersion": "1.0.1",
   "newVersion": "1.1.0",
-  "profile": "C:\\Users\\GaryZ\\AppData\\Local\\Temp\\examcard-work-test-IfMYpx",
+  "profile": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.1.0-work\\.test-runs\\tmp\\examcard-work-test-Z5Offo",
   "checks": [
     "no automatic v6 upgrade",
     "native backup actual file is complete v5/22",
