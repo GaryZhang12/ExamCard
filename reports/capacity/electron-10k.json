@@ -17,25 +17,25 @@
     "total": 4542684
   },
   "after10k": {
-    "indexedDB": 10711427,
+    "indexedDB": 7751018,
     "localStorage": 914,
-    "total": 12556422
+    "total": 9596013
   },
   "afterDuplicateImport": {
-    "indexedDB": 7751267,
+    "indexedDB": 7751079,
     "localStorage": 955,
-    "total": 9596411
+    "total": 9596222
   },
-  "duplicateDelta": -2960160,
+  "duplicateDelta": 61,
   "oneK": {
-    "importMs": 174.80000000447035,
+    "importMs": 128.60000000149012,
     "backupBytes": 907640,
     "assetIds": 0
   },
   "tenK": {
-    "appendMs": 1607,
-    "listMs": 1082.6000000014901,
-    "assembleMs": 47.399999998509884,
+    "appendMs": 1481.7999999970198,
+    "listMs": 971.5,
+    "assembleMs": 48,
     "questions": 10000,
     "selected": 100,
     "shortage": 0,
@@ -43,7 +43,7 @@
     "assetIds": 0
   },
   "duplicate": {
-    "duplicateMs": 278.19999999552965,
+    "duplicateMs": 277.1000000014901,
     "count": 10000
   }
 }

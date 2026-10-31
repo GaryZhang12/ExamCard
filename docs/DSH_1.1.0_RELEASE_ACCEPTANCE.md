@@ -127,14 +127,14 @@ SKIP：`legacy`（缺少 1.0.1 历史相册夹具，按既有规则跳过，不�
 | 项目 | 实测值 |
 |---|---:|
 | 1,000 题 IndexedDB | 2,698,612 bytes |
-| 10,000 题 IndexedDB | 7,752,222 bytes |
-| 重复导入后 IndexedDB | 7,752,283 bytes |
+| 10,000 题 IndexedDB | 7,751,018 bytes |
+| 重复导入后 IndexedDB | 7,751,079 bytes |
 | 重复导入净增 | 61 bytes |
 | 1,000 题完整备份 | 907,640 bytes |
 | 10,000 题完整备份 | 8,996,391 bytes |
-| 1,000 题导入 | 179 ms |
-| 追加到 10,000 题 | 1,794 ms |
-| 10,000 题查询 | 1,228 ms |
+| 1,000 题导入 | 129 ms |
+| 追加到 10,000 题 | 1,482 ms |
+| 10,000 题查询 | 972 ms |
 | 10,000 题随机组卷 | 51.0 ms |
 | 逐题图片资产 | 0（纯文本原生导入） |
 
@@ -183,12 +183,12 @@ SKIP：`legacy`（缺少 1.0.1 历史相册夹具，按既有规则跳过，不�
 
 构建产物位于交付目录；最终 SHA256 见 `SHA256SUMS.txt` 与 `MANIFEST.json`。
 
-- `ExamCard-1.1.0-win-portable.exe` · 175,843,737 bytes
-  - SHA256 `0967E16CDA8209B445EACAF092A1DD00919F098674E5174C3EB34E1611BB79C3`
-- `ExamCard-1.1.0-win-setup.exe` · 202,693,979 bytes
-  - SHA256 `3958A7F27EA668D16247A3A2231EFC920D904EBD446142394B20063B9B3C17D0`
+- `ExamCard-1.1.0-win-portable.exe` · 175,832,011 bytes
+  - SHA256 `25331412CF872FF0FA59E443F0E1000D0842365C8BC88B1625B1B1557D0AA34D`
+- `ExamCard-1.1.0-win-setup.exe` · 202,694,780 bytes
+  - SHA256 `86CD33B24778633A0679BB0B9B0128E7EE3AA9A3AB59A1A3A2AC15EA263AE0CF`
 - `ExamCard-1.1.0-source.zip` · SHA256 见交付目录 `SHA256SUMS.txt`
-- `app.asar` SHA256 `65EB1DB4349C475FB331270167014CD76E6C1B11EB1C3E696B6E6B0E6C2D357A`
+- `app.asar` SHA256 `5806162BF84F664BE990FFB053891F47A00D3D549BE6BE19371CB7DF09A1CF4C`
 - 构建校验：版本 1.1.0、Apache-2.0、0 禁止 payload、102 个 payload 文件匹配。
 
 ## 10. 未解决 / 用户实机验收
