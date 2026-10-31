@@ -193,6 +193,7 @@
     });
   }
   function taskRow(t, mode) {
+    if (t.status === 'completed') mode = 'completed';
     var links = [t.courseId ? '课程' : '', t.chapterId ? '章节' : '', (t.tagIds || []).length ? '知识点' : '', t.examId ? '试卷' : ''].filter(Boolean).join(' / ');
     var stageText = (t.stages || []).map(function (s) { return (STAGE_LABEL[s.type] || s.type) + ' ' + s.minutes + '分'; }).join(' → ');
     var planText = t.planId ? ('计划：' + (t.planTitle || t.planId) + (t.subject ? ' · ' + t.subject : '') + (t.planMode ? ' · ' + (PLAN_MODE_LABEL[t.planMode] || t.planMode) : '') + (t.learningMode ? ' · ' + (MODE_LABEL[t.learningMode] || t.learningMode) : '')) : '';
