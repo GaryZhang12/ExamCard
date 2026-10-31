@@ -1,7 +1,7 @@
 {
   "environment": {
     "version": "1.1.0",
-    "userData": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.1.0-work\\.test-runs\\tmp\\examcard-work-test-YayW8C",
+    "userData": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.1.0-work\\.test-runs\\tmp\\examcard-work-test-MfAj6O",
     "electron": "43.3.0",
     "sandbox": false,
     "displays": [
@@ -21,7 +21,7 @@
       }
     ]
   },
-  "profile": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.1.0-work\\.test-runs\\tmp\\examcard-work-test-YayW8C",
+  "profile": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.1.0-work\\.test-runs\\tmp\\examcard-work-test-MfAj6O",
   "target": "C:\\Users\\GaryZ\\Documents\\ChatGPT\\EC答题卡开发\\ExamCard-1.1.0-work",
   "cases": [
     {
@@ -122,7 +122,7 @@
         "issues": []
       },
       "screenshot": "empty-960x720-learn-plans.png",
-      "sha256": "e58dfa9ee11330ea173673087800882c407afaa84ce69755f92ac85a9fa781b4"
+      "sha256": "e3cc2bfa7c3b13c6fffa5b2c42759c2652f9c2f9cb33fd721ced6e393a06fcae"
     },
     {
       "name": "empty-960x720-data",
@@ -142,7 +142,7 @@
         "issues": []
       },
       "screenshot": "empty-960x720-data.png",
-      "sha256": "48a82902bcbe1686d9e740ee63a0213b52b64327bfdfa8a66ddac604e257f6fd"
+      "sha256": "3e135de800abe4667611c1bba6f10d8964a99d3cf66378afd9ca77604ab4af64"
     },
     {
       "name": "empty-960x720-diagnosis-logs",
@@ -202,7 +202,7 @@
         "issues": []
       },
       "screenshot": "empty-1366x768-home.png",
-      "sha256": "16c7e033f42422e2538c364d2efd17020444cf5f4fc5afd3c55e13430ab6c41c"
+      "sha256": "f6a2ad99f1e70a3a6379752e203db8ad423bacb1498a3abba778720c011b5263"
     },
     {
       "name": "empty-1366x768-library",
@@ -222,7 +222,7 @@
         "issues": []
       },
       "screenshot": "empty-1366x768-library.png",
-      "sha256": "f96fc562700338d84fb1fc8f7d7b482d1f432a3760aba8a19ed03da71a648d83"
+      "sha256": "8b2a57812e5086550a8277d582384b1335363946485c8368850847c0a9b94265"
     },
     {
       "name": "empty-1366x768-essay",
@@ -262,7 +262,7 @@
         "issues": []
       },
       "screenshot": "empty-1366x768-toc.png",
-      "sha256": "44644c4f627be664cbfc3235638d5d0577d3e0e9c2fb3e18bdc3c9ea93711224"
+      "sha256": "c55885586a2d6af946e770402cc8f8c49b80906c3d86685ec0187158e16359ed"
     },
     {
       "name": "empty-1366x768-learn-plans",
@@ -322,7 +322,7 @@
         "issues": []
       },
       "screenshot": "empty-1366x768-diagnosis-logs.png",
-      "sha256": "50cf9b2a0df035fdecd3017570a1d3ddd16c9a598e83c3db82f5d502beb85bc2"
+      "sha256": "0ab5ece877fc785890c0834854a2ae4638e2030c1f33eb2cdda57ed2302b1c73"
     },
     {
       "name": "empty-1366x768-about",
@@ -342,7 +342,7 @@
         "issues": []
       },
       "screenshot": "empty-1366x768-about.png",
-      "sha256": "b8aebefbd31c2bd58b222dba465754c80620ac0b8b7898360fe4405aa5419082"
+      "sha256": "98f819f875009404876228e886674d012cad79b3b3bebaf341d3e4b551748c74"
     },
     {
       "name": "empty-1920x1080-home",
@@ -402,7 +402,7 @@
         "issues": []
       },
       "screenshot": "empty-1920x1080-essay.png",
-      "sha256": "ea39780e7036534f13eca1ff931102c34feed6b2efc9b76788b9593b80373a5f"
+      "sha256": "8d5406af3f5461978ea5e7e03f7e94e92d41979862eaf186409b4a2d65dade82"
     },
     {
       "name": "empty-1920x1080-toc",
@@ -422,7 +422,7 @@
         "issues": []
       },
       "screenshot": "empty-1920x1080-toc.png",
-      "sha256": "93d7a8b2aa4dbb4eb135a65af83827158c8ac3df75a470cfb7abfc247137a759"
+      "sha256": "ca2c10973b94e9c6318e84bcdd2e47627e558f4a5ccb7dea64b0121d878c9fc8"
     },
     {
       "name": "empty-1920x1080-learn-plans",
@@ -442,7 +442,7 @@
         "issues": []
       },
       "screenshot": "empty-1920x1080-learn-plans.png",
-      "sha256": "375a9c5721453aea910d055bb4aced2fb37a29bfefa4c4bf17bc10d066a0c54b"
+      "sha256": "4f4426718a86f526602c39315b24c98435167ff9c631eb1b4f10cda1fa0c583b"
     },
     {
       "name": "empty-1920x1080-data",
@@ -462,7 +462,7 @@
         "issues": []
       },
       "screenshot": "empty-1920x1080-data.png",
-      "sha256": "40067b291d5d8694677995d9e0bb1bc66c21c7754ab423c3d42eba0acea31a1c"
+      "sha256": "fc4e326f6a9fc19eb7f1f74722064d702518e45f24f80230c40baad2649335d6"
     },
     {
       "name": "empty-1920x1080-diagnosis-logs",
@@ -482,7 +482,7 @@
         "issues": []
       },
       "screenshot": "empty-1920x1080-diagnosis-logs.png",
-      "sha256": "f3283c54f451d588cdd6bf745b04027d8831fe41259ae9d72a41deb51f4de4ce"
+      "sha256": "d5de6ee709a3b2ba3660155bb12e3f7dad4b65701960152fed7235f461428569"
     },
     {
       "name": "empty-1920x1080-about",
@@ -522,7 +522,7 @@
         "issues": []
       },
       "screenshot": "empty-2560x1440-home.png",
-      "sha256": "1be3f908c56d6ddc62a046fce76a027033032f8ba8e47fed60ba9b5c216a8a3b"
+      "sha256": "85ce84212aef585523f815b363bd15fd896893beac8c2863ff9e8f7eab5016dd"
     },
     {
       "name": "empty-2560x1440-library",
@@ -542,7 +542,7 @@
         "issues": []
       },
       "screenshot": "empty-2560x1440-library.png",
-      "sha256": "7189945a393cb2353eaef25c3ff1847b0fb311353e674c3eaa1206a4b8f71418"
+      "sha256": "122a79dad935f4ae75c87a1fcaa2b73c348f1355cc2e4a2803a763522a610576"
     },
     {
       "name": "empty-2560x1440-essay",
@@ -562,7 +562,7 @@
         "issues": []
       },
       "screenshot": "empty-2560x1440-essay.png",
-      "sha256": "d3671cd6a945baeae0a8825bd217d5a811ff85573876b567c5838ae512514fb0"
+      "sha256": "63733208a3e3c9c764e02652ec7ee5aaa2dd31b1131ac587592de038984b1f96"
     },
     {
       "name": "empty-2560x1440-toc",
@@ -582,7 +582,7 @@
         "issues": []
       },
       "screenshot": "empty-2560x1440-toc.png",
-      "sha256": "d379d27c586a58d39a0602abf1853f01022e82db65e3bed0c99e459a213760c3"
+      "sha256": "6c0d6b7f519d7b2397647c5fc6015435ac3b5dce76f3446f909d1374f9a0f265"
     },
     {
       "name": "empty-2560x1440-learn-plans",
@@ -602,7 +602,7 @@
         "issues": []
       },
       "screenshot": "empty-2560x1440-learn-plans.png",
-      "sha256": "90dadc0a56900110c43aa93237a6eb7527ac3080510b6317f06065480b84e1c4"
+      "sha256": "f29e0a996a56fead0618140e84709a0a67765635a2d9b2b5e2c00ef5a5e020e4"
     },
     {
       "name": "empty-2560x1440-data",
@@ -622,7 +622,7 @@
         "issues": []
       },
       "screenshot": "empty-2560x1440-data.png",
-      "sha256": "2b5055522f1eae0a6d8f62b5f331f67cbf2477415b88752387295d16f9abfee6"
+      "sha256": "f87d4f0d8b459ba618f0a2c6de92a6b73a102259e610ca435880d78a834141c3"
     },
     {
       "name": "empty-2560x1440-diagnosis-logs",
@@ -642,7 +642,7 @@
         "issues": []
       },
       "screenshot": "empty-2560x1440-diagnosis-logs.png",
-      "sha256": "31c58b94a3691795e4a1e70a2650f590b2273a84aef80a4de1f317bd8963f0f2"
+      "sha256": "f09a91a2d8736e029e124c3f392cbbc8b95b260e05c82bf54bbed370985246c6"
     },
     {
       "name": "empty-2560x1440-about",
@@ -662,7 +662,7 @@
         "issues": []
       },
       "screenshot": "empty-2560x1440-about.png",
-      "sha256": "9b98772c67f0a0203419115e92dd4f726f69eb27b0aedd5b28fab8005df2a8e7"
+      "sha256": "bfd92444931b578693f921ff6c4bda70e3aa4a56d828829603770e35d4f9ca17"
     },
     {
       "name": "long-content-960x720-home",
@@ -702,7 +702,7 @@
         "issues": []
       },
       "screenshot": "long-content-960x720-library.png",
-      "sha256": "26bcebaef8e123b26ff47b4aa8a3d8720786b64831ed280a8073737929b73701"
+      "sha256": "2f831086c5a219bd1752c75b2d034da98aa389beeea138eb220f560bf9f97b6c"
     },
     {
       "name": "long-content-960x720-essay",
@@ -862,7 +862,7 @@
         "issues": []
       },
       "screenshot": "long-content-1366x768-library.png",
-      "sha256": "dd78402c6913f19ccf0903488dc30b53d3bbfba26edecd61d5f8041c30e66d7e"
+      "sha256": "0c30314321a3393c207e1c4cdc9481a800b263a529ec5dbb08d77aa7a5e4711b"
     },
     {
       "name": "long-content-1366x768-essay",
@@ -922,7 +922,7 @@
         "issues": []
       },
       "screenshot": "long-content-1366x768-learn-plans.png",
-      "sha256": "f65680f486a4f12dd4b94cf92c0ddbbcf5277b6ec980f751bb772985b14dd0fb"
+      "sha256": "2452467ffb947540da1e42a33a1d645fb39aaf89e679627637782dccf8677de4"
     },
     {
       "name": "long-content-1366x768-data",
@@ -942,7 +942,7 @@
         "issues": []
       },
       "screenshot": "long-content-1366x768-data.png",
-      "sha256": "3f9fe5261966fa269f6a57f9f91c499064114538e1b02b7be05c85c96cc3ef52"
+      "sha256": "11ff55c825bef0c8f97a40919d3120a2345d88a181a2922a830e8a5a783db116"
     },
     {
       "name": "long-content-1366x768-diagnosis-logs",
@@ -962,7 +962,7 @@
         "issues": []
       },
       "screenshot": "long-content-1366x768-diagnosis-logs.png",
-      "sha256": "50cf9b2a0df035fdecd3017570a1d3ddd16c9a598e83c3db82f5d502beb85bc2"
+      "sha256": "9a94ff81c65d49617b2ccf3041c6448e446879a7b99073eac3b424ffbccc9774"
     },
     {
       "name": "long-content-1366x768-about",
@@ -982,7 +982,7 @@
         "issues": []
       },
       "screenshot": "long-content-1366x768-about.png",
-      "sha256": "98f819f875009404876228e886674d012cad79b3b3bebaf341d3e4b551748c74"
+      "sha256": "0be8f83094524b60633470bbc4f624bce6440b41bf98058ae94f1a5ef810dfb1"
     },
     {
       "name": "long-content-1920x1080-home",
@@ -1002,7 +1002,7 @@
         "issues": []
       },
       "screenshot": "long-content-1920x1080-home.png",
-      "sha256": "779f1f3cc41c39eb976b5179b86137e328207c9d135006c3822ddbf0f95129f2"
+      "sha256": "ccb700cf1a3f88d07abdd9b4e5b0d930be3953d392e22295ec8046a8c10b0d72"
     },
     {
       "name": "long-content-1920x1080-library",
@@ -1022,7 +1022,7 @@
         "issues": []
       },
       "screenshot": "long-content-1920x1080-library.png",
-      "sha256": "c3faf17e366257cca34d71007405efdda71a9ab06a493015bf3a9197b704cfe3"
+      "sha256": "428d5d331efc2c309e01f0f98e8cfd61722938b03273d6115cfc6c335b3ce835"
     },
     {
       "name": "long-content-1920x1080-essay",
@@ -1042,7 +1042,7 @@
         "issues": []
       },
       "screenshot": "long-content-1920x1080-essay.png",
-      "sha256": "66dd238d6fb9bf999430976eeb858b6e473234e56b9a8ed5f4404f7e357e87b5"
+      "sha256": "e83a216144c37d093a601a0ce53fc9d50d8f7cec25aaaaf11b5212834d7bc620"
     },
     {
       "name": "long-content-1920x1080-toc",
@@ -1062,7 +1062,7 @@
         "issues": []
       },
       "screenshot": "long-content-1920x1080-toc.png",
-      "sha256": "eef59b2813e07b4a6f1b633022ba9220a610a46a3383f0e25c7c72a48887ef82"
+      "sha256": "0f45f4a87d383694459c65de485a40007131b3019819700c22d16d9b93421a8b"
     },
     {
       "name": "long-content-1920x1080-learn-plans",
@@ -1082,7 +1082,7 @@
         "issues": []
       },
       "screenshot": "long-content-1920x1080-learn-plans.png",
-      "sha256": "1eb0efc5bec4ba72a132f99bd647e5871dd067d86a3def68fb82a37474c02b67"
+      "sha256": "266c6e1a91a1433abd5a20e82a0ba1b34ff2f1d6b9055caf6da12bc60c2570c8"
     },
     {
       "name": "long-content-1920x1080-data",
@@ -1122,7 +1122,7 @@
         "issues": []
       },
       "screenshot": "long-content-1920x1080-diagnosis-logs.png",
-      "sha256": "bc235cc987381e2635272279097c59d1a1358543ae81a44af4332a8911dd4e93"
+      "sha256": "172e29394959eb221f9e83bb0e508795989f1fe8f800aac6b603d127a5824735"
     },
     {
       "name": "long-content-1920x1080-about",
@@ -1142,7 +1142,7 @@
         "issues": []
       },
       "screenshot": "long-content-1920x1080-about.png",
-      "sha256": "2f0c380d105a1808bbf1056cff77b3532e227c3492a5428e025d4f5a278b2d6b"
+      "sha256": "c57e457992b9e692688411f4c4d81f58642bdb289f1ac720f8dac4388022d8fc"
     },
     {
       "name": "long-content-2560x1440-home",
@@ -1162,7 +1162,7 @@
         "issues": []
       },
       "screenshot": "long-content-2560x1440-home.png",
-      "sha256": "c062606ea3761419720e7c7187505bb9a580fdbf82fdf4afb4d3ca5d86aed574"
+      "sha256": "3120bbf79b1e21a5dd3d4966df80967be36d6955359cc0ae64ddb20dd01d5e0e"
     },
     {
       "name": "long-content-2560x1440-library",
@@ -1182,7 +1182,7 @@
         "issues": []
       },
       "screenshot": "long-content-2560x1440-library.png",
-      "sha256": "abcbffdb37e10a6b4d28dffae0998075e1c5458efe8d9ba29eb081f7eaad43fb"
+      "sha256": "7a883ecac92137027192a7b3dce97199fb75a817897aff0a46c234bf91fb719f"
     },
     {
       "name": "long-content-2560x1440-essay",
@@ -1222,7 +1222,7 @@
         "issues": []
       },
       "screenshot": "long-content-2560x1440-toc.png",
-      "sha256": "c1cf012b9e4803f14d1ea7cdb3b54d1ebf85aa9f07189849cebc44d7f7370595"
+      "sha256": "cef9f2d0ed4947f7781155fc2c102f1a2658ad3b43032d9eeef41c4117a25692"
     },
     {
       "name": "long-content-2560x1440-learn-plans",
@@ -1262,7 +1262,7 @@
         "issues": []
       },
       "screenshot": "long-content-2560x1440-data.png",
-      "sha256": "14898b2a2353ad11a287a0e1b36dd7a985e5db07c2d72793cfcf4594fd0a8e63"
+      "sha256": "e79fbedd82ec73f88b17fe3d6a65ac1c56bbc3f2f191eaf576f13d5ecb6536ad"
     },
     {
       "name": "long-content-2560x1440-diagnosis-logs",
@@ -1282,7 +1282,7 @@
         "issues": []
       },
       "screenshot": "long-content-2560x1440-diagnosis-logs.png",
-      "sha256": "b48f945793c8ee26b23e57a1ee53ecbee2e0acfb5c02dfeb32b3765b85bb3717"
+      "sha256": "e3b1fc04b1cf31fc478f0616c191f41bb609cbae2b222f252c9b69c7d448e84a"
     },
     {
       "name": "long-content-2560x1440-about",
@@ -1302,7 +1302,7 @@
         "issues": []
       },
       "screenshot": "long-content-2560x1440-about.png",
-      "sha256": "bfd92444931b578693f921ff6c4bda70e3aa4a56d828829603770e35d4f9ca17"
+      "sha256": "266ccea38766a5b0dc441fe0e75a1280d1b7b8d3dbf2867951aecb54b792a09e"
     },
     {
       "name": "plan modal Escape closes and returns focus",

@@ -214,7 +214,7 @@
     var t = cleanTitle(raw || '');
     if (!t) return null;
     t = t.replace(/[（(][^）)]*[）)]\s*$/, '').replace(/[：:，,。；;]+$/g, '').replace(/\s+/g, '');
-    if (!t || t.length > 24) return null;
+    if (!t || t.length > 60) return null;
     for (var i = 0; i < MODULE_ALIASES.length; i++) {
       var def = MODULE_ALIASES[i];
       if (t === def.name) return def.name;
@@ -222,6 +222,20 @@
       var base = t.replace(/(?:专项练习|专项训练|专项|练习|精讲|强化|模块)$/g, '');
       if (base === def.name) return def.name;
       for (var b = 0; b < def.aliases.length; b++) if (base === def.aliases[b]) return def.name;
+    }
+    // 广东真题常见写法：“一.常识判断:根据题目要求……”。标题正文会
+    // 紧跟说明文字，因此识别开头的规范模块名，而不是要求整行精确匹配。
+    for (var j = 0; j < MODULE_ALIASES.length; j++) {
+      var d = MODULE_ALIASES[j];
+      var names = [d.name].concat(d.aliases);
+      for (var n = 0; n < names.length; n++) {
+        var lead = names[n];
+        if (t.indexOf(lead) !== 0) continue;
+        var rest = t.slice(lead.length);
+        if (!rest) return d.name;
+        if (/^[：:，,。；;、（(]/.test(rest)) return d.name;
+        if (/^(专项练习|专项训练|专项|练习|精讲|强化|模块)/.test(rest)) return d.name;
+      }
     }
     return null;
   }
