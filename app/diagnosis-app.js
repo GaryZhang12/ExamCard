@@ -3,7 +3,7 @@
 /* ExamCard V4.1 · 学习诊断 UI（标签/诊断/错题本/趋势/学习记录/报告） */
 (function (root) {
   'use strict';
-  var state = { open: false, tab: 'overview', engine: null, logs: [], exams: [], tags: [], activeExamId: null, filter: { examId: '', module: '', tagId: '', days: '', repeated: false }, selected: {}, chartModule: '' };
+  var state = { open: false, tab: 'overview', engine: null, logs: [], exams: [], tags: [], activeExamId: null, filter: { examId: '', module: '', tagId: '', days: '', repeated: false }, selected: {}, chartModule: '', trendDays: 30, trendToken: 0, trendReport: null };
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function pct(v) { return v == null ? '—' : (Math.round(v * 10) / 10) + '%'; }
@@ -31,7 +31,7 @@
     if (examView && !examView.classList.contains('hidden')) { toast('请先返回行测试卷库，再打开学习诊断'); return; }
     buildRoot(); state.open = true; $('diagRoot').classList.remove('hidden'); refresh();
   }
-  function close() { state.open = false; var r = $('diagRoot'); if (r) r.classList.add('hidden'); }
+  function close() { state.trendToken++; state.open = false; var r = $('diagRoot'); if (r) r.classList.add('hidden'); }
 
   async function refresh() {
     if (!state.open) return;
@@ -266,15 +266,115 @@
     } catch (e) { console.error(e); toast('开始复测失败：' + (e.message || e)); }
   }
 
-  function renderTrends() {
-    var e = state.engine, trends = e.trends || [];
-    var modules = e.modules.map(function (m) { return m.key; });
-    if (!state.chartModule && modules.length) state.chartModule = modules[0];
-    var html = '<div class="diag-card"><h3>历史趋势 <span class="diag-badge">样本量/统计区间见下表</span></h3>';
-    if (!trends.length) {
-      html += '<div class="diag-empty">暂无可绘制的趋势数据。旧版仅有 summary 的记录不补造逐题曲线。</div></div>';
-      $('diagBody').innerHTML = html; return;
+  function trendStat(key, value, sub) {
+    return '<div class="diag-stat"><div class="k">' + esc(key) + '</div><div class="v">' + esc(value) + '</div>' + (sub ? '<div class="s">' + esc(sub) + '</div>' : '') + '</div>';
+  }
+  function trendBadge(insufficient, sample) {
+    return insufficient ? '<span class="diag-badge warn">数据不足（样本 ' + Number(sample || 0) + '）</span>' : '<span class="diag-badge">已核实 ' + Number(sample || 0) + '</span>';
+  }
+  function trendRows(rows, kind) {
+    if (!rows.length) return '<div class="diag-empty">数据不足：暂无可核实的' + esc(kind) + '样本。不会用 0% 或 100% 代替。</div>';
+    return '<div class="p2-trend-scroll"><table class="diag-table"><thead><tr><th>' + (kind === '知识点' ? '知识点' : '模块') + '</th><th>活动</th><th>题量</th><th>已核实</th><th>正确 / 错误</th><th>未知</th><th>正确率</th><th>来源</th></tr></thead><tbody>' +
+      rows.map(function (m) {
+        var src = Object.keys(m.sources || {}).map(function (k) { return k + ':' + m.sources[k]; }).join('、') || '—';
+        return '<tr><td>' + esc(m.name || m.key) + ' ' + (m.dataInsufficient ? '<span class="diag-badge warn">数据不足</span>' : '') + '</td><td>' + m.activities + '</td><td>' + m.questions + '</td><td>' + m.known + '</td><td>' + m.correct + ' / ' + m.incorrect + '</td><td>' + m.unknownQuestions + '</td><td>' + pct(m.accuracy) + '</td><td>' + esc(src) + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+  function trendPracticeTable(types) {
+    var keys = ['subtotal', 'new', 'retest', 'unclassified', 'comprehensive', 'mock'];
+    return '<div class="p2-trend-scroll"><table class="diag-table"><thead><tr><th>类型</th><th>活动</th><th>题量</th><th>已核实</th><th>正确 / 错误</th><th>未知正确</th><th>正确率</th><th>说明</th></tr></thead><tbody>' +
+      keys.map(function (k) {
+        var c = types[k];
+        var note = k === 'subtotal' ? '含未分类 ' + (c.unclassifiedQuestions || 0) + ' 题（分类未确认）' : (k === 'new' ? '仅 new 标签，不等于全部专项' : '');
+        return '<tr><td>' + esc(c.label) + '</td><td>' + c.activities + '</td><td>' + c.questions + '</td><td>' + c.known + '</td><td>' + c.correct + ' / ' + c.incorrect + '</td><td>' + c.unknownQuestions + '</td><td>' + pct(c.accuracy) + (c.dataInsufficient ? ' <span class="diag-badge warn">数据不足</span>' : '') + '</td><td>' + esc(note) + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+  function trendNoveltyTable(qh) {
+    var keys = ['first', 'repeat', 'unknown'];
+    return '<div class="p2-trend-scroll"><table class="diag-table"><thead><tr><th>新旧</th><th>活动</th><th>题量</th><th>已核实</th><th>正确 / 错误</th><th>未知</th><th>正确率</th><th>来源</th></tr></thead><tbody>' +
+      keys.map(function (k) {
+        var b = qh[k];
+        var src = Object.keys(b.sources || {}).map(function (s) { return s + ':' + b.sources[s]; }).join('、') || '—';
+        return '<tr><td>' + esc(b.label) + '</td><td>' + b.activities + '</td><td>' + b.questions + '</td><td>' + b.known + '</td><td>' + b.correct + ' / ' + b.incorrect + '</td><td>' + b.unknownQuestions + '</td><td>' + pct(b.accuracy) + '</td><td>' + esc(src) + '</td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<div class="diag-note">首次/重复按全部历史稳定 ID 和原始时间戳判定，窗口外先前历史也算已做；外部/手动活动无逐题稳定 ID 时归“历史未知”，不按组卷模式或语义猜测。</div>';
+  }
+  function trendDailyTable(r) {
+    return '<div class="p2-trend-scroll"><table class="diag-table" id="diagTrendDaily"><thead><tr><th>日期</th><th>来源</th><th>题量</th><th>已核实</th><th>正确 / 错误</th><th>未知</th><th>首次 / 重复 / 未知</th><th>正确率</th><th>精确 / 估算秒</th><th>申论评分</th><th>复测实际</th></tr></thead><tbody>' +
+      r.daily.map(function (d) {
+        var src = Object.keys(d.sources || {}).map(function (s) { return s + ':' + d.sources[s]; }).join('、') || '—';
+        return '<tr data-day="' + esc(d.date) + '"><td>' + esc(d.date) + '</td><td>' + esc(src) + '</td><td>' + d.questions + '</td><td>' + d.known + '</td><td>' + d.correct + ' / ' + d.incorrect + '</td><td>' + d.unknownQuestions + '</td><td>' + d.novelty.first + ' / ' + d.novelty.repeat + ' / ' + d.novelty.unknown + '</td><td>' + pct(d.accuracy) + '</td><td>' + d.duration.exactSeconds + ' / ' + d.duration.estimatedSeconds + '</td><td>' + d.essayScores + '</td><td>' + d.retestResults + '</td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<div class="diag-note">全来源逐日序列由同一批规范化活动一次派生；空日正确率为 null。申论评分与复测实际结果单列，提醒日不当作答日。</div>';
+  }
+  function trendReportHtml(r) {
+    var h = '<div class="diag-grid">' +
+      trendStat('窗口', r.window.from + ' ~ ' + r.window.to, r.window.days + ' 天 · ' + r.timezone) +
+      trendStat('活动 / 客观题', r.sample.objectiveActivities + ' / ' + r.sample.objectiveEvents, '去重后活动') +
+      trendStat('已核实 / 未知', r.sample.knownObjectiveEvents + ' / ' + r.sample.unknownObjectiveQuestions, '未知不按 0') +
+      trendStat('全体客观正确 / 题量', r.overall.correct + ' / ' + r.overall.questions, '含综合/模考的客观合计') +
+      trendStat('客观练习小计（不含综合/模考）', (r.practiceTypes.subtotal.correct || 0) + ' / ' + (r.practiceTypes.subtotal.questions || 0), '新题 ' + (r.practiceTypes.new.correct || 0) + '/' + (r.practiceTypes.new.questions || 0) + ' · 复测 ' + (r.practiceTypes.retest.correct || 0) + '/' + (r.practiceTypes.retest.questions || 0) + ' · 未分类 ' + (r.practiceTypes.unclassified.correct || 0) + '/' + (r.practiceTypes.unclassified.questions || 0) + '（分类未确认，未猜新/复测）；综合 ' + (r.practiceTypes.comprehensive.correct || 0) + '/' + (r.practiceTypes.comprehensive.questions || 0) + '、模考 ' + (r.practiceTypes.mock.correct || 0) + '/' + (r.practiceTypes.mock.questions || 0) + ' 除外') +
+      trendStat('已知正确率', pct(r.overall.accuracy), 'correct / known') +
+      trendStat('真实逐题样本', String(r.sample.perQuestionTimeExact), '无逐题 ' + r.sample.noPerQuestionQuestions + ' 题') +
+      trendStat('首次 / 重复 / 未知', r.sample.firstQuestions + ' / ' + r.sample.repeatQuestions + ' / ' + r.sample.unknownHistoryQuestions, '逐题历史') +
+      trendStat('复测实际 / 申论来源评分记录', r.sample.retestResults + ' / ' + r.sample.essayScores, '来源记录数，不冒充完全去重独立评分次数') +
+      '</div>';
+    h += '<div class="diag-note">来源：内部快照 ' + r.sources.software.activities + ' 会话（忽略旧快照 ' + r.sources.software.suppressedSnapshots + '）· 外部 ' + r.sources.external.activities + ' 条 · 手动 ' + r.sources.external.manualActivities + ' 条 · 1.1 题库 ' + (r.sources.bank.available ? r.sources.bank.activities + ' 次' : '不可用') + '。删除 ' + r.sources.external.deletedSuppressed + ' 条、重复 ' + r.sources.external.duplicatesSuppressed + ' 条已排除。</div>';
+    if (!r.sources.bank.available) h += '<div class="diag-warn">独立题库：' + esc(r.sources.bank.reason) + '</div>';
+    var modeText = r.sources.bank.available && r.sources.bank.modes ? Object.keys(r.sources.bank.modes).map(function (k) { return k + ':' + r.sources.bank.modes[k]; }).join('、') : '';
+    if (modeText) h += '<div class="diag-note">题库组卷模式：' + esc(modeText) + '。模式只表示组卷/排序意图，不是逐题新旧证据。</div>';
+    h += '<div class="diag-card"><h3>首次 / 重复 / 未知 <span class="diag-badge">全部历史 · 稳定题目 ID</span></h3>' + trendNoveltyTable(r.questionHistory) + '</div>';
+    h += '<div class="diag-card"><h3>模块正确率 <span class="diag-badge">已核实样本 &lt; ' + 5 + ' 标数据不足</span></h3>' + trendRows(r.modules, '模块') + '</div>';
+    h += '<div class="diag-card"><h3>知识点正确率 <span class="diag-badge">一题多标签分别计入</span></h3>' + trendRows(r.knowledge, '知识点') + '</div>';
+    var exact = r.perQuestionTime.exact;
+    var est = r.perQuestionTime.estimated;
+    h += '<div class="diag-card"><h3>逐题用时 / 总时长 <span class="diag-badge">总时长不拆成逐题</span></h3>' +
+      '<div class="diag-grid">' + trendStat('真实逐题样本', String(exact.length), 'exact') + trendStat('P50 / P90', sec(r.perQuestionTime.exactSummary.p50Seconds) + ' / ' + sec(r.perQuestionTime.exactSummary.p90Seconds), 'nearest-rank') + trendStat('活动总时长', sec(r.totalDuration.exactSeconds), '精确') + trendStat('估算总时长', sec(r.totalDuration.estimatedSeconds), '活动级') + trendStat('无逐题样本', String(r.perQuestionTime.noPerQuestionCount) + ' 题', '不补 0 秒') + '</div>' +
+      (exact.length ? '<div class="p2-trend-scroll"><table class="diag-table"><thead><tr><th>日期</th><th>来源</th><th>题号 / bankQuestionId</th><th>秒</th></tr></thead><tbody>' + exact.slice(0, 120).map(function (x) { return '<tr><td>' + esc(x.date) + '</td><td>' + esc(x.source) + '</td><td>' + esc(x.bankQuestionId || x.questionId || '—') + '</td><td>' + esc(x.elapsedSeconds) + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<div class="diag-empty">暂无真实逐题计时；980 秒等活动总时长只进入总时长，不生成 30 条逐题。</div>') +
+      (est.length ? '<div class="diag-note">估算层：' + est.map(function (x) { return esc(x.activityId + ' · ' + x.secondsPerQuestion + ' 秒/题 · ' + x.questionCount + ' 题'); }).join('；') + '。未与 exact 混合。</div>' : '') +
+      '<div class="diag-note">真实逐题样本 ' + exact.length + ' 条；无真实逐题样本 ' + r.perQuestionTime.noPerQuestionCount + ' 题；未知用时 ' + r.perQuestionTime.unknownCount + ' 题。总时长与分布分开呈现。</div></div>';
+    h += '<div class="diag-card"><h3>错因主次频率 <span class="diag-badge">外部/手动错题</span></h3>' +
+      (r.causes.length ? '<div class="p2-trend-scroll"><table class="diag-table"><thead><tr><th>错因</th><th>主因</th><th>次因</th><th>事件</th><th>样本</th></tr></thead><tbody>' + r.causes.map(function (c) { return '<tr><td>' + esc(c.cause) + '</td><td>' + c.primary + '</td><td>' + c.secondary + '</td><td>' + c.events + '</td><td>' + (c.dataInsufficient ? '数据不足（&lt;3）' : '已去重') + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<div class="diag-empty">数据不足：暂无结构化错因。错误题次不会自动归类。</div>') +
+      '<div class="diag-note">去重错题 ' + r.causeSample.events + ' 条；未录错因的错误题次 ' + r.causeSample.uncausedIncorrect + ' 个。主因/次因分开计数。</div></div>';
+    h += '<div class="diag-card"><h3>练习类型 / 组卷意图 <span class="diag-badge">不等同逐题新旧</span></h3>' + trendPracticeTable(r.practiceTypes) + '<div class="diag-note">random/unseen/weak 不命名为新题；wrong 组中的共享材料也可能含首次题。复测与专项不互相并入。</div></div>';
+    h += '<div class="diag-card"><h3>全来源逐日趋势（' + r.window.days + ' 天） <span class="diag-badge">外部/题库/内部同一表</span></h3>' + trendDailyTable(r) + '</div>';
+    h += '<div class="diag-card"><h3>D+1 / D+3 / D+7 实际结果 <span class="diag-badge">只按实际完成日</span></h3>' +
+      '<div class="p2-trend-scroll"><table class="diag-table"><thead><tr><th>间隔</th><th>计划</th><th>完成</th><th>结果</th><th>已核实</th><th>正确率</th></tr></thead><tbody>' +
+      ['d1', 'd3', 'd7', 'unclassified'].map(function (k) { var x = r.retest.intervals[k]; return '<tr><td>' + esc(x.label) + '</td><td>' + x.planned + '</td><td>' + x.completed + '</td><td>' + x.results.length + '</td><td>' + x.known + '</td><td>' + pct(x.accuracy) + (x.dataInsufficient ? ' <span class="diag-badge warn">数据不足</span>' : '') + '</td></tr>'; }).join('') + '</tbody></table></div>' +
+      (r.retest.results.length ? '<div class="p2-trend-scroll"><table class="diag-table"><thead><tr><th>实际完成</th><th>计划</th><th>原始错误</th><th>模式</th><th>正确 / 题量</th><th>关联学习记录</th></tr></thead><tbody>' + r.retest.results.map(function (x) { return '<tr><td>' + esc(x.date) + '</td><td>' + esc(x.dueDate || '—') + '</td><td>' + esc(x.errorDate || '—') + '</td><td>' + esc(x.mode === 'similar' ? '同类新题' : x.mode === 'original' ? '原题' : '未标注') + '</td><td>' + (x.correctCount == null ? '—' : x.correctCount) + ' / ' + (x.questionCount == null ? '—' : x.questionCount) + '</td><td>' + esc(x.linkedLogId || '—') + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<div class="diag-empty">窗口内没有实际复测结果；计划/提醒日期不补造成绩。</div>') +
+      '<div class="diag-note">原题 / 同类新题分开：原题 ' + r.retest.byMode.original.results + ' 条、同类 ' + r.retest.byMode.similar.results + ' 条、未标注 ' + r.retest.byMode.unclassified.results + ' 条。一次正确不自动掌握。</div></div>';
+    h += '<div class="diag-card"><h3>申论评分 <span class="diag-badge">内部 essayReviews + 外部学习记录 · 不转换为客观题</span></h3>' +
+      (r.essays.length ? '<div class="p2-trend-scroll"><table class="diag-table" id="diagTrendEssays"><thead><tr><th>日期</th><th>来源</th><th>活动 / 评分ID</th><th>轮次 / 依据</th><th>分数</th><th>内容 / 备注</th><th>状态</th></tr></thead><tbody>' +
+        r.essays.map(function (e) {
+          var roundLabel = { first: '首次', reevaluation: '复评', additional: '后续', unclassified: '未判定' }[e.round] || e.round;
+          var sourceLabel = { internal: '内部评分', external: '外部记录', manual: '手动记录' }[e.source] || e.source;
+          return '<tr><td>' + esc(e.date) + '</td><td>' + esc(sourceLabel) + '</td><td>' + esc(e.reviewId || e.logId || e.activityId) + '</td><td>' + esc(roundLabel) + ' · ' + esc(e.roundSource) + '</td><td>' + (e.score == null ? '未知' : e.score + '/' + (e.maxScore == null ? '未知' : e.maxScore)) + '</td><td>' + esc(e.content || e.topic || '申论') + (e.note ? ' · ' + esc(e.note) : '') + '</td><td>' + (e.dataInsufficient ? '数据不足：分数/满分未知' : '保留原评分') + (e.identityNote ? ' · 活动关联但无逐评分ID，未去重' : '') + (e.crossSourceUncertain ? ' · 跨来源未确认同评分' : '') + '</td></tr>';
+        }).join('') + '</tbody></table></div>' : '<div class="diag-empty">数据不足：窗口内没有申论评分样本。</div>') +
+      '<div class="diag-note">内部 ' + r.sources.essays.internalReviews + ' 条、外部 ' + r.sources.essays.externalScores + ' 条、手动 ' + r.sources.essays.manualScores + ' 条（来源评分记录）；活动级 logId 只证明同活动，不证明逐评分同一；仅逐评分精确引用去重，其余来源分列并标不确定。</div></div>';
+    h += '<div class="diag-card"><h3>统计口径与不足说明</h3><ul class="p2-trend-notes">' + r.dataNotes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul></div>';
+    return h;
+  }
+  async function loadTrendReport(days) {
+    var token = ++state.trendToken;
+    var host = $('diagTrendReport');
+    if (!host || !root.TrendEngine) return;
+    try {
+      var report = await TrendEngine.load({ days: days });
+      if (token !== state.trendToken || !host.isConnected) return;
+      state.trendReport = report;
+      host.setAttribute('data-days', String(days));
+      host.setAttribute('data-from', report.window.from);
+      host.setAttribute('data-to', report.window.to);
+      host.innerHTML = trendReportHtml(report);
+    } catch (e) {
+      if (token !== state.trendToken || !host.isConnected) return;
+      host.innerHTML = '<div class="diag-warn">趋势计算失败：' + esc(e.message || e) + '</div>';
     }
+  }
+  function legacyTrendsHtml() {
+    var e = state.engine, trends = e.trends || [];
+    var html = '<div class="diag-card"><h3>EC 内部逐日趋势（原有） <span class="diag-badge">仅旧 PDF/软件快照</span></h3>';
+    if (!trends.length) return html + '<div class="diag-empty">暂无可绘制的逐日趋势数据。旧版仅有 summary 的记录不补造逐题曲线。</div></div>';
     var maxAcc = 100;
     var w = 760, h = 210, pad = 34;
     var pts = trends.map(function (t, i) {
@@ -288,11 +388,28 @@
       '<path d="' + path + '" fill="none" stroke="#2563eb" stroke-width="3"></path>' +
       pts.map(function (p) { return '<circle cx="' + p.x + '" cy="' + p.y + '" r="4" fill="#2563eb"></circle><text x="' + p.x + '" y="' + (p.y - 9) + '" font-size="10" text-anchor="middle" fill="#475569">' + (p.t.accuracy == null ? '—' : p.t.accuracy + '%') + '</text>'; }).join('') + '</svg>';
     html += '<table class="diag-table" style="margin-top:10px"><thead><tr><th>日期</th><th>练习次数</th><th>正确</th><th>错误</th><th>正确率</th><th>平均每题用时</th></tr></thead><tbody>' + trends.map(function (t) { return '<tr><td>' + esc(t.date) + '</td><td>' + t.attempts + '</td><td>' + t.correct + '</td><td>' + t.incorrect + '</td><td>' + pct(t.accuracy) + '</td><td>' + sec(t.avgSeconds) + '</td></tr>'; }).join('') + '</tbody></table></div>';
-    html += '<div class="diag-card"><h3>模块当前表现</h3><table class="diag-table"><thead><tr><th>模块</th><th>题次</th><th>正确率</th><th>平均用时</th><th>样本会话</th></tr></thead><tbody>' + e.modules.map(function (m) { return '<tr><td>' + esc(m.key) + '</td><td>' + m.total + '</td><td>' + pct(m.accuracy) + '</td><td>' + sec(m.avgSeconds) + '</td><td>' + m.sessionCount + '</td></tr>'; }).join('') + '</tbody></table><div class="diag-note">按日期分模块曲线的数据量可能不足；模块当前表现按全部已批改快照汇总，不编造时间曲线。</div></div>';
-    html += '<div class="diag-card"><h3>模块近期变化</h3><table class="diag-table"><thead><tr><th>模块</th><th>最近 3 次正确率</th><th>此前 3 次正确率</th><th>变化</th><th>样本（题）</th></tr></thead><tbody>' + (e.moduleTrends || []).map(function (m) { return '<tr><td>' + esc(m.module) + '</td><td>' + pct(m.recent.accuracy) + '</td><td>' + pct(m.previous.accuracy) + '</td><td>' + (m.delta == null ? '数据不足' : (m.delta > 0 ? '+' : '') + m.delta + ' 个百分点') + '</td><td>' + m.recent.sample + ' / ' + m.previous.sample + '</td></tr>'; }).join('') + '</tbody></table><div class="diag-note">样本按会话计数；不足两个窗口时不判定改善/下降。</div></div>';
-    html += '<div class="diag-card"><h3>知识点表现变化</h3>' + ((e.knowledgeTrends || []).length ? '<table class="diag-table"><thead><tr><th>知识点</th><th>最近 3 次正确率</th><th>此前 3 次正确率</th><th>变化</th><th>样本（题）</th></tr></thead><tbody>' + e.knowledgeTrends.map(function (k) { return '<tr><td>' + esc(k.name) + '</td><td>' + pct(k.recent.accuracy) + '</td><td>' + pct(k.previous.accuracy) + '</td><td>' + (k.delta == null ? '数据不足' : (k.delta > 0 ? '+' : '') + k.delta + ' 个百分点') + '</td><td>' + k.recent.sample + ' / ' + k.previous.sample + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="diag-empty">暂无带标签的跨会话数据；先完成题目标注并做多次练习。</div>') + '</div>';
-    html += '<div class="diag-card"><h3>错题复测前后对比</h3>' + (e.retestCompare.length ? '<table class="diag-table"><thead><tr><th>复测日期</th><th>来源会话</th><th>来源错误数</th><th>复测正确</th><th>复测错误</th><th>题数</th></tr></thead><tbody>' + e.retestCompare.map(function (r) { return '<tr><td>' + esc(r.date) + '</td><td>' + esc(r.sourceSessionId || '—') + '</td><td>' + (r.beforeWrong == null ? '—' : r.beforeWrong) + '</td><td>' + r.retestCorrect + '</td><td>' + r.retestWrong + '</td><td>' + r.total + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="diag-empty">还没有复测记录。错题本中可发起复测。</div>') + '</div>';
+    html += '<div class="diag-card"><h3>模块当前表现（原有）</h3><table class="diag-table"><thead><tr><th>模块</th><th>题次</th><th>正确率</th><th>平均用时</th><th>样本会话</th></tr></thead><tbody>' + e.modules.map(function (m) { return '<tr><td>' + esc(m.key) + '</td><td>' + m.total + '</td><td>' + pct(m.accuracy) + '</td><td>' + sec(m.avgSeconds) + '</td><td>' + m.sessionCount + '</td></tr>'; }).join('') + '</tbody></table></div>';
+    html += '<div class="diag-card"><h3>模块近期变化（原有）</h3><table class="diag-table"><thead><tr><th>模块</th><th>最近 3 次正确率</th><th>此前 3 次正确率</th><th>变化</th><th>样本（题）</th></tr></thead><tbody>' + (e.moduleTrends || []).map(function (m) { return '<tr><td>' + esc(m.module) + '</td><td>' + pct(m.recent.accuracy) + '</td><td>' + pct(m.previous.accuracy) + '</td><td>' + (m.delta == null ? '数据不足' : (m.delta > 0 ? '+' : '') + m.delta + ' 个百分点') + '</td><td>' + m.recent.sample + ' / ' + m.previous.sample + '</td></tr>'; }).join('') + '</tbody></table><div class="diag-note">样本按会话计数；不足两个窗口时不判定改善/下降。</div></div>';
+    html += '<div class="diag-card"><h3>知识点表现变化（原有）</h3>' + ((e.knowledgeTrends || []).length ? '<table class="diag-table"><thead><tr><th>知识点</th><th>最近 3 次正确率</th><th>此前 3 次正确率</th><th>变化</th><th>样本（题）</th></tr></thead><tbody>' + e.knowledgeTrends.map(function (k) { return '<tr><td>' + esc(k.name) + '</td><td>' + pct(k.recent.accuracy) + '</td><td>' + pct(k.previous.accuracy) + '</td><td>' + (k.delta == null ? '数据不足' : (k.delta > 0 ? '+' : '') + k.delta + ' 个百分点') + '</td><td>' + k.recent.sample + ' / ' + k.previous.sample + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="diag-empty">暂无带标签的跨会话数据；先完成题目标注并做多次练习。</div>') + '</div>';
+    html += '<div class="diag-card"><h3>错题复测前后对比（原有）</h3>' + (e.retestCompare.length ? '<table class="diag-table"><thead><tr><th>复测日期</th><th>来源会话</th><th>来源错误数</th><th>复测正确</th><th>复测错误</th><th>题数</th></tr></thead><tbody>' + e.retestCompare.map(function (r) { return '<tr><td>' + esc(r.date) + '</td><td>' + esc(r.sourceSessionId || '—') + '</td><td>' + (r.beforeWrong == null ? '—' : r.beforeWrong) + '</td><td>' + r.retestCorrect + '</td><td>' + r.retestWrong + '</td><td>' + r.total + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="diag-empty">还没有复测记录。错题本中可发起复测。</div>') + '</div>';
+    return html;
+  }
+  function renderTrends() {
+    var days = state.trendDays || 30;
+    var restoreFocus = !!(document.activeElement && document.activeElement.id === 'diagTrendDays');
+    var html = '<div class="diag-card"><h3>7 / 14 / 30 日学习趋势 <span class="diag-badge">Asia/Shanghai · 只读快照重算</span></h3>' +
+      '<div class="diag-filter"><label>统计区间<select id="diagTrendDays" class="diag-select">' +
+      [7, 14, 30].map(function (d) { return '<option value="' + d + '"' + (d === days ? ' selected' : '') + '>近 ' + d + ' 天</option>'; }).join('') +
+      '</select></label><span class="diag-note" style="margin:0">按北京时间日期截断；原始时间戳保留；统计不另存聚合真相。</span></div>' +
+      '<div id="diagTrendReport" data-days="' + days + '" data-from="" data-to=""><div class="diag-empty">正在按只读快照计算趋势…</div></div></div>';
+    html += legacyTrendsHtml();
     $('diagBody').innerHTML = html;
+    if ($('diagTrendDays')) $('diagTrendDays').addEventListener('change', function () {
+      state.trendDays = Number(this.value) || 30;
+      renderTrends();
+    });
+    if (restoreFocus && $('diagTrendDays')) $('diagTrendDays').focus();
+    loadTrendReport(days);
   }
 
   function diagnosisEvents() {

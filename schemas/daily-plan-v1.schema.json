@@ -12,6 +12,8 @@
     "timezone": { "const": "Asia/Shanghai" },
     "exam_type": { "type": "string", "minLength": 1, "maxLength": 40 },
     "status": { "enum": ["planned", "active", "paused", "completed", "cancelled"] },
+    "plan_mode": { "enum": ["foundation", "reinforcement", "speed_training", "mock_exam", "review_adjustment"] },
+    "plan_submode": { "enum": ["mock_review", "pre_exam_adjustment", null] },
     "title": { "type": "string", "minLength": 1, "maxLength": 300 },
     "goal": { "type": "string", "maxLength": 2000 },
     "mem_suspended": { "type": "boolean" },
@@ -80,6 +82,20 @@
         "require_error_review": { "type": "boolean" }
       }
     },
+    "memorization": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "topic": { "type": ["string", "null"], "maxLength": 500 },
+        "source": { "type": ["string", "null"], "maxLength": 500 },
+        "keywords": { "type": "array", "items": { "type": "string", "maxLength": 80 } },
+        "first_learned_at": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "last_reviewed_at": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "next_review_at": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "recall_accuracy": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "confusions": { "type": "array", "items": { "type": "string", "maxLength": 300 } }
+      }
+    },
     "task": {
       "type": "object",
       "additionalProperties": false,
@@ -89,6 +105,14 @@
         "subject": { "type": "string", "maxLength": 200 },
         "topic": { "type": "string", "minLength": 1, "maxLength": 1000 },
         "priority": { "enum": ["high", "normal", "low"] },
+        "task_type": { "enum": ["video", "examples", "practice", "review", "memorization", "retest", "timed_drill", "essay", "mock_exam", "mock_review"] },
+        "module": { "type": ["string", "null"], "maxLength": 300 },
+        "knowledge_point": { "type": ["string", "null"], "maxLength": 300 },
+        "target_accuracy": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "time_limit_seconds": { "type": ["integer", "null"], "minimum": 0 },
+        "question_count": { "type": ["integer", "null"], "minimum": 0 },
+        "question_set_id": { "type": ["string", "null"], "maxLength": 120 },
+        "memorization": { "$ref": "#/$defs/memorization" },
         "start": { "$ref": "#/$defs/time" },
         "end": { "$ref": "#/$defs/time" },
         "planned_minutes": { "type": "integer", "minimum": 0, "maximum": 1440 },

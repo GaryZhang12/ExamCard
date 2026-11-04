@@ -5,6 +5,46 @@ Version changes are recorded here; for current setup and usage, see [README](REA
 
 > 1.1.0 于 2026-10-31 正式发布，内容依据开发与发布门禁报告整理；发行文件校验值见 Release 附件 `SHA256SUMS.txt`。
 
+## [1.2.0] - RC PRE-RELEASE CANDIDATE / RC 预发布候选
+
+状态：**1.2.0 RC/Pre-release 候选渠道**（应用版本 1.2.0，目标候选标识 rc.1），不是 Stable。当前具体 tag、可下载资产与校验值以 [GitHub Releases 列表](https://github.com/GaryZhang12/ExamCard/releases) 为准；本节不预编具体 RC tag/EXE 链接，也不把 RC 冒充 Stable。最新公开 Stable 仍为 **v1.1.0（2026-10-31）**。
+
+### Added / 新增
+
+- **WP01 学习计划**：严格 `examcard.daily-plan/v1` JSON/CSV 导入、预览、日期/时间/题型/阶段校验、重复/冲突/已完成保护；`learning_mode + stages`，不接受不存在的 `phase`。
+- **WP02 学习记录**：原 ID 更正、19→18 等 before/after/原因/revision 审计、软删除、批量新增、精确/估算/未知用时、导出；未知值保持 null，不写 0。
+- **WP03–WP05 外部练习/错因/统计**：用户主动提供的粉笔外部练习预览确认、`source+externalId` 去重、错题独立命名空间、主次错因/方法/符号/推理/复测；新题/复测/综合/模考/未分类分列，客观练习小计 = new+retest+unclassified；申论 7/9 独立。
+- **WP06 复测**：D+1/D+3/D+7 按实际完成日期，原题/同类分开，提前/推迟/跳过/关闭保留历史；一次正确不自动改写掌握。
+- **WP07–WP08 归档与连续 PDF**：本地 PDF 归档/关联/检索；长材料跨页连续滚动、定位返回、人工修正和计时保留；不移动原文件。
+- **WP09 趋势**：7/14/30 天北京时间窗口，全来源逐日序列、模块/用时/错因/首次重复未知/复测实际结果、申论来源评分；数据不足/空日不显示 0%。
+- **WP10 结构化复盘**：`examcard.review-exchange/v1` Schema/模板、opaque 预览、单事务原子提交、typed targets、批次/实体/refs 审计、撤销、目标定位、LearningApp 消费入口、真实 targetCatalog/template 导出。
+- 1.1 公开能力继续保留：行测/申论 PDF、教材与本地 OCR、课程、每日计划、独立题库、随机练习、诊断、复测、归档、备份/恢复。
+
+### Compatibility / 兼容
+
+- 数据库仍 `gd_exam_v2`，用户目录仍 `%APPDATA%\gd-exam-card-v3\`；v5/22、v6/28 结构不变，1.2 无新 store、无强制 schema 提升。
+- v5 完整 22 表到 v6 显式“完整备份 + 明确确认”门不变；15 表/缺表/损坏备份拒绝，不静默恢复。
+- 1.1→1.2 无 schema 提升不等于 1.2 新 meta/StudyLog v2 可在 1.1 UI 无损编辑。升级/试用前导出完整 JSON 备份；需系统回退时退出应用并离线备份整个 userData；回退 1.1 使用升级前备份。
+- 恢复会覆盖当前数据；先导出当前完整备份。程序不会替用户执行真实备份。
+
+### Verification / 验证（阶段证据，非全项目最终结论）
+
+- WP01–WP05 已通过 P0 独立验收；WP06–WP08 已通过 P1 独立验收；WP09 通过 22 单元/三时区/11 UI/真实报告分类页面；WP10 通过原始 Electron 9 checks/0 renderer exceptions 及独立并发/撤销依赖/维护/任务竞态/38 单元。
+- M6 全量回归、干净快照构建、源码/patch/EXE/SHA 和最终几何结果以随包 `FINAL_ACCEPTANCE.md`、`MANIFEST` 和 `SHA256SUMS` 为准；本节不预编最终数字。
+
+### Known limitations / 已知限制
+
+- 粉笔数据由用户主动提供，不是登录爬取；不自动原创题、不云同步、不自动上传。
+- unknown/null 不猜 0/new；活动总时长不生成逐题分布；无标准答案不判错；OCR 继续人工核对。
+- 申论 7/9 保留，不计入客观题分子/分母。
+- 结构化复盘是未确认建议，不自动改原始 Attempt/错因统计/已确认评分；已撤销 review_id 保留历史，重导需显式新 review_id；不支持任意原文件一键原样复活旧 review。
+- 源码零 hash 模板只是字段示例；实际使用应用导出的 targetCatalog[].target 与真实 hash 模板。
+- 真实 125%/150% DPI、标准用户安装/卸载、原生 OS 保存对话框取消和最终构建未在本阶段冒充 PASS。
+
+### Release assets / 发行文件
+
+- 本文不预编具体 RC 资产或校验值；如存在，统一以 [GitHub Releases 列表](https://github.com/GaryZhang12/ExamCard/releases) 和随附 `SHA256SUMS.txt` 为准。最新公开 Stable 仍为 [v1.1.0](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.1.0)。
+
 ## [1.1.0] - 2026-10-31
 
 ### Added / 新增

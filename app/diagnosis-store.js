@@ -16,6 +16,7 @@
       tx.objectStore(store).put(value);
       tx.oncomplete = function () { res(value); };
       tx.onerror = function () { rej(tx.error); };
+      tx.onabort = function () { rej(tx.error || new Error('数据写入事务已中止')); };
     });
   }
   function del(db, store, key) {
@@ -24,7 +25,25 @@
       tx.objectStore(store).delete(key);
       tx.oncomplete = res;
       tx.onerror = function () { rej(tx.error); };
+      tx.onabort = function () { rej(tx.error || new Error('数据删除事务已中止')); };
     });
+  }
+  function txDone(tx) {
+    return new Promise(function (res, rej) {
+      tx.oncomplete = function () { res(); };
+      tx.onerror = function () { rej(tx.error || new Error('学习记录事务失败')); };
+      tx.onabort = function () { rej(tx.error || new Error('学习记录事务已中止')); };
+    });
+  }
+  function assertStudyLogModel() {
+    if (!root.StudyLog) throw new Error('学习记录模型未加载');
+  }
+  function duplicateExternalKey(all, rec, ownId) {
+    var key = root.StudyLog.externalKeyOf(rec);
+    if (!key) return null;
+    return all.filter(function (x) {
+      return x.id !== ownId && x.status !== 'deleted' && root.StudyLog.externalKeyOf(x) === key;
+    })[0] || null;
   }
   function byIndex(db, store, index, key) {
     return reqP(db.transaction(store, 'readonly').objectStore(store).index(index).getAll(key));
@@ -126,27 +145,174 @@
         return all.sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')) || (b.createdAt || 0) - (a.createdAt || 0); });
       });
     },
-    async saveStudyLog(log) {
+    async getStudyLog(id) {
+      return withDb(function (db) { return get(db, 'studyLogs', id); });
+    },
+    async saveStudyLog(log, options) {
+      assertStudyLogModel();
+      options = options || {};
+      var now = Date.now();
+      var normalized = root.StudyLog.normalize(log, { now: now });
+      if (normalized.errors.length) {
+        var ve = new Error('学习记录校验失败：' + normalized.errors[0].path + '：' + normalized.errors[0].message);
+        ve.details = normalized.errors;
+        throw ve;
+      }
       return withDb(async function (db) {
-        var rec = clone(log);
-        rec.id = rec.id || uid('log');
-        rec.date = rec.date || new Date().toISOString().slice(0, 10);
-        rec.content = String(rec.content || '').trim();
-        if (!rec.content) throw new Error('学习内容不能为空');
-        rec.source = 'manual';
-        rec.createdAt = rec.createdAt || Date.now();
-        rec.updatedAt = Date.now();
-        await put(db, 'studyLogs', rec);
-        return rec;
+        var tx = db.transaction('studyLogs', 'readwrite');
+        var store = tx.objectStore('studyLogs');
+        var done = txDone(tx);
+        try {
+          var all = await reqP(store.getAll());
+          var rec = normalized.value;
+          var old = rec.id ? await reqP(store.get(rec.id)) : null;
+          if (old) {
+            if (old.revision != null && options.expectedRevision == null && options.expectedUpdatedAt == null) {
+              var lockErr = new Error('保存学习记录必须提供当前版本号，已拒绝静默覆盖');
+              lockErr.code = 'STUDY_LOG_CONFLICT';
+              throw lockErr;
+            }
+            rec = root.StudyLog.applyUpdate(old, rec, {
+              reason: options.reason || '修改学习记录',
+              now: now,
+              expectedRevision: options.expectedRevision,
+              expectedUpdatedAt: options.expectedUpdatedAt
+            });
+          } else {
+            if (options.expectedRevision != null) {
+              var goneErr = new Error('学习记录已被删除或替换，请刷新后重试');
+              goneErr.code = 'STUDY_LOG_CONFLICT';
+              throw goneErr;
+            }
+            rec.id = rec.id || root.StudyLog.uid();
+            rec.createdAt = rec.createdAt || now;
+            rec.updatedAt = now;
+            rec.revision = 1;
+            rec.revisions = [{ at: now, action: options.action || 'create', reason: String(options.reason || '新增学习记录').trim().slice(0, 1000), after: root.StudyLog.auditSnapshot(rec) }];
+          }
+          var dup = duplicateExternalKey(all, rec, rec.id);
+          if (dup) throw new Error('外部练习已存在：' + rec.source + ' / ' + rec.externalId);
+          await reqP(store.put(rec));
+          await done;
+          return rec;
+        } catch (e) {
+          try { tx.abort(); } catch (ignore) {}
+          await done.catch(function () {});
+          throw e;
+        }
       });
     },
-    async deleteStudyLog(id) { return withDb(function (db) { return del(db, 'studyLogs', id); }); },
+    async updateStudyLog(id, patch, options) {
+      assertStudyLogModel();
+      options = options || {};
+      if (options.expectedRevision == null && options.expectedUpdatedAt == null) {
+        var lockMissing = new Error('编辑学习记录必须提供当前版本号，已拒绝旧编辑静默覆盖');
+        lockMissing.code = 'STUDY_LOG_CONFLICT';
+        throw lockMissing;
+      }
+      var now = Date.now();
+      return withDb(async function (db) {
+        var tx = db.transaction('studyLogs', 'readwrite');
+        var store = tx.objectStore('studyLogs');
+        var done = txDone(tx);
+        try {
+          var old = await reqP(store.get(id));
+          if (!old) throw new Error('学习记录不存在');
+          var rec = root.StudyLog.applyUpdate(old, patch || {}, {
+            reason: options.reason || '修改学习记录',
+            now: now,
+            expectedRevision: options.expectedRevision,
+            expectedUpdatedAt: options.expectedUpdatedAt
+          });
+          var all = await reqP(store.getAll());
+          var dup = duplicateExternalKey(all, rec, id);
+          if (dup) throw new Error('外部练习已存在：' + rec.source + ' / ' + rec.externalId);
+          await reqP(store.put(rec));
+          await done;
+          return rec;
+        } catch (e) {
+          try { tx.abort(); } catch (ignore) {}
+          await done.catch(function () {});
+          throw e;
+        }
+      });
+    },
+    async saveStudyLogs(logs, options) {
+      assertStudyLogModel();
+      options = options || {};
+      var now = Date.now();
+      var records = root.StudyLog.normalizeMany(logs, { now: now });
+      return withDb(async function (db) {
+        var tx = db.transaction('studyLogs', 'readwrite');
+        var store = tx.objectStore('studyLogs');
+        var done = txDone(tx);
+        try {
+          var all = await reqP(store.getAll());
+          var seen = new Map();
+          // Validate the full batch before the first put. Even if a later put
+          // fails, the transaction aborts and no row or audit is left behind.
+          var prepared = records.map(function (rec) {
+            var copy = Object.assign({}, rec);
+            copy.id = root.StudyLog.uid();
+            copy.createdAt = now;
+            copy.updatedAt = now;
+            copy.revision = 1;
+            copy.status = 'active';
+            copy.deletedAt = null;
+            copy.deletedReason = '';
+            copy.revisions = [{ at: now, action: options.action || 'import', reason: String(options.reason || '批量导入学习记录').trim().slice(0, 1000), after: root.StudyLog.auditSnapshot(copy) }];
+            var key = root.StudyLog.externalKeyOf(copy);
+            if (key) {
+              if (seen.has(key) || duplicateExternalKey(all, copy, copy.id)) throw new Error('外部练习已存在：' + copy.source + ' / ' + copy.externalId);
+              seen.set(key, true);
+            }
+            return copy;
+          });
+          for (var i = 0; i < prepared.length; i++) await reqP(store.put(prepared[i]));
+          await done;
+          return prepared;
+        } catch (e) {
+          try { tx.abort(); } catch (ignore) {}
+          await done.catch(function () {});
+          throw e;
+        }
+      });
+    },
+    async deleteStudyLog(id, reason, options) {
+      assertStudyLogModel();
+      options = options || {};
+      return withDb(async function (db) {
+        var tx = db.transaction('studyLogs', 'readwrite');
+        var store = tx.objectStore('studyLogs');
+        var done = txDone(tx);
+        try {
+          var old = await reqP(store.get(id));
+          if (!old) throw new Error('学习记录不存在');
+          var rec = root.StudyLog.applyDelete(old, {
+            reason: reason || '删除学习记录',
+            now: Date.now(),
+            expectedRevision: options.expectedRevision,
+            expectedUpdatedAt: options.expectedUpdatedAt
+          });
+          await reqP(store.put(rec));
+          await done;
+          return rec;
+        } catch (e) {
+          try { tx.abort(); } catch (ignore) {}
+          await done.catch(function () {});
+          throw e;
+        }
+      });
+    },
     async getAllGradingRecords() { return withDb(function (db) { return getAll(db, 'gradingRecords'); }); },
     async getAllAttemptsLegacy() { return withDb(function (db) { return getAll(db, 'attempts'); }); },
     async getAllSessions() { return withDb(function (db) { return getAll(db, 'sessions'); }); },
     async getAllExams() { return withDb(function (db) { return getAll(db, 'exams'); }); },
     async getAllQuestionTags() { return withDb(function (db) { return getAll(db, 'questionTags'); }); },
-    async getAllQuestions() { return withDb(function (db) { return getAll(db, 'questions'); }); }
+    async getAllQuestions() { return withDb(function (db) { return getAll(db, 'questions'); }); },
+    async getAllEssayReviews() { return withDb(function (db) { return getAll(db, 'essayReviews'); }); },
+    async getAllEssaySessions() { return withDb(function (db) { return getAll(db, 'essaySessions'); }); },
+    async getAllEssayExams() { return withDb(function (db) { return getAll(db, 'essayExams'); }); }
   };
   root.DiagnosisStore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

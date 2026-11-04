@@ -1,0 +1,357 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://examcard.local/schemas/review-exchange-v1.schema.json",
+  "title": "ExamCard structured review exchange v1",
+  "$comment": "Structural whitelist. Cross-row uniqueness, correct<=questions, group sums, real calendar validity and target existence/revision/hash are enforced by app/review-exchange-format.js and Stage B (typed targets are checked in the transaction).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "batch_id", "source", "generated_at", "activities", "reviews", "corrections"],
+  "properties": {
+    "schema": { "const": "examcard.review-exchange/v1" },
+    "batch_id": { "$ref": "#/$defs/id" },
+    "source": { "$ref": "#/$defs/source" },
+    "generated_at": { "$ref": "#/$defs/isoTimestamp" },
+    "activities": { "type": "array", "maxItems": 200, "items": { "$ref": "#/$defs/activity" } },
+    "reviews": { "type": "array", "maxItems": 500, "items": { "$ref": "#/$defs/review" } },
+    "corrections": { "type": "array", "maxItems": 200, "items": { "$ref": "#/$defs/correction" } },
+    "notes": { "type": "string", "maxLength": 20000 }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+    },
+    "shortId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+    },
+    "text200": { "type": "string", "maxLength": 200 },
+    "text300": { "type": "string", "maxLength": 300 },
+    "text120": { "type": "string", "maxLength": 120 },
+    "text1000": { "type": "string", "maxLength": 1000 },
+    "text2000": { "type": "string", "maxLength": 2000 },
+    "text3000": { "type": "string", "maxLength": 3000 },
+    "text4000": { "type": "string", "maxLength": 4000 },
+    "text5000": { "type": "string", "maxLength": 5000 },
+    "hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "isoTimestamp": {
+      "type": "string",
+      "maxLength": 40,
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?(?:Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "durationPrecision": { "enum": ["exact", "estimated", "unknown"] },
+    "durationUnit": { "enum": ["seconds", "minutes"] },
+    "practiceType": { "enum": ["new", "retest", "comprehensive", "mock"] },
+    "retestStatus": { "enum": ["not_required", "pending", "scheduled", "passed", "failed"] },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref"],
+      "properties": {
+        "kind": { "enum": ["chatgpt", "manual", "other"] },
+        "ref": { "$ref": "#/$defs/id" },
+        "label": { "$ref": "#/$defs/text200" }
+      }
+    },
+    "targetStudyLog": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "namespace", "id", "expected_revision", "expected_hash"],
+      "properties": {
+        "type": { "const": "studyLog" },
+        "namespace": { "const": "ec-store:studyLogs" },
+        "id": { "$ref": "#/$defs/id" },
+        "expected_revision": { "type": "integer", "minimum": 0 },
+        "expected_hash": { "$ref": "#/$defs/hash" }
+      }
+    },
+    "targetLearningTask": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "namespace", "id", "expected_updated_at", "expected_hash"],
+      "properties": {
+        "type": { "const": "learningTask" },
+        "namespace": { "const": "ec-store:learningTasks" },
+        "id": { "$ref": "#/$defs/id" },
+        "expected_updated_at": { "type": "integer", "minimum": 1 },
+        "expected_hash": { "$ref": "#/$defs/hash" }
+      }
+    },
+    "targetGradingRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "namespace", "id", "expected_hash"],
+      "properties": {
+        "type": { "const": "gradingRecord" },
+        "namespace": { "const": "ec-store:gradingRecords" },
+        "id": { "$ref": "#/$defs/id" },
+        "expected_hash": { "$ref": "#/$defs/hash" }
+      }
+    },
+    "targetBankAttempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "namespace", "id", "expected_hash"],
+      "properties": {
+        "type": { "const": "bankAttempt" },
+        "namespace": { "const": "ec-store:bankAttempts" },
+        "id": { "$ref": "#/$defs/id" },
+        "expected_hash": { "$ref": "#/$defs/hash" }
+      }
+    },
+    "targetEssayReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "namespace", "id", "expected_hash"],
+      "properties": {
+        "type": { "const": "essayReview" },
+        "namespace": { "const": "ec-store:essayReviews" },
+        "id": { "$ref": "#/$defs/id" },
+        "expected_hash": { "$ref": "#/$defs/hash" }
+      }
+    },
+    "targetBatchActivity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "namespace", "id", "expected_revision", "expected_hash"],
+      "properties": {
+        "type": { "const": "batchActivity" },
+        "namespace": { "const": "batch:activity" },
+        "id": { "$ref": "#/$defs/id" },
+        "expected_revision": { "const": 0 },
+        "expected_hash": { "$ref": "#/$defs/hash" }
+      }
+    },
+    "target": {
+      "oneOf": [
+        { "$ref": "#/$defs/targetStudyLog" },
+        { "$ref": "#/$defs/targetLearningTask" },
+        { "$ref": "#/$defs/targetGradingRecord" },
+        { "$ref": "#/$defs/targetBankAttempt" },
+        { "$ref": "#/$defs/targetEssayReview" },
+        { "$ref": "#/$defs/targetBatchActivity" }
+      ]
+    },
+    "group": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label"],
+      "properties": {
+        "label": { "$ref": "#/$defs/text120", "minLength": 1 },
+        "question_count": { "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }] },
+        "correct_count": { "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }] },
+        "duration_seconds": { "anyOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }] }
+      }
+    },
+    "retestHistory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["date"],
+      "properties": {
+        "date": { "$ref": "#/$defs/date" },
+        "status": { "enum": ["passed", "failed", "pending"] },
+        "score": { "anyOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }] },
+        "max_score": { "anyOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }] },
+        "note": { "$ref": "#/$defs/text1000" }
+      }
+    },
+    "wrongQuestion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["question_no", "primary_cause"],
+      "properties": {
+        "question_no": { "anyOf": [{ "type": "string", "maxLength": 80 }, { "type": "number" }] },
+        "question_type": { "enum": ["single", "multi", "judge", "other"] },
+        "knowledge_point": { "$ref": "#/$defs/text300" },
+        "primary_cause": { "$ref": "#/$defs/text120", "minLength": 1 },
+        "secondary_causes": { "type": "array", "maxItems": 10, "items": { "$ref": "#/$defs/text120", "minLength": 1 } },
+        "method": { "$ref": "#/$defs/text2000" },
+        "logic_symbols": { "$ref": "#/$defs/text2000" },
+        "reasoning": { "$ref": "#/$defs/text5000" },
+        "retest_history": { "type": "array", "maxItems": 50, "items": { "$ref": "#/$defs/retestHistory" } }
+      }
+    },
+    "essayScore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["round", "score", "max_score"],
+      "properties": {
+        "round": { "enum": ["first", "reevaluation"] },
+        "score": { "type": "number", "minimum": 0 },
+        "max_score": { "type": "number", "exclusiveMinimum": 0 },
+        "reviewed_at": { "anyOf": [{ "$ref": "#/$defs/isoTimestamp" }, { "type": "null" }] },
+        "reviewer": { "$ref": "#/$defs/text200" },
+        "note": { "$ref": "#/$defs/text2000" }
+      }
+    },
+    "activityCommon": {
+      "type": "object",
+      "required": ["activity_id", "assessment", "date", "content", "duration_precision"],
+      "properties": {
+        "activity_id": { "$ref": "#/$defs/id" },
+        "assessment": { "enum": ["objective", "essay"] },
+        "date": { "$ref": "#/$defs/date" },
+        "occurred_at": { "anyOf": [{ "$ref": "#/$defs/isoTimestamp" }, { "type": "null" }] },
+        "content": { "$ref": "#/$defs/text3000", "minLength": 1 },
+        "module": { "$ref": "#/$defs/text300" },
+        "topic": { "$ref": "#/$defs/text300" },
+        "knowledge_point": { "$ref": "#/$defs/text300" },
+        "practice_type": { "anyOf": [{ "$ref": "#/$defs/practiceType" }, { "type": "null" }] },
+        "question_count": { "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }] },
+        "correct_count": { "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }] },
+        "duration_seconds": { "anyOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }] },
+        "duration_minutes": { "anyOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }] },
+        "duration_precision": { "$ref": "#/$defs/durationPrecision" },
+        "duration_unit": { "$ref": "#/$defs/durationUnit" },
+        "groups": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/group" } },
+        "wrong_questions": { "type": "array", "maxItems": 500, "items": { "$ref": "#/$defs/wrongQuestion" } },
+        "essay_scores": { "type": "array", "maxItems": 10, "items": { "$ref": "#/$defs/essayScore" } },
+        "task_id": { "anyOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }] },
+        "retest_status": { "anyOf": [{ "$ref": "#/$defs/retestStatus" }, { "type": "null" }] },
+        "report_ref": { "$ref": "#/$defs/text2000" },
+        "note": { "$ref": "#/$defs/text4000" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "duration_precision": { "const": "unknown" } }, "required": ["duration_precision"] },
+          "then": { "properties": { "duration_seconds": { "type": "null" }, "duration_minutes": { "type": "null" } } }
+        },
+        {
+          "if": { "properties": { "duration_precision": { "enum": ["exact", "estimated"] } }, "required": ["duration_precision"] },
+          "then": {
+            "anyOf": [
+              { "required": ["duration_seconds"], "properties": { "duration_seconds": { "type": "number" } } },
+              { "required": ["duration_minutes"], "properties": { "duration_minutes": { "type": "number" } } }
+            ]
+          }
+        },
+        {
+          "if": { "properties": { "correct_count": { "type": "integer" } }, "required": ["correct_count"] },
+          "then": { "required": ["question_count"] }
+        },
+        {
+          "if": { "properties": { "assessment": { "const": "essay" } }, "required": ["assessment"] },
+          "then": {
+            "required": ["essay_scores"],
+            "properties": {
+              "practice_type": { "type": "null" },
+              "question_count": { "type": "null" },
+              "correct_count": { "type": "null" },
+              "essay_scores": {
+                "minItems": 1,
+                "contains": { "properties": { "round": { "const": "first" } }, "required": ["round"] }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "assessment": { "const": "objective" } }, "required": ["assessment"] },
+          "then": { "properties": { "essay_scores": { "maxItems": 0 } } }
+        }
+      ]
+    },
+    "manualActivity": {
+      "allOf": [
+        { "$ref": "#/$defs/activityCommon" },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "properties": {
+            "kind": { "const": "manual" }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "externalActivity": {
+      "allOf": [
+        { "$ref": "#/$defs/activityCommon" },
+        {
+          "type": "object",
+          "required": ["kind", "source", "external_id"],
+          "properties": {
+            "kind": { "const": "external" },
+            "source": { "$ref": "#/$defs/shortId" },
+            "external_id": { "$ref": "#/$defs/shortId" }
+          }
+        },
+        {
+          "if": { "properties": { "assessment": { "const": "objective" } }, "required": ["assessment"] },
+          "then": {
+            "required": ["practice_type"],
+            "properties": { "practice_type": { "$ref": "#/$defs/practiceType" } }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "activity": {
+      "oneOf": [
+        { "$ref": "#/$defs/manualActivity" },
+        { "$ref": "#/$defs/externalActivity" }
+      ]
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["review_id", "target", "summary", "reviewed_at"],
+      "properties": {
+        "review_id": { "$ref": "#/$defs/id" },
+        "target": { "$ref": "#/$defs/target" },
+        "summary": { "$ref": "#/$defs/text5000", "minLength": 1 },
+        "primary_cause": { "$ref": "#/$defs/text200" },
+        "secondary_causes": { "type": "array", "maxItems": 10, "items": { "$ref": "#/$defs/text200", "minLength": 1 } },
+        "knowledge_points": { "type": "array", "maxItems": 30, "items": { "$ref": "#/$defs/text300", "minLength": 1 } },
+        "next_actions": { "type": "array", "maxItems": 30, "items": { "$ref": "#/$defs/text1000", "minLength": 1 } },
+        "reviewed_at": { "$ref": "#/$defs/isoTimestamp" },
+        "note": { "$ref": "#/$defs/text4000" }
+      }
+    },
+    "correctionFields": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "content": { "$ref": "#/$defs/text3000", "minLength": 1 },
+        "date": { "$ref": "#/$defs/date" },
+        "module": { "$ref": "#/$defs/text300" },
+        "topic": { "$ref": "#/$defs/text300" },
+        "knowledge_point": { "$ref": "#/$defs/text300" },
+        "question_count": { "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }] },
+        "correct_count": { "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }] },
+        "duration_seconds": { "anyOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }] },
+        "duration_minutes": { "anyOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }] },
+        "duration_precision": { "$ref": "#/$defs/durationPrecision" },
+        "duration_unit": { "$ref": "#/$defs/durationUnit" },
+        "groups": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/group" } },
+        "wrong_questions": { "type": "array", "maxItems": 500, "items": { "$ref": "#/$defs/wrongQuestion" } },
+        "essay_scores": { "type": "array", "maxItems": 10, "items": { "$ref": "#/$defs/essayScore" } },
+        "note": { "$ref": "#/$defs/text4000" }
+      }
+    },
+    "correction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "reason", "fields"],
+      "properties": {
+        "correction_id": { "$ref": "#/$defs/id" },
+        "target": { "$ref": "#/$defs/targetStudyLog" },
+        "reason": { "$ref": "#/$defs/text2000", "minLength": 1 },
+        "fields": { "$ref": "#/$defs/correctionFields" }
+      }
+    }
+  }
+}
+
+

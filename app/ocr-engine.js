@@ -27,12 +27,14 @@
     }).catch(function (e) { workerPromise = null; throw e; });
     return workerPromise;
   }
-  async function recognizeCanvas(canvas, onProgress) {
+  async function recognizeCanvas(canvas, onProgress, opts) {
+    opts = opts || {};
     if (busy) throw new Error('OCR 正忙，请稍后重试');
     busy = true;
     try {
       var w = await createWorker(onProgress);
-      var r = await w.recognize(canvas, { preserve_interword_spaces: '1', tessedit_pageseg_mode: '11' }, { text: true, blocks: true });
+      var psm = String(opts.psm || '11');
+      var r = await w.recognize(canvas, { preserve_interword_spaces: '1', tessedit_pageseg_mode: psm }, { text: true, blocks: true });
       return { text: r.data.text || '', words: r.data.words || [], blocks: r.data.blocks || [], confidence: r.data.confidence, source: 'ocr', engine: 'tesseract.js' };
     } finally { busy = false; }
   }
@@ -50,8 +52,11 @@
     opts = opts || {};
     var canvas = await renderPdfPage(pdfDoc, pageNo, opts.scale || 2);
     try {
-      var r = await recognizeCanvas(canvas, opts.onProgress);
+      var r = await recognizeCanvas(canvas, opts.onProgress, opts);
       r.page = pageNo;
+      r.scale = Number(opts.scale) || 2;
+      r.pageWidth = canvas.width / r.scale;
+      r.pageHeight = canvas.height / r.scale;
       return r;
     } finally {
       canvas.width = 1; canvas.height = 1;

@@ -14,6 +14,8 @@
 | `timezone` | string | 是 | 固定 `Asia/Shanghai` |
 | `exam_type` | string | 是 | 如 `gd` / `sz` / 自定义 |
 | `status` | string | 是 | `planned` / `active` / `paused` / `completed` / `cancelled` |
+| `plan_mode` | string | 否 | `foundation` / `reinforcement` / `speed_training` / `mock_exam` / `review_adjustment` |
+| `plan_submode` | string/null | 否 | `mock_review` / `pre_exam_adjustment` / `null` |
 | `title` | string | 是 | 计划标题 |
 | `goal` | string | 是 | 计划目标，可为空 |
 | `mem_suspended` | boolean | 是 | 记忆暂停/特殊状态标记 |
@@ -31,6 +33,14 @@
 | `start` / `end` | string | 是 | `HH:MM`，同一天内；结束晚于开始 |
 | `planned_minutes` | integer | 是 | 计划分钟，0–1440 |
 | `learning_mode` | string | 是 | `course_first` / `mock` / `practice` / `review` / `textbook` / `other` |
+| `task_type` | string | 否 | `video` / `examples` / `practice` / `review` / `memorization` / `retest` / `timed_drill` / `essay` / `mock_exam` / `mock_review` |
+| `module` | string/null | 否 | 模块，如 `资料分析`；未知用 `null` |
+| `knowledge_point` | string/null | 否 | 知识点；未知用 `null` |
+| `target_accuracy` | number/null | 否 | 0–1；未知用 `null` |
+| `time_limit_seconds` | integer/null | 否 | 非负整数；未知用 `null` |
+| `question_count` | integer/null | 否 | 非负整数；未知用 `null` |
+| `question_set_id` | string/null | 否 | 已存在的 EC 题集 ID；未导入题集必须用 `null` 或空字符串，不能虚构 |
+| `memorization` | object/null | 否 | 背诵主题、来源、关键词、易混淆点、回忆正确率等 |
 | `course` | object/null | 是 | 课程信息；未知用 `null` |
 | `material` | object/null | 是 | 教材信息；未知章节/页码用 `null` |
 | `stages` | array | 是 | 阶段结构；见下 |
@@ -185,3 +195,7 @@ CSV 仍以标准 30 列为准；旧别名不写入模板。
 ### ChatGPT 生成
 
 见 `DAILY_PLAN_CHATGPT_PROMPT.md`；推荐直接让它输出标准 v1 JSON，不依赖旧别名。
+
+### 2026-11-03 合成代表计划
+
+仓库没有用户真实的 2026-11-03 计划文件。`docs/plan-2026-11-03-synthetic.json` 是**合成代表数据**，标题和 goal 已明确标注“非真实计划”；仅用于验证 schema、运行时校验、预览、重复导入和更新保护，不得作为真实计划或真实完成记录展示。

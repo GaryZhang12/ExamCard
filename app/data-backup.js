@@ -7,7 +7,7 @@
   var DB_NAME = 'gd_exam_v2';
   var FORMAT = 'ExamCardBackup';
   var FORMAT_VERSION = 1;
-  var APP_VERSION = '1.1.0';
+  var APP_VERSION = '1.2.0';
 
   function BackupError(message, detail) {
     var e = new Error(message);
@@ -351,36 +351,46 @@
   }
 
   async function restoreBackup(backup, options) {
-    var info = await verifyBackupIntegrity(backup, options);
-    if (root.BankStore) root.BankStore.stopForClear();
-      if (root.BankPractice) root.BankPractice.stopForClear();
-    var decoded = {};
-    Object.keys(backup.stores).forEach(function (name) {
-      decoded[name] = backup.stores[name].map(deserializeValue);
-    });
-    var db = await openDb();
+    var archiveReason = '恢复完整备份';
+    // 恢复/清空属于破坏性维护：先取消正在进行且仍在 await 文件读取/哈希的
+    // 归档写入，并阻止维护期间新开的归档写事务延迟落到恢复后的数据上。
+    if (root.ReviewArchive && ReviewArchive.stopForClear) ReviewArchive.stopForClear(archiveReason);
+    if (root.ReviewExchange && ReviewExchange.stopForClear) ReviewExchange.stopForClear(archiveReason);
     try {
-      var currentStores = Array.prototype.slice.call(db.objectStoreNames);
-      Object.keys(decoded).forEach(function (name) {
-        if (currentStores.indexOf(name) < 0) throw BackupError('当前数据库缺少表：' + name);
+      var info = await verifyBackupIntegrity(backup, options);
+      if (root.BankStore) root.BankStore.stopForClear();
+      if (root.BankPractice) root.BankPractice.stopForClear();
+      var decoded = {};
+      Object.keys(backup.stores).forEach(function (name) {
+        decoded[name] = backup.stores[name].map(deserializeValue);
       });
-      var tx = db.transaction(currentStores, 'readwrite');
-      var completion = txDone(tx);
+      var db = await openDb();
       try {
-        currentStores.forEach(function (name) { tx.objectStore(name).clear(); });
+        var currentStores = Array.prototype.slice.call(db.objectStoreNames);
         Object.keys(decoded).forEach(function (name) {
-          var store = tx.objectStore(name);
-          decoded[name].forEach(function (rec) { store.put(rec); });
+          if (currentStores.indexOf(name) < 0) throw BackupError('当前数据库缺少表：' + name);
         });
-        await completion;
-      } catch (e) {
-        try { tx.abort(); } catch (ignore) {}
-        await completion.catch(function () {});
-        throw e;
+        var tx = db.transaction(currentStores, 'readwrite');
+        var completion = txDone(tx);
+        try {
+          currentStores.forEach(function (name) { tx.objectStore(name).clear(); });
+          Object.keys(decoded).forEach(function (name) {
+            var store = tx.objectStore(name);
+            decoded[name].forEach(function (rec) { store.put(rec); });
+          });
+          await completion;
+        } catch (e) {
+          try { tx.abort(); } catch (ignore) {}
+          await completion.catch(function () {});
+          throw e;
+        }
+        return { ok: true, dbVersion: info.dbVersion, counts: info.counts };
+      } finally {
+        db.close();
       }
-      return { ok: true, dbVersion: info.dbVersion, counts: info.counts };
     } finally {
-      db.close();
+      if (root.ReviewArchive && ReviewArchive.resumeMaintenance) ReviewArchive.resumeMaintenance(archiveReason);
+      if (root.ReviewExchange && ReviewExchange.resumeMaintenance) ReviewExchange.resumeMaintenance(archiveReason);
     }
   }
 

@@ -52,7 +52,7 @@
     options = options || {};
     var maxMinutes = Number(options.maxMinutes) > 0 ? Number(options.maxMinutes) : DEFAULT_MAX_MINUTES;
     var due = (tasks || []).filter(function (t) {
-      return t && t.status !== 'completed' && t.status !== 'cancelled' && (t.taskType === 'retest' || t.type === 'retest') && t.dueDate && t.dueDate <= date;
+      return t && t.status !== 'completed' && t.status !== 'cancelled' && t.reminderStatus !== 'skipped' && t.reminderStatus !== 'closed' && (t.taskType === 'retest' || t.type === 'retest') && t.dueDate && t.dueDate <= date;
     }).sort(function (a, b) { return String(a.dueDate).localeCompare(String(b.dueDate)) || String(a.title).localeCompare(String(b.title)); });
     var chosen = [], minutes = 0, deferred = [];
     due.forEach(function (t) {

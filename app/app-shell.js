@@ -81,6 +81,11 @@
     else setPage('ExamCard', '');
   }
   function hideModules() {
+    // 关闭/切换学习界面时，取消仍在 await 文件读取/哈希的归档写回。
+    if (root.ReviewArchive && root.ReviewArchive.cancelPending) root.ReviewArchive.cancelPending('关闭/切换学习界面');
+    if (root.ReviewExchange && root.ReviewExchange.cancelPending) root.ReviewExchange.cancelPending('关闭/切换学习界面');
+    var learnRoot = $('learnRoot');
+    if (root.LearningApp && root.LearningApp.close && learnRoot && !learnRoot.classList.contains('hidden')) root.LearningApp.close();
     ['modalRoot', 'learnModalRoot', 'essayModalRoot', 'diagModalRoot', 'bankModalRoot'].forEach(function (id) {
       var dialogRoot = $(id); if (dialogRoot) dialogRoot.innerHTML = '';
     });

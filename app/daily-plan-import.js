@@ -95,6 +95,10 @@
 
   function validatePlan(plan) {
     var errors = [];
+    if (!plan || typeof plan !== 'object' || Array.isArray(plan)) {
+      err(errors, '$', '计划顶层必须为对象');
+      return errors;
+    }
     checkUnknown(plan, TOP_FIELDS, 'plan', errors);
     if (plan.schema_version !== SCHEMA) err(errors, 'schema_version', '必须为 ' + SCHEMA);
     if (!plan.plan_id || typeof plan.plan_id !== 'string' || plan.plan_id.length > 120) err(errors, 'plan_id', 'plan_id 必填且不超过 120 字符');
@@ -111,18 +115,22 @@
     if (!Array.isArray(plan.schedule)) err(errors, 'schedule', '必须为数组');
     if (Array.isArray(plan.schedule)) {
       plan.schedule.forEach(function (b, i) {
-        checkUnknown(b, ['start', 'end', 'kind', 'label'], 'schedule[' + i + ']', errors);
-        if (!isTime(b.start) || !isTime(b.end)) err(errors, 'schedule[' + i + ']', '开始/结束时间应为 HH:MM');
-        else if (minutes(b.end) <= minutes(b.start)) err(errors, 'schedule[' + i + ']', '结束时间必须晚于开始时间');
-        if (b.kind && ['task', 'break', 'rest'].indexOf(b.kind) < 0) err(errors, 'schedule[' + i + '].kind', '类型无效');
-        safeText(b.label, 'schedule[' + i + '].label', errors, 120);
+        var sp = 'schedule[' + i + ']';
+        if (!b || typeof b !== 'object' || Array.isArray(b)) { err(errors, sp, '必须为对象'); return; }
+        checkUnknown(b, ['start', 'end', 'kind', 'label'], sp, errors);
+        if (!isTime(b.start) || !isTime(b.end)) err(errors, sp, '开始/结束时间应为 HH:MM');
+        else if (minutes(b.end) <= minutes(b.start)) err(errors, sp, '结束时间必须晚于开始时间');
+        if (b.kind && ['task', 'break', 'rest'].indexOf(b.kind) < 0) err(errors, sp + '.kind', '类型无效');
+        safeText(b.label, sp + '.label', errors, 120);
       });
     }
-    if (!Array.isArray(plan.tasks) || !plan.tasks.length) { err(errors, 'tasks', '至少包含一个任务'); return errors; }
-    var ids = {};
+    if (!Array.isArray(plan.tasks)) { err(errors, 'tasks', '必须为非空数组'); return errors; }
+    if (!plan.tasks.length) { err(errors, 'tasks', '至少包含一个任务'); return errors; }
+    var ids = Object.create(null);
     var intervals = [];
     plan.tasks.forEach(function (t, i) {
       var p = 'tasks[' + i + ']';
+      if (!t || typeof t !== 'object' || Array.isArray(t)) { err(errors, p, '必须为对象'); return; }
       checkUnknown(t, TASK_FIELDS, p, errors);
       ['task_id','subject','topic','priority','start','end','planned_minutes','learning_mode','course','material','stages','acceptance'].forEach(function (k) { if (!has(t, k)) err(errors, p + '.' + k, '缺少必需字段'); });
       if (!t.task_id || typeof t.task_id !== 'string' || t.task_id.length > 120) err(errors, p + '.task_id', 'task_id 必填且不超过 120 字符');
@@ -209,11 +217,16 @@
   }
 
   function normalizePlan(obj) {
-    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) throw new Error('计划顶层必须是对象');
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
+      var top = new Error('计划顶层必须是对象');
+      top.details = [{ path: '$', message: '计划顶层必须是对象' }];
+      throw top;
+    }
     var nw = obj && obj._normalizationWarnings;
     var plan = JSON.parse(JSON.stringify(obj));
     if (nw) { try { Object.defineProperty(plan, '_normalizationWarnings', { value: nw, enumerable: false, configurable: true }); } catch (e) {} }
-    plan.tasks = (plan.tasks || []).map(function (t) {
+    if (!Array.isArray(plan.tasks)) return plan;
+    plan.tasks = plan.tasks.map(function (t) {
       var x = Object.assign({}, t);
       x.course = x.course == null ? null : Object.assign({}, x.course);
       x.material = x.material == null ? null : Object.assign({}, x.material);
@@ -248,6 +261,7 @@
   }
 
   function normalizeLegacy(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
     var p = JSON.parse(JSON.stringify(raw || {}));
     var normalizationWarnings = [];
     if (p.schedule == null) p.schedule = [];
@@ -257,14 +271,19 @@
       else if (p.schedule.start && p.schedule.end) p.schedule = [p.schedule];
       else p.schedule = [];
     }
+    // Let validatePlan report a path-specific error instead of throwing from
+    // forEach before the validator has a chance to inspect the field.
+    if (p.tasks != null && !Array.isArray(p.tasks)) return p;
     var pmap = { 1: 'high', 2: 'normal', 3: 'low', '高': 'high', '中': 'normal', '低': 'low' };
     var emap = { '广东': 'gd', '广东省考': 'gd', 'gd': 'gd', '深圳': 'sz', '深圳市考': 'sz', 'sz': 'sz', '国考': 'national', 'national': 'national' };
     p.exam_type = emap[String(p.exam_type || '').trim()] || p.exam_type;
     (p.tasks || []).forEach(function (task) {
+      if (!task || typeof task !== 'object' || Array.isArray(task)) return;
       if (pmap[task.priority] != null) task.priority = pmap[task.priority];
       var modeMap = { 'course-first': 'course_first', 'courseFirst': 'course_first', 'course_first': 'course_first', 'exam': 'mock', 'mock_exam': 'mock' };
       if (modeMap[task.learning_mode]) task.learning_mode = modeMap[task.learning_mode];
       if (Array.isArray(task.stages)) task.stages = task.stages.map(function (s) {
+        if (!s || typeof s !== 'object' || Array.isArray(s)) return s;
         var out = Object.assign({}, s);
         if (out.minutes == null && out.duration_minutes != null) out.minutes = out.duration_minutes;
         if (out.minutes == null && out.planned_minutes != null) out.minutes = out.planned_minutes;
@@ -274,6 +293,7 @@
       });
     });
     (p.tasks || []).forEach(function (task, ti) {
+      if (!task || typeof task !== 'object' || Array.isArray(task)) return;
       if (task.learning_mode !== 'course_first' || !Array.isArray(task.stages)) return;
       var adjustment = splitCourseMode(task.stages);
       if (!adjustment) return;

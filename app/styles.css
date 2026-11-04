@@ -461,6 +461,10 @@ b { font-weight: 700; }
 /* PDF.js 阅读器 */
 .pdf-viewport { flex: 1 1 auto; min-height: 0; overflow: auto; background: #525659; padding: 12px; position: relative; }
 .pdf-page-wrap { position: relative; width: fit-content; margin: 0 auto; }
+.pdf-continuous { margin: 0 auto; position: relative; }
+.pdf-page-block { position: relative; margin: 0 auto 14px; background: #fff; box-shadow: 0 4px 18px rgba(0,0,0,.35); border-radius: 2px; overflow: hidden; }
+.pdf-page-block canvas.pdf-page-canvas { display: block; background: #fff; }
+.pdf-page-block .pdf-marker { z-index: 3; }
 #pdfCanvas { display: block; background: #fff; box-shadow: 0 4px 18px rgba(0,0,0,.35); border-radius: 2px; }
 .pdf-marker {
   position: absolute; left: 0; right: 0; height: 3px; top: 0;

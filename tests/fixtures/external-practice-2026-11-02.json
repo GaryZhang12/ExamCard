@@ -1,0 +1,192 @@
+{
+  "schema": "examcard.external-practice-batch/v1",
+  "note": "合成验收数据，依据用户陈述的 2026-11-02 成绩构造；不是粉笔账号抓取，也不冒充真实计划/真实用户数据。",
+  "records": [
+    {
+      "source": "fenbi-synthetic",
+      "externalId": "synthetic-20261102-zl",
+      "date": "2026-11-02",
+      "assessment": "objective",
+      "practiceType": "new",
+      "module": "资料分析",
+      "topic": "资料分析专项",
+      "knowledgePoint": "资料分析综合",
+      "content": "资料分析专项练习（合成验收：5/6）",
+      "questionCount": 6,
+      "correctCount": 5,
+      "durationPrecision": "unknown",
+      "durationUnit": "seconds",
+      "taskId": null,
+      "retestStatus": "not_required",
+      "wrongQuestions": [
+        {
+          "questionNo": "4",
+          "questionType": "single",
+          "knowledgePoint": "资料分析",
+          "primaryCause": "审题错误",
+          "secondaryCauses": ["计算或估算错误", "注意力或计算耐心问题"],
+          "method": "先定位时间与单位，再列式估算",
+          "logicSymbols": "",
+          "reasoning": "合成验收错题：审题与计算耐心不足。",
+          "retestHistory": []
+        }
+      ]
+    },
+    {
+      "source": "fenbi-synthetic",
+      "externalId": "synthetic-20261102-pd",
+      "date": "2026-11-02",
+      "assessment": "objective",
+      "practiceType": "new",
+      "module": "判断推理",
+      "topic": "判断推理专项",
+      "knowledgePoint": "论证/选非/加强",
+      "content": "判断推理专项练习（合成验收：3/6）",
+      "questionCount": 6,
+      "correctCount": 3,
+      "durationPrecision": "unknown",
+      "durationUnit": "seconds",
+      "taskId": null,
+      "retestStatus": "pending",
+      "wrongQuestions": [
+        {
+          "questionNo": "3",
+          "questionType": "single",
+          "knowledgePoint": "削弱论证",
+          "primaryCause": "逻辑方向错误",
+          "secondaryCauses": ["方法选择错误"],
+          "method": "先写论点与论据，再判断削弱方向",
+          "logicSymbols": "P→Q; 削弱：P∧¬Q",
+          "reasoning": "合成验收：误判选项与论点的关系。",
+          "retestHistory": []
+        },
+        {
+          "questionNo": "4",
+          "questionType": "single",
+          "knowledgePoint": "分析推理",
+          "primaryCause": "审题错误",
+          "secondaryCauses": ["注意力或计算耐心问题"],
+          "method": "圈出选非/选是要求",
+          "logicSymbols": "",
+          "reasoning": "合成验收：排名推导正确，但忽视选非要求。",
+          "retestHistory": []
+        },
+        {
+          "questionNo": "5",
+          "questionType": "single",
+          "knowledgePoint": "加强论证",
+          "primaryCause": "逻辑方向错误",
+          "secondaryCauses": ["知识点缺失"],
+          "method": "区分充分条件与必要条件",
+          "logicSymbols": "充分：P→Q；必要：Q→P",
+          "reasoning": "合成验收：加强论证方向混淆。",
+          "retestHistory": []
+        }
+      ]
+    },
+    {
+      "source": "fenbi-synthetic",
+      "externalId": "synthetic-20261102-yy",
+      "date": "2026-11-02",
+      "assessment": "objective",
+      "practiceType": "new",
+      "module": "言语理解与表达",
+      "topic": "言语理解专项",
+      "knowledgePoint": "主旨/细节",
+      "content": "言语理解专项练习（合成验收：4/6）",
+      "questionCount": 6,
+      "correctCount": 4,
+      "durationPrecision": "unknown",
+      "durationUnit": "seconds",
+      "taskId": null,
+      "retestStatus": "pending",
+      "wrongQuestions": [
+        {
+          "questionNo": "2",
+          "questionType": "single",
+          "knowledgePoint": "主旨概括",
+          "primaryCause": "审题错误",
+          "secondaryCauses": ["方法选择错误"],
+          "method": "区分局部信息与全文中心",
+          "logicSymbols": "",
+          "reasoning": "合成验收：戏曲艺术题以局部信息代替全文中心。",
+          "retestHistory": []
+        },
+        {
+          "questionNo": "6",
+          "questionType": "single",
+          "knowledgePoint": "主旨概括",
+          "primaryCause": "审题错误",
+          "secondaryCauses": [],
+          "method": "区分重要意义与主要内容",
+          "logicSymbols": "",
+          "reasoning": "合成验收：城乡融合题把重要意义误判为主要内容。",
+          "retestHistory": []
+        }
+      ]
+    },
+    {
+      "source": "fenbi-synthetic",
+      "externalId": "synthetic-20261102-cf",
+      "date": "2026-11-02",
+      "assessment": "objective",
+      "practiceType": "new",
+      "module": "数量关系",
+      "topic": "三位数除法",
+      "knowledgePoint": "除法/估算",
+      "content": "三位数除法训练（合成验收：18/30，980 秒）",
+      "questionCount": 30,
+      "correctCount": 18,
+      "durationSeconds": 980,
+      "durationPrecision": "exact",
+      "durationUnit": "seconds",
+      "taskId": null,
+      "retestStatus": "not_required",
+      "groups": [
+        { "label": "第一组", "questionCount": 10, "correctCount": 7, "durationSeconds": 235 },
+        { "label": "第二组", "questionCount": 10, "correctCount": 6, "durationSeconds": 389 },
+        { "label": "第三组", "questionCount": 10, "correctCount": 5, "durationSeconds": 356 }
+      ],
+      "wrongQuestions": []
+    },
+    {
+      "source": "fenbi-synthetic",
+      "externalId": "synthetic-20261102-mix15",
+      "date": "2026-11-02",
+      "assessment": "objective",
+      "practiceType": "comprehensive",
+      "module": "综合",
+      "topic": "15 题综合练习",
+      "knowledgePoint": "综合",
+      "content": "15 题综合练习（合成验收：单独保留，不并入专项）",
+      "questionCount": 15,
+      "correctCount": null,
+      "durationPrecision": "unknown",
+      "durationUnit": "seconds",
+      "taskId": null,
+      "retestStatus": "not_required",
+      "wrongQuestions": []
+    },
+    {
+      "source": "fenbi-synthetic",
+      "externalId": "synthetic-20261102-sl",
+      "date": "2026-11-02",
+      "assessment": "essay",
+      "module": "申论",
+      "topic": "申论小题",
+      "knowledgePoint": "申论表达",
+      "content": "申论小题首次 7/10，复评 9/10（合成验收）",
+      "questionCount": null,
+      "correctCount": null,
+      "durationPrecision": "unknown",
+      "durationUnit": "seconds",
+      "taskId": null,
+      "retestStatus": "not_required",
+      "essayScores": [
+        { "round": "first", "score": 7, "maxScore": 10, "reviewer": "用户录入", "note": "首次评分" },
+        { "round": "reevaluation", "score": 9, "maxScore": 10, "reviewer": "用户录入", "note": "复评保留" }
+      ],
+      "wrongQuestions": []
+    }
+  ]
+}

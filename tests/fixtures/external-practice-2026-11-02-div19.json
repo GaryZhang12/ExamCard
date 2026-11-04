@@ -1,0 +1,24 @@
+{
+  "schema": "examcard.external-practice-batch/v1",
+  "note": "合成更正测试：先录 19/30，再通过 UI 更正为 18/30；不是真实用户数据。",
+  "records": [
+    {
+      "source": "fenbi-synthetic",
+      "externalId": "synthetic-20261102-cf",
+      "date": "2026-11-02",
+      "assessment": "objective",
+      "practiceType": "new",
+      "module": "数量关系",
+      "topic": "三位数除法",
+      "knowledgePoint": "除法/估算",
+      "content": "三位数除法训练（待更正 19/30）",
+      "questionCount": 30,
+      "correctCount": 19,
+      "durationPrecision": "unknown",
+      "durationUnit": "seconds",
+      "taskId": null,
+      "retestStatus": "not_required",
+      "wrongQuestions": []
+    }
+  ]
+}

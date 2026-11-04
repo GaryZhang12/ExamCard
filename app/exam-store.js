@@ -672,38 +672,46 @@
 
     /* 全量清空用户学习数据：保留考试类型配置与升级元数据，其他 store 在同一事务中清空。 */
     async clearUserData() {
+      var archiveReason = '清空全部学习数据';
+      if (root.ReviewArchive && ReviewArchive.stopForClear) ReviewArchive.stopForClear(archiveReason);
+      if (root.ReviewExchange && ReviewExchange.stopForClear) ReviewExchange.stopForClear(archiveReason);
       if (root.BankStore) root.BankStore.stopForClear();
       if (root.BankPractice) root.BankPractice.stopForClear();
       try {
-        if (root.__GD_V2__ && root.__GD_V2__.beforeDataClear) await root.__GD_V2__.beforeDataClear();
-        if (root.TextbookImport && root.TextbookImport.stopForClear) await root.TextbookImport.stopForClear();
-      } catch (e) {
-        if (root.__GD_V2__ && root.__GD_V2__.afterDataClear) await root.__GD_V2__.afterDataClear(false);
-        throw e;
-      }
-      return withDb(async function (db) {
-        var stores = Array.prototype.slice.call(db.objectStoreNames);
-        if (stores.indexOf('examProfiles') < 0 || stores.indexOf('meta') < 0) throw new Error('数据库结构不完整，无法安全清空');
-        var migration = await get(db, 'meta', 'migration.v2');
-        var tx = db.transaction(stores, 'readwrite');
-        stores.forEach(function (name) {
-          if (name === 'examProfiles') return;
-          tx.objectStore(name).clear();
-        });
-        if (migration) tx.objectStore('meta').put(migration);
         try {
-          await txDone(tx);
+          if (root.__GD_V2__ && root.__GD_V2__.beforeDataClear) await root.__GD_V2__.beforeDataClear();
+          if (root.TextbookImport && root.TextbookImport.stopForClear) await root.TextbookImport.stopForClear();
         } catch (e) {
           if (root.__GD_V2__ && root.__GD_V2__.afterDataClear) await root.__GD_V2__.afterDataClear(false);
           throw e;
         }
-        if (root.__GD_V2__ && root.__GD_V2__.afterDataClear) await root.__GD_V2__.afterDataClear(true);
-        return {
-          stores: stores,
-          preserved: ['examProfiles', 'meta:migration.v2'],
-          clearedStores: stores.filter(function (name) { return name !== 'examProfiles' && name !== 'meta'; }).concat(['meta (except migration.v2)'])
-        };
-      });
+        return await withDb(async function (db) {
+          var stores = Array.prototype.slice.call(db.objectStoreNames);
+          if (stores.indexOf('examProfiles') < 0 || stores.indexOf('meta') < 0) throw new Error('数据库结构不完整，无法安全清空');
+          var migration = await get(db, 'meta', 'migration.v2');
+          var tx = db.transaction(stores, 'readwrite');
+          stores.forEach(function (name) {
+            if (name === 'examProfiles') return;
+            tx.objectStore(name).clear();
+          });
+          if (migration) tx.objectStore('meta').put(migration);
+          try {
+            await txDone(tx);
+          } catch (e) {
+            if (root.__GD_V2__ && root.__GD_V2__.afterDataClear) await root.__GD_V2__.afterDataClear(false);
+            throw e;
+          }
+          if (root.__GD_V2__ && root.__GD_V2__.afterDataClear) await root.__GD_V2__.afterDataClear(true);
+          return {
+            stores: stores,
+            preserved: ['examProfiles', 'meta:migration.v2'],
+            clearedStores: stores.filter(function (name) { return name !== 'examProfiles' && name !== 'meta'; }).concat(['meta (except migration.v2)'])
+          };
+        });
+      } finally {
+        if (root.ReviewArchive && ReviewArchive.resumeMaintenance) ReviewArchive.resumeMaintenance(archiveReason);
+        if (root.ReviewExchange && ReviewExchange.resumeMaintenance) ReviewExchange.resumeMaintenance(archiveReason);
+      }
     },
     /* 元数据 */
     async getMeta(key) { return withDb(async function (db) { var r = await get(db, 'meta', key); return r ? r.value : null; }); },

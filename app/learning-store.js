@@ -108,7 +108,7 @@
       var e = expected.filter(function (x) { return x.planTaskId === r.planTaskId; })[0];
       if (!e || seenTasks[r.planTaskId]) return true;
       seenTasks[r.planTaskId] = true;
-      return ['planId', 'planHash', 'taskHash', 'title', 'planMinutes', 'learningMode', 'stages', 'taskType', 'planMode', 'planSubmode', 'module', 'knowledgePoint', 'targetAccuracy', 'timeLimitSeconds', 'memorization'].some(function (k) { return JSON.stringify(e[k]) !== JSON.stringify(r[k]); });
+      return ['planId', 'planHash', 'taskHash', 'title', 'subject', 'topic', 'type', 'taskType', 'planMode', 'planSubmode', 'module', 'knowledgePoint', 'targetAccuracy', 'timeLimitSeconds', 'memorization', 'date', 'time', 'dueDate', 'priority', 'start', 'end', 'learningMode', 'stages', 'acceptance', 'courseInfo', 'materialInfo', 'planMinutes', 'planQuestions', 'courseId', 'courseSuggestionId', 'courseMatchReason', 'textbookId', 'materialMatchReason', 'chapterId', 'examId', 'planSource', 'planTitle', 'planGoal', 'planDate', 'timezone', 'examType', 'planStatus', 'memSuspended'].some(function (k) { return JSON.stringify(e[k]) !== JSON.stringify(r[k]); });
     })) throw new Error('计划预览与任务不一致，请重新导入');
     return withDb(async function (db) {
       var tx = db.transaction(['learningTasks', 'meta'], 'readwrite');
@@ -116,12 +116,12 @@
       var txDone = new Promise(function (res, rej) { tx.oncomplete = res; tx.onerror = function () { rej(tx.error); }; tx.onabort = function () { rej(tx.error || new Error('计划导入事务已中止')); }; });
       try {
         var existing = await reqp(lt.getAll());
-        var byKey = {};
-        existing.forEach(function (x) { if (x.planId && x.planTaskId) byKey[x.planId + '|' + x.planTaskId] = x; });
+        var byKey = new Map();
+        existing.forEach(function (x) { if (x.planId && x.planTaskId) byKey.set(x.planId + '|' + x.planTaskId, x); });
         var now = Date.now(), created = 0, updated = 0, unchanged = 0, skippedCompleted = 0;
         for (var i = 0; i < records.length; i++) {
           var r = Object.assign({}, records[i]);
-          var old = byKey[plan.plan_id + '|' + r.planTaskId] || null;
+          var old = byKey.get(plan.plan_id + '|' + r.planTaskId) || null;
           if (old && old.status === 'completed') { skippedCompleted++; continue; }
           if (old && old.planHash === r.planHash && old.taskHash === r.taskHash) { unchanged++; continue; }
           var hist = old && Array.isArray(old.importHistory) ? old.importHistory.slice(-10) : [];

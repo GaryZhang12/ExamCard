@@ -144,7 +144,7 @@
       'examActions', 'pauseBtn', 'statsBtn', 'stdBtn', 'submitBtn',
       'libraryView', 'examView', 'importPdfBtn', 'importPdfInput', 'examList',
       'pdfPrev', 'pdfPageInfo', 'pdfNext', 'pdfPageInput', 'pdfJump',
-      'zoomOut', 'zoomLabel', 'zoomIn', 'zoomFit', 'gotoQPage', 'fixLocBtn', 'pdfStatus',
+      'zoomOut', 'zoomLabel', 'zoomIn', 'zoomFit', 'gotoQPage', 'fixLocBtn', 'pdfStatus', 'pdfContinuousBtn',
       'pdfViewport', 'pdfPageWrap', 'pdfCanvas', 'pdfMarker',
       'ansCount', 'totalCount', 'unansCount', 'markCount', 'statusPill', 'stdStatus',
       'curNo', 'curModule', 'curType', 'curPage', 'options', 'markChk', 'clearBtn',
@@ -204,6 +204,16 @@
     ui.zoomFit.addEventListener('click', function () { if (state.viewer) state.viewer.fit(); });
     ui.gotoQPage.addEventListener('click', function () { locateCurrentQuestion(); });
     ui.fixLocBtn.addEventListener('click', toggleFixMode);
+    ui.pdfContinuousBtn.addEventListener('click', async function () {
+      if (!state.viewer || !state.viewer.doc) return;
+      try {
+        var enabled = await state.viewer.setContinuous(!state.viewer.continuous);
+        ui.pdfContinuousBtn.classList.toggle('active', enabled);
+        ui.pdfContinuousBtn.textContent = enabled ? '单页模式' : '连续滚动';
+      } catch (e) {
+        toast('切换连续滚动失败：' + (e.message || e));
+      }
+    });
 
     ui.modalRoot.addEventListener('click', function (e) {
       if (e.target.classList && e.target.classList.contains('modal-mask')) { closeModal(); return; }
@@ -219,10 +229,7 @@
       if (state.session) trackWrite(ExamStore.putSession(state.session).catch(function () {}));
     });
     window.addEventListener('resize', function () {
-      if (state.viewer && state.view) {
-        var y = state.viewer.getCurrentYRatio();
-        state.viewer.render(y);
-      }
+      if (state.viewer && state.view) state.viewer.refresh();
     });
   }
 
@@ -486,13 +493,38 @@
     };
   }
 
+  async function ocrScanPdfForImport(doc) {
+    if (!window.OcrText || !OcrEngine.isAvailable()) throw new Error('扫描识别不可用，请确认 OCR 资源完整或改用文字版 PDF');
+    var cancelled = false, pages = null;
+    openModal('<h3>扫描件本地 OCR</h3><div class="modal-body"><p>该 PDF 没有可提取文字，正在复用教材 OCR 引擎逐页识别。识别只在本机运行，不会上传 PDF。</p><p id="scanOcrProgress" class="help-text">准备识别…</p></div><div class="modal-actions"><button class="btn" id="scanOcrCancel">取消识别</button></div>', 'small');
+    var cancelBtn = $('scanOcrCancel');
+    if (cancelBtn) cancelBtn.addEventListener('click', function () { cancelled = true; var el = $('scanOcrProgress'); if (el) el.textContent = '正在取消…'; });
+    try {
+      pages = await OcrText.extractPages(doc, {
+        scale: 2,
+        psm: '6',
+        isCancelled: function () { return cancelled; },
+        onProgress: function (m) { var el = $('scanOcrProgress'); if (el) el.textContent = '正在识别第 ' + m.page + ' / ' + m.pages + ' 页（本机 OCR）'; }
+      });
+    } catch (e) {
+      if (cancelled) throw new Error('已取消扫描识别，未写入任何数据');
+      throw e;
+    } finally {
+      closeModal();
+      try { await OcrEngine.terminate(); } catch (e) {}
+    }
+    if (cancelled) throw new Error('已取消扫描识别，未写入任何数据');
+    return pages;
+  }
+
   async function importPdfFile(file) {
     openModal('<h3>正在解析 PDF…</h3><div class="modal-body"><p>正在提取文字、识别题号/题型/模块，并检查重复风险，请稍候。</p></div>', 'small');
+    var doc = null, docDestroyed = false, ocrUsed = false;
     try {
       var buf = await file.arrayBuffer();
       var fileHash = await sha256Hex(buf);
       var pdfBytes = new Uint8Array(buf).slice();
-      var doc = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
+      doc = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
       var meta = { fileName: file.name, title: null };
       try {
         var md = await doc.getMetadata();
@@ -501,7 +533,17 @@
       var pages = await PdfDetect.extractPages(doc);
       var detected = PdfDetect.detect(pages, meta);
       var pageCount = doc.numPages || detected.pageCount || pages.length;
-      await doc.destroy();
+      if (detected.stats && detected.stats.textPages === 0) {
+        if (!window.OcrText || !OcrEngine.isAvailable()) throw new Error('该 PDF 没有可提取文字，且本机 OCR 不可用；请使用文字版 PDF');
+        if (!window.confirm('该 PDF 未检测到可提取文字（可能是扫描件）。是否复用现有本地教材 OCR 引擎识别？\n识别在本机执行，完成后仍需人工核对。')) throw new Error('已取消扫描识别，未写入任何数据');
+        openModal('<h3>正在解析 PDF…</h3><div class="modal-body"><p>正在准备本地 OCR…</p></div>', 'small');
+        pages = await ocrScanPdfForImport(doc);
+        detected = PdfDetect.detect(pages, meta);
+        detected.ocrUsed = true;
+        detected.stats.ocr = true;
+        ocrUsed = true;
+      }
+      await doc.destroy(); docDestroyed = true; doc = null;
       var exam = {
         id: 'exam-' + uuid(),
         name: detected.title || file.name.replace(/\.pdf$/i, ''),
@@ -516,17 +558,20 @@
         fileHash: fileHash,
         paperSource: file.name,
         copyright: '',
-        detection: { warnings: detected.warnings || [], stats: detected.stats || null, quality: detected.quality || null },
+        detection: { warnings: detected.warnings || [], stats: detected.stats || null, quality: detected.quality || null, ocr: { used: ocrUsed, engine: 'tesseract.js', psm: '6', scale: 2 } },
         createdAt: Date.now()
       };
       var duplicates = { exact: [], similar: [], similarQuestions: [] };
       try { duplicates = await findDuplicates(exam, fileHash, detected); } catch (e) { console.warn(e); }
-      state.pendingImport = { exam: exam, buf: buf, pages: pages, detected: detected, duplicates: duplicates, corrections: 0 };
+      state.pendingImport = { exam: exam, buf: buf, pages: pages, detected: detected, duplicates: duplicates, corrections: 0, ocrUsed: ocrUsed };
       showImportReview();
     } catch (err) {
       console.error(err);
+      if (doc && !docDestroyed) { try { await doc.destroy(); } catch (e) {} }
+      try { if (window.OcrEngine) await OcrEngine.terminate(); } catch (e) {}
+      closeModal();
       openModal('<h3>解析失败</h3><div class="modal-body"><p>' + escapeHtml(err.message || String(err)) + '</p>' +
-        '<p class="help-text">可尝试用「手工题号映射」：确认 PDF 有文字层后重新导入，或联系工具维护者。扫描件暂不支持自动识别。</p></div>' +
+        '<p class="help-text">可重新导入重试；OCR 只在本机运行，取消或失败不会写入试卷/题目。文字版 PDF 可直接导入；扫描件请确认 OCR 资源完整。</p></div>' +
         '<div class="modal-actions"><button class="btn" data-close>关闭</button></div>', 'small');
     }
   }
@@ -554,15 +599,18 @@
     var exam = ctx.exam;
     var pages = ctx.pages || [];
     var textPages = pages.filter(function (p) { return p.lines && p.lines.length; }).length;
+    var ocrUsed = !!(ctx.ocrUsed || (ctx.detected && ctx.detected.ocrUsed));
     var warnings = (ctx.detected && ctx.detected.warnings) || [];
     var issues = warnings.map(function (w) {
       var cls = w.type === 'duplicate' || w.type === 'invalid-number' || w.type === 'needs-review' || w.type === 'option-coverage' ? 'error' : 'warn';
       return '<div class="issue-line ' + cls + '">' + escapeHtml(w.message || w.type) + '</div>';
     }).join('');
-    if (!textPages) {
+    if (ocrUsed) {
+      issues = '<div class="issue-line warn">已使用本机 Tesseract OCR 识别扫描件；自动识别 ' + ((ctx.detected && ctx.detected.questions) || []).length + ' 题，仍需逐题核对。未识别题号可用下方「补齐缺失题号」批量补录。</div>' + issues;
+    } else if (!textPages) {
       issues = '<div class="issue-line warn">该 PDF 未检测到可提取文字（可能是扫描件）。已保留手工题号映射：请点击「添加题目」逐题添加题号、页码与位置（%）。</div>' + issues;
     }
-    if (!exam.questions.length && textPages) {
+    if (!exam.questions.length && textPages && !ocrUsed) {
       issues += '<div class="issue-line warn">未能自动识别题目，请手工添加题号或在 PDF 中手动定位。</div>';
     }
     var dup = ctx.duplicates || { exact: [], similar: [], similarQuestions: [] };
@@ -597,7 +645,7 @@
       '<datalist id="impModuleOptions"></datalist>' +
       '<p class="help-text">选项格式：A、选项内容 | B、选项内容。异常题目需人工核对；确认导入即表示你接受当前识别/修正结果。</p>' +
       '<div class="modal-actions" style="justify-content:space-between">' +
-      '<div><button class="btn" id="impAdd">＋ 添加题目</button> <button class="btn ghost" id="impReset">重新识别</button></div>' +
+      '<div><button class="btn" id="impAdd">＋ 添加题目</button> <button class="btn" id="impFillMissing">补齐缺失题号</button> <button class="btn" id="impFixImages">批量补图形选项</button> <button class="btn" id="impImportCorrection">导入人工修正</button><input id="impCorrectionFile" type="file" accept="application/json,.json" class="hidden"> <button class="btn ghost" id="impReset">重新识别</button></div>' +
       '<div><button class="btn" data-close>取消</button><button class="btn primary" id="impConfirm">确认导入</button></div></div>',
       'wide'
     );
@@ -616,6 +664,90 @@
       state.importCorrections++;
       renderImportRows();
       refreshImportQuality();
+    });
+    $('impFillMissing').addEventListener('click', function () {
+      var nums = {};
+      state.draftQuestions.forEach(function (q) { var n = parseInt(q.n, 10); if (n > 0) nums[n] = true; });
+      var max = 0;
+      Object.keys(nums).forEach(function (n) { max = Math.max(max, Number(n)); });
+      if (!max) { toast('当前没有可推断的题号范围，请先添加一道题'); return; }
+      var missing = [];
+      for (var n = 1; n <= max; n++) if (!nums[n]) missing.push(n);
+      if (!missing.length) { toast('1-' + max + ' 题号已连续'); return; }
+      if (!window.confirm('将为缺失题号 ' + missing.join(', ') + ' 批量添加空白题目并标记为待人工补录。是否继续？')) return;
+      var lastModule = state.draftQuestions.length ? state.draftQuestions[state.draftQuestions.length - 1].module : '未分类';
+      missing.forEach(function (n) {
+        var next = state.draftQuestions.filter(function (q) { return parseInt(q.n, 10) > n; }).sort(function (a, b) { return parseInt(a.n, 10) - parseInt(b.n, 10); })[0];
+        var prev = state.draftQuestions.filter(function (q) { return parseInt(q.n, 10) < n; }).sort(function (a, b) { return parseInt(b.n, 10) - parseInt(a.n, 10); })[0];
+        var moduleForMissing = (next && next.module) || (prev && prev.module) || lastModule || '未分类';
+        state.draftQuestions.push({
+          n: n, printedNumber: n, type: 'single', typeStatus: 'needs-review', module: moduleForMissing,
+          page: (next && next.page) || (prev && prev.page) || 1, yRatio: 0.1, xRatio: 0.1, preview: 'OCR 未识别第 ' + n + ' 题，请人工补录', fullStem: '',
+          options: [], optionStatus: 'missing', requiresAssets: false, requiresMaterial: false,
+          issues: [{ code: 'ocr-missing', severity: 'warning', message: 'OCR 未识别题号/题干，请人工补录第 ' + n + ' 题' }],
+          reviewStatus: 'needs-confirm', manualEdited: true, ocrMissing: true
+        });
+      });
+      state.draftQuestions.sort(function (a, b) { return a.n - b.n; });
+      state.importCorrections = (state.importCorrections || 0) + missing.length;
+      renderImportRows();
+      refreshImportQuality();
+      toast('已补齐 ' + missing.length + ' 道待人工补录题目');
+    });
+    function applyCorrectionRecords(records) {
+      if (!Array.isArray(records)) records = records && Array.isArray(records.corrections) ? records.corrections : [];
+      var applied = 0;
+      records.forEach(function (r) {
+        if (!r || !Number.isFinite(Number(r.n))) return;
+        var n = Number(r.n), q = state.draftQuestions.filter(function (x) { return parseInt(x.n, 10) === n; })[0];
+        if (!q) {
+          q = { n: n, printedNumber: n, type: 'single', typeStatus: 'needs-review', module: r.module || '未分类', page: 1, yRatio: 0.1, xRatio: 0.1, preview: '', fullStem: '', options: [], optionStatus: 'missing', issues: [], reviewStatus: 'manual', manualEdited: true };
+          state.draftQuestions.push(q);
+        }
+        ['printedNumber','page','xRatio','yRatio','module','type','fullStem','preview','requiresAssets','requiresMaterial','materialText'].forEach(function (k) { if (r[k] != null) q[k] = r[k]; });
+        if (Array.isArray(r.options)) q.options = r.options.map(function (o) { return { key: String(o.key || '').toUpperCase(), text: String(o.text == null ? '' : o.text) }; }).filter(function (o) { return /^[A-D]$/.test(o.key); });
+        q.options = q.options || [];
+        q.optionStatus = q.type === 'judge' ? (q.options.length >= 2 ? 'ok' : 'missing') : (q.options.length >= 4 ? 'ok' : (q.options.length ? 'partial' : 'missing'));
+        q.issues = (q.issues || []).filter(function (x) { return !/^(ocr-missing|options-missing|options-incomplete|options-partial|manual-review)$/.test(x.code); });
+        q.reviewStatus = 'manual'; q.manualEdited = true; q.typeStatus = q.typeStatus === 'needs-review' ? 'confirmed' : q.typeStatus;
+        applied++;
+      });
+      state.draftQuestions.sort(function (a, b) { return a.n - b.n; });
+      state.importCorrections = (state.importCorrections || 0) + applied;
+      renderImportRows(); refreshImportQuality();
+      toast('已应用 ' + applied + ' 条人工修正');
+    }
+    $('impImportCorrection').addEventListener('click', function () { $('impCorrectionFile').click(); });
+    $('impCorrectionFile').addEventListener('change', async function () {
+      var f = this.files && this.files[0]; this.value = ''; if (!f) return;
+      try { applyCorrectionRecords(JSON.parse(await f.text())); } catch (e) { toast('修正文件解析失败：' + (e.message || e)); }
+    });
+    $('impFixImages').addEventListener('click', function () {
+      var count = 0;
+      state.draftQuestions.forEach(function (q) {
+        var have = {};
+        (q.options || []).forEach(function (o) { have[o.key] = true; });
+        if (q.type === 'judge') {
+          if ((q.options || []).length >= 2) return;
+          if (!have.A) q.options.push({ key: 'A', text: '正确' });
+          if (!have.B) q.options.push({ key: 'B', text: '错误' });
+          q.options.sort(function (a, b) { return a.key.localeCompare(b.key); });
+          q.optionStatus = 'ok'; q.manualEdited = true;
+          q.issues = (q.issues || []).filter(function (x) { return !/^options-/.test(x.code); });
+          count++;
+          return;
+        }
+        if ((q.options || []).length >= 4) return;
+        ['A','B','C','D'].forEach(function (k) { if (!have[k]) q.options.push({ key: k, text: '见原PDF图像' }); });
+        q.options.sort(function (a, b) { return a.key.localeCompare(b.key); });
+        q.optionStatus = 'ok'; q.requiresAssets = true; q.manualEdited = true;
+        q.issues = (q.issues || []).filter(function (x) { return !/^options-/.test(x.code); });
+        count++;
+      });
+      if (!count) { toast('没有需要补图的选项'); return; }
+      state.importCorrections = (state.importCorrections || 0) + count;
+      renderImportRows(); refreshImportQuality();
+      toast('已将 ' + count + ' 道题标记为图形选项（见原PDF图像），仍需逐题确认');
     });
     $('impReset').addEventListener('click', function () {
       if ((state.importCorrections || 0) > 0 && !window.confirm('重新识别会丢弃当前 ' + state.importCorrections + ' 处人工修正，是否继续？')) return;

@@ -35,7 +35,9 @@ const {launch}=require('./launch.cjs'),fs=require('node:fs'),path=require('node:
    await page.waitForFunction(async()=> (await LearningStore.listTextbooks()).length===1);
    const saved=await page.evaluate(async()=>{const b=(await LearningStore.listTextbooks())[0];return {book:b,chapters:(await LearningStore.listChapters(b.id)).sort((a,b)=>a.order-b.order)};});
    assert.deepEqual(saved.chapters.map(x=>x.title),preview.map(x=>x.title));assert.equal(saved.chapters[1].printedPage,'5');
-   await nav('learn-textbooks');assert.match(await page.locator('#learnBody').innerText(),/人工核对/);return saved;
+   await nav('learn-textbooks');
+   await page.waitForFunction(()=>{const b=document.querySelector('#learnBody');return !!b&&/人工核对/.test(b.innerText);});
+   assert.match(await page.locator('#learnBody').innerText(),/人工核对/);return saved;
   });
   await check('merge preserves existing manual chapter fields; replace snapshots',async()=>{
    return page.evaluate(async()=>{

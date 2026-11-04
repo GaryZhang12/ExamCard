@@ -224,6 +224,7 @@
     return { reliable: reasons.length === 0, reasons: reasons, cjk: cjk, headings: headings, pages: pages.size };
   }
   function ocrLines(result, page) {
+    if (root.OcrText) return OcrText.linesFromResult(result, page);
     var out = [];
     (result.blocks || []).forEach(function (b) {
       (b.paragraphs || []).forEach(function (p) {

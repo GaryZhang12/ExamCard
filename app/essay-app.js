@@ -971,6 +971,7 @@
     });
     var totalWords = answers.reduce(function (a, x) { return a + x.words; }, 0);
     var totalScore = (exam.prompts || []).reduce(function (a, p) { return a + (Number(p.score) || 0); }, 0);
+    var hasScore = (exam.prompts || []).some(function (p) { return p.score != null; });
     $('essayResultMeta').textContent = (exam.year || '年份未填') + ' · ' + (exam.prompts || []).length + ' 题 · 总分 ' + totalScore + ' 分 · ' + (session.submitReason === 'timeout' ? '时间到自动交卷' : '手动交卷') + (session.submittedAt ? ' · ' + new Date(session.submittedAt).toLocaleString() : '');
     $('essayResultStats').innerHTML =
       '<div class="essay-stat"><div class="k">题目数</div><div class="v">' + (exam.prompts || []).length + '</div></div>' +
@@ -988,23 +989,31 @@
       box.innerHTML = '<div class="essay-empty-block">尚未导入 ChatGPT 批改结果。请先导出批改包 ZIP，交给 ChatGPT 参考批改，再导入评分 JSON。</div>';
       return;
     }
-    var r = reviews[0];
-    var html = '<h3 style="margin:18px 0 8px">AI 参考批改 · ' + esc(r.reviewer && (r.reviewer.name || r.reviewer.model) || 'ChatGPT') + '</h3>' +
-      '<div class="essay-ai-badge">AI 参考评分 · 非官方答案，仅作修改参考' + (reviews.length > 1 ? ' · 已保留 ' + reviews.length + ' 份历史报告' : '') + '</div>';
-    if (r.overall) {
-      html += '<div class="essay-package-note"><b>总体：</b>' + esc(r.overall.summary || '') + ' ' +
-        (r.overall.totalScore != null ? '参考总分 ' + esc(r.overall.totalScore) + ' / ' + esc(r.overall.maxScore != null ? r.overall.maxScore : '') : '') + '</div>';
-    }
-    (r.prompts || []).forEach(function (pr) {
-      var p = promptById(pr.promptId) || {};
-      html += '<div class="essay-review-card"><h3>第' + esc(pr.number != null ? pr.number : p.number) + '题 · ' + esc(typeLabel(p.type)) + '</h3>' +
-        '<div class="score-line">参考得分：' + esc(pr.score != null ? pr.score : '—') + ' / ' + esc(pr.maxScore != null ? pr.maxScore : (p.score || '—')) + (pr.band ? ' · ' + esc(pr.band) : '') + '</div>';
-      (pr.rubricHits || []).forEach(function (hit) {
-        html += '<div class="rb ' + (hit.hit ? 'hit' : 'miss') + '">' + (hit.hit ? '✓ ' : '✗ ') + esc(hit.point || '') + (hit.evidence ? '<br><span class="hint">依据：' + esc(hit.evidence) + '</span>' : '') + '</div>';
+    var ordered = reviews.slice().sort(function (a, b) { return (a.importedAt || 0) - (b.importedAt || 0); });
+    var html = '<h3 style="margin:18px 0 8px">AI 参考批改 · 已保留 ' + ordered.length + ' 份历史报告</h3>' +
+      '<div class="essay-ai-badge">AI 参考评分 · 非官方答案，仅作修改参考 · 首次评分与复评分别保留，不转换为题数</div>';
+    ordered.forEach(function (r, idx) {
+      var label = idx === 0 ? '首次评分' : (idx === 1 ? '复评' : '复评 ' + idx);
+      var total = r.overall && r.overall.totalScore != null ? (esc(r.overall.totalScore) + ' / ' + esc(r.overall.maxScore != null ? r.overall.maxScore : '')) : '未给出总分';
+      var when = r.importedAt ? new Date(r.importedAt).toLocaleString() : '';
+      html += '<details class="essay-review-history" ' + (idx === ordered.length - 1 ? 'open' : '') + '>' +
+        '<summary><b>' + label + '</b> · 参考总分 ' + total + (when ? ' · ' + esc(when) : '') + '</summary>';
+      if (r.overall) {
+        html += '<div class="essay-package-note"><b>总体：</b>' + esc(r.overall.summary || '') + ' ' +
+          (r.overall.totalScore != null ? '参考总分 ' + esc(r.overall.totalScore) + ' / ' + esc(r.overall.maxScore != null ? r.overall.maxScore : '') : '') + '</div>';
+      }
+      (r.prompts || []).forEach(function (pr) {
+        var p = promptById(pr.promptId) || {};
+        html += '<div class="essay-review-card"><h3>第' + esc(pr.number != null ? pr.number : p.number) + '题 · ' + esc(typeLabel(p.type)) + '</h3>' +
+          '<div class="score-line">参考得分：' + esc(pr.score != null ? pr.score : '—') + ' / ' + esc(pr.maxScore != null ? pr.maxScore : (p.score || '—')) + (pr.band ? ' · ' + esc(pr.band) : '') + '</div>';
+        (pr.rubricHits || []).forEach(function (hit) {
+          html += '<div class="rb ' + (hit.hit ? 'hit' : 'miss') + '">' + (hit.hit ? '✓ ' : '✗ ') + esc(hit.point || '') + (hit.evidence ? '<br><span class="hint">依据：' + esc(hit.evidence) + '</span>' : '') + '</div>';
+        });
+        if (pr.comments) html += '<div class="rb">评语：' + esc(pr.comments) + '</div>';
+        if (pr.suggestions && pr.suggestions.length) html += '<div class="rb">修改建议：<ul>' + pr.suggestions.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul></div>';
+        html += '</div>';
       });
-      if (pr.comments) html += '<div class="rb">评语：' + esc(pr.comments) + '</div>';
-      if (pr.suggestions && pr.suggestions.length) html += '<div class="rb">修改建议：<ul>' + pr.suggestions.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul></div>';
-      html += '</div>';
+      html += '</details>';
     });
     box.innerHTML = html;
   }

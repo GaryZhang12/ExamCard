@@ -6,8 +6,10 @@
   var clone = function (v) { return v == null ? v : JSON.parse(JSON.stringify(v)); };
   function dateOf(ts) {
     if (!ts) return '';
-    var d = new Date(ts);
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    // 备考日期唯一边界为 Asia/Shanghai（固定 +08:00）；不读主机本地日期。
+    var n = typeof ts === 'number' ? ts : Date.parse(String(ts));
+    if (!isFinite(n)) return '';
+    return new Date(n + 8 * 3600 * 1000).toISOString().slice(0, 10);
   }
   function acc(correct, incorrect) { return (correct + incorrect) ? Math.round(correct * 1000 / (correct + incorrect)) / 10 : null; }
   function qidOf(exam, n) {

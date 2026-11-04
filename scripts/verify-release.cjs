@@ -4,7 +4,7 @@ const lib=path.dirname(require.resolve('app-builder-lib/package.json',{paths:[bu
 const archive=path.join(root,'dist/win-unpacked/resources/app.asar');const entries=asar.listPackage(archive).map(p=>p.replaceAll('\\','/'));
 assert.ok(!entries.some(p=>/^\/(?:tests|reports|\.git|\.test-runtime|\.test-runs)\//.test(p)));
 assert.ok(!entries.some(p=>/builtin-(?:pdfs|exams)|(?:^|\/)(?:\.env|[^/]*\.pem|[^/]*\.key|gd_exam_v2)(?:\/|$)/i.test(p)));
-const pkg=JSON.parse(asar.extractFile(archive,'package.json'));assert.equal(pkg.version,'1.1.0');assert.equal(pkg.license,'Apache-2.0');assert.equal(pkg.main,'electron-main.js');
+const pkg=JSON.parse(asar.extractFile(archive,'package.json'));assert.equal(pkg.version,require('../package.json').version);assert.equal(pkg.license,'Apache-2.0');assert.equal(pkg.main,'electron-main.js');
 function walk(dir){return fs.readdirSync(path.join(root,dir),{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(dir,e.name)):[path.join(dir,e.name)]);}
 const files=['electron-main.js','preload.js','desktop-enhance.js',...walk('app'),...walk('licenses')];
 for(const p of files)assert.deepEqual(asar.extractFile(archive,p),fs.readFileSync(path.join(root,p)),p+' differs from tested source');

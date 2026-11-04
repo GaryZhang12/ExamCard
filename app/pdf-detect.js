@@ -213,7 +213,7 @@
   function canonicalModuleName(raw) {
     var t = cleanTitle(raw || '');
     if (!t) return null;
-    t = t.replace(/[（(][^）)]*[）)]\s*$/, '').replace(/[：:，,。；;]+$/g, '').replace(/\s+/g, '');
+    t = t.replace(/^[“”"'《〈]+/, '').replace(/[（(][^）)]*[）)]\s*$/, '').replace(/[：:，,。；;]+$/g, '').replace(/\s+/g, '');
     if (!t || t.length > 60) return null;
     for (var i = 0; i < MODULE_ALIASES.length; i++) {
       var def = MODULE_ALIASES[i];
@@ -259,6 +259,9 @@
     return true;
   }
   function moduleNameFromLine(text) {
+    // Scanned 资料分析 sections often begin with a material instruction rather
+    // than a legible “第X部分 资料分析” heading.
+    if (/^(?:[\d一二三四五六七八九十]+\s*[、.．]\s*)?根据以下(?:资料|材料).*回答\s*\d+/.test(text)) return '资料分析';
     var rest = sectionTitleRest(text);
     if (rest != null) return canonicalModuleName(rest);
     // A bare major-section title is accepted only when it is exactly a known
@@ -320,12 +323,21 @@
     // - full-width punctuation and (A)/(A) forms.
     // Only literal A-D markers are accepted; numbers/statistics are never invented as options.
     var optionLines = [], optionsStarted = false;
+      var seenOptionLetters = {};
     for (var li = 0; li < (blockLines || []).length; li++) {
       var lineText = normalizeText(blockLines[li].text || '');
       // Explicit document/material boundaries end the answer block. Otherwise
       // the last option absorbs footers and the following passage until Q+1.
-      if (optionsStarted && (/第\s*\d+\s*页\s*[/／]\s*共\s*\d+\s*页/.test(lineText) || /^材料[一二三四五六七八九十\d]+[（(]/.test(lineText))) break;
+        // A page footer must not cut off option C/D that continue on the next page.
+        if (optionsStarted && /第\s*\d+\s*页\s*[/／]\s*共\s*\d+\s*页/.test(lineText)) {
+          // If A-D are already present, the footer ends this block. If only A/B were
+          // found, keep scanning the next page for C/D but skip the page furniture.
+          if (Object.keys(seenOptionLetters).length >= 4) break;
+          continue;
+        }
+        if (optionsStarted && /^材料[一二三四五六七八九十\d]+[（(]/.test(lineText)) break;
       optionLines.push(lineText);
+      (lineText.match(/([A-D])\s*[.\u3002\uff0e\u3001:\uff1a)\uff09]/g) || []).forEach(function (mk) { seenOptionLetters[mk.charAt(0)] = true; });
       if (/[A-D]\s*[.．、:：)）]/.test(lineText)) optionsStarted = true;
     }
     var text = optionLines.join('\n');
@@ -394,16 +406,21 @@
     return { options: options, stem: stem };
   }
 
-  function detectQuestionType(blockText) {
+  function explicitQuestionType(blockText) {
     for (var i = 0; i < TYPE_MARKERS.length; i++) {
       if (TYPE_MARKERS[i].re.test(blockText)) return TYPE_MARKERS[i].type;
     }
+    return null;
+  }
+  function detectQuestionType(blockText) {
+    var explicit = explicitQuestionType(blockText);
+    if (explicit) return explicit;
     if (countOptionLetters(blockText) >= 4) return 'single';
     if (/判断题|判断正误|请判断|判断[：:]|对错|是否正确|正确与否/.test(blockText)) return 'judge';
     return 'unknown';
   }
   function detectTypeStatus(blockText, type) {
-    for (var i = 0; i < TYPE_MARKERS.length; i++) if (TYPE_MARKERS[i].re.test(blockText)) return 'confirmed';
+    if (explicitQuestionType(blockText)) return 'confirmed';
     if (type === 'single' && countOptionLetters(blockText) >= 4) return 'confirmed';
     if (type === 'judge') return 'confirmed';
     return 'needs-review';
@@ -565,9 +582,35 @@
           fontSize: ln.fontSize || 0,
           yRatio: clamp01((h - (ln.y || 0)) / h),
           xRatio: clamp01((ln.x || 0) / w),
-          seq: all.length
+          seq: all.length,
+          ocr: !!pg.ocr
         });
       }
+    }
+
+    var typeHeaders = [];
+    for (var th = 0; th < all.length; th++) {
+      var ht = all[th].text;
+      var htType = null;
+      if (/判断题|判断正误|请判断/.test(ht) && !/^\d{1,3}\s*[.．、]/.test(ht)) htType = 'judge';
+      else if (/多项选择|多选题|不定项选择/.test(ht) && !/^\d{1,3}\s*[.．、]/.test(ht)) htType = 'multi';
+      else if (/单项选择|单选题/.test(ht) && !/^\d{1,3}\s*[.．、]/.test(ht)) htType = 'single';
+      if (htType) typeHeaders.push({ seq: all[th].seq, type: htType, text: ht });
+    }
+    function typeForSeq(seq) {
+      // A new first-level section resets the question-type marker. Without this
+      // reset, "多选题" from the political-theory block leaks into later modules.
+      var lastModuleSeq = -1;
+      for (var mi = 0; mi < all.length; mi++) {
+        if (all[mi].seq >= seq) break;
+        if (moduleNameFromLine(all[mi].text)) lastModuleSeq = all[mi].seq;
+      }
+      var found = null;
+      for (var ti = 0; ti < typeHeaders.length; ti++) {
+        if (typeHeaders[ti].seq >= seq) break;
+        if (typeHeaders[ti].seq > lastModuleSeq) found = typeHeaders[ti];
+      }
+      return found ? found.type : null;
     }
 
     var stats = {
@@ -604,10 +647,12 @@
     var candidates = [];
     var rawHeaders = [];
     var ambiguousHeaders = [];
+    var seenModule = false;
     for (var k = 0; k < all.length; k++) {
       var line = all[k];
       var modName = moduleNameFromLine(line.text);
       if (modName) {
+        seenModule = true;
         // Keep every module-like line as a question-block boundary; only
         // validated body titles become the active module. A running header
         // must not be swallowed into the previous question's last option.
@@ -615,6 +660,11 @@
         continue;
       }
       if (looksLikeSectionTitle(line.text) && isModuleHeaderLine(line) && !matchQuestion(line.text)) {
+        // Question-type headings are section boundaries, not ambiguous modules.
+        if (/判断题|单选题|多选题|多项选择|单项选择|不定项选择/.test(line.text)) continue;
+        // These are sub-sections inside a module, not an unresolved first-level module.
+        if (/图形推理|逻辑判断|数字推理|数学运算|定义判断|类比推理|篇章阅读|语句表达/.test(line.text)) continue;
+        if (!seenModule && line.ocr) continue;
         ambiguousHeaders.push({ seq: line.seq, page: line.page, yRatio: line.yRatio, text: cleanTitle(line.text) });
         continue;
       }
@@ -623,7 +673,7 @@
       // 右边距过滤：题号行应贴近正文左边界，正文折行一般有缩进
       var left = leftByPage[line.page];
       var tolX = Math.max(6, line.pageW * 0.015);
-      if (typeof left === 'number' && line.x > left + tolX) {
+      if (!line.ocr && typeof left === 'number' && line.x > left + tolX) {
         continue;
       }
       candidates.push({
@@ -638,6 +688,8 @@
         yRatio: line.yRatio
       });
     }
+
+    candidates.forEach(function (c) { c.typeHint = typeForSeq(c.seq); });
 
     // 同一标题在页眉/页脚重复出现时不是大题标题。
     var headerTextCount = {};
@@ -744,8 +796,10 @@
       var blockText = blockLines.map(function (x2) { return x2.text; }).join(' ');
 
       var firstRest = ac.rest;
-      var type = detectQuestionType(blockText);
-      var typeStatus = detectTypeStatus(blockText, type);
+      var explicitType = explicitQuestionType(blockText);
+      var inferredType = detectQuestionType(blockText);
+      var type = explicitType || ac.typeHint || inferredType;
+      var typeStatus = explicitType ? 'confirmed' : (ac.typeHint ? 'confirmed' : detectTypeStatus(blockText, type));
       if (type === 'unknown') type = 'single';
       var optionResult = extractOptions(blockLines);
       var options = optionResult.options;

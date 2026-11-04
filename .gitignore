@@ -17,3 +17,10 @@ reports/import77v2/
 reports/_*
 .reports-staging/
 
+
+# EC-WP-OCR-02 local UAT evidence (contains private exam content)
+reports/ocr-uat/
+reports/ocr02/
+reports/ocr02-new/
+reports/ocr-import/ocr-review-90.png
+

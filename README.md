@@ -4,12 +4,13 @@
 
 [简体中文](#简体中文) · [English](#english)
 
-**Version:** 1.1.0  
-**Released:** 2026-10-31  
-**Platform:** Windows 10 / 11 (x64)  
-**License:** Apache License 2.0  
-**Repository:** https://github.com/GaryZhang12/ExamCard  
-**Latest Release:** [ExamCard v1.1.0](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.1.0) · [更新日志 / Changelog](CHANGELOG.md)
+**Version:** 1.2.0 RC PRE-RELEASE CANDIDATE — CHANNEL / RC 预发布候选渠道<br>
+**Latest public stable:** v1.1.0 · 2026-10-31<br>
+**Platform:** Windows 10 / 11 (x64)<br>
+**License:** Apache License 2.0<br>
+**Repository:** https://github.com/GaryZhang12/ExamCard<br>
+**Latest public Release:** [ExamCard v1.1.0](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.1.0) · [更新日志 / Changelog](CHANGELOG.md)<br>
+**1.2.0 RC status:** Pre-release candidate, not Stable. Current availability follows [GitHub Releases](https://github.com/GaryZhang12/ExamCard/releases) / 候选可用状态以 GitHub Releases 列表为准.
 
 ---
 
@@ -36,6 +37,18 @@ ExamCard 不提供在线 AI 自动生成或在线同步服务。用户可以借�
 ### 版本更新
 
 各版本新增功能、修复与兼容性变更统一维护在 [CHANGELOG.md](CHANGELOG.md)，README 只保留当前软件使用说明。
+
+### 1.2.0 RC 预发布候选渠道
+
+当前工作树对应 **1.2.0 RC/Pre-release 候选渠道**（应用版本 1.2.0，目标候选标识 `v1.2.0-rc.1`），不是 Stable。当前是否有可下载候选资产、具体 tag 与校验值，以现有 [GitHub Releases 列表](https://github.com/GaryZhang12/ExamCard/releases) 为准；本文不预编具体 RC tag/EXE 链接。最新公开 Stable 仍是 **v1.1.0（2026-10-31）**，其下载、校验值与历史链接见下方“下载与安装”。
+
+1.2.0 在 1.1 公开能力上增量包含：严格每日计划导入（WP01）、学习记录更正/软删除/审计（WP02）、外部练习与错因模型（WP03–WP05）、D+1/D+3/D+7 复测（WP06）、本地 PDF 归档（WP07）、长材料连续 PDF（WP08）、7/14/30 天全来源趋势（WP09）、结构化复盘交换（WP10）。旧的行测、申论、教材/OCR、课程、计划、独立题库、备份恢复能力保留。
+
+数据库仍为 `gd_exam_v2`，v5/22 与 v6/28 不变；1.2.0 无新 store、无强制 schema 升级。1.1→1.2 无 schema 提升不代表 1.2 新 meta/StudyLog v2 可无损降级给 1.1 UI：升级/试用前先导出完整 JSON 备份，退出应用后离线备份整个 `%APPDATA%\gd-exam-card-v3\`；恢复会覆盖当前数据，回退 1.1 应使用升级前备份。
+
+结构化复盘是**未确认的建议**，不自动修改原始 Attempt、错因统计或已确认评分；批次详情与记录关联复盘均提供“查看完整复盘”只读入口，完整显示长摘要、主/次错因、知识点、建议、原始 reviewed_at、备注、来源和真实目标；已撤销的 `review_id` 保留历史，重新复盘必须显式使用新的 `review_id`，不能宣传任意原文件一键原样重导。粉笔数据由用户主动提供，不是登录爬取；没有云同步或自动原创题。
+
+详细操作、数据/回滚和限制见 [1.2.0 候选指南](docs/1.2.0_CANDIDATE_GUIDE.md)、[数据模型与回滚](docs/1.2.0_DATA_MODEL.md) 和 [WP10 复盘说明](docs/WP10_REVIEW_EXCHANGE_GUIDE.md)。
 
 ### 主要功能
 
@@ -428,6 +441,18 @@ ExamCard does not include an online AI generation service or cloud synchronizati
 
 Version-specific changes, fixes, and migration notes are maintained in [CHANGELOG.md](CHANGELOG.md). This README focuses on current usage.
 
+### 1.2.0 RC Pre-release Candidate Channel
+
+This working tree is the **1.2.0 RC/Pre-release candidate channel** (app version 1.2.0; target `v1.2.0-rc.1`), not Stable. Whether a downloadable candidate asset exists, and its exact tag/checksums, follows the current [GitHub Releases list](https://github.com/GaryZhang12/ExamCard/releases); this README does not pre-create a specific RC tag/EXE link. The latest public Stable release remains **v1.1.0 (2026-10-31)**; its downloads, checksums, and historical links remain in “Download and Installation” below.
+
+1.2.0 adds, on top of the public 1.1 capabilities: strict daily-plan import (WP01), learning-record correction/soft-delete/audit (WP02), external-practice and mistake models (WP03–WP05), D+1/D+3/D+7 retests (WP06), local PDF archive (WP07), continuous long-material PDF (WP08), 7/14/30-day all-source trends (WP09), and structured review exchange (WP10). Existing aptitude, essay, textbook/OCR, course, plan, independent-bank, backup, and restore capabilities are retained.
+
+The database remains `gd_exam_v2`; v5/22 and v6/28 are unchanged. 1.2.0 adds no new store and does not force a schema upgrade. No schema bump does **not** mean 1.2's new meta/StudyLog v2 fields can be edited losslessly by the 1.1 UI: export a complete JSON backup before upgrade/trial, exit the app, then copy the entire `%APPDATA%\gd-exam-card-v3\` directory offline. Restore overwrites current data; rollback to 1.1 should use the pre-upgrade backup.
+
+Structured reviews are **unconfirmed suggestions** and do not auto-modify original attempts, mistake statistics, or confirmed scores. Batch details and record-linked reviews provide a read-only “View full review” entry for the complete long summary, causes, knowledge points, actions, original reviewed_at, note, source, and real target; An undone `review_id` remains historical; re-review requires an explicitly new `review_id`, and arbitrary one-click re-import of the same file must not be promised. Fenbi data is user-provided, not login-scraped; there is no cloud sync or automatic question generation.
+
+See the [1.2.0 candidate guide](docs/1.2.0_CANDIDATE_GUIDE.md), [data model and rollback](docs/1.2.0_DATA_MODEL.md), and [WP10 review exchange guide](docs/WP10_REVIEW_EXCHANGE_GUIDE.md).
+
 ### Features
 
 #### 1. Aptitude Test Training
@@ -790,7 +815,7 @@ For general feedback, visit [GitHub Issues](https://github.com/GaryZhang12/ExamC
 
 ### Release Status
 
-**Current release: v1.1.0 · 2026-10-31**
+**Latest public release: v1.1.0 · 2026-10-31**
 
 **Previous releases:** [v1.0.1](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.1) · [v1.0.0](https://github.com/GaryZhang12/ExamCard/releases/tag/v1.0.0).
 

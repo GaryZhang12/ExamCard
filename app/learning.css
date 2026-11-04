@@ -55,6 +55,15 @@
 .learn-modal { background: #fff; border-radius: 12px; width: min(900px,96vw); max-height: 92vh; overflow: auto; padding: 18px; box-shadow: 0 20px 60px rgba(15,23,42,.35); }
 .learn-modal h3 { margin: 0 0 8px; font-size: 16px; }
 .learn-modal .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.rx-review-meta { border: 1px solid #dbe3ef; background: #f8fafc; border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.7; margin-bottom: 10px; }
+.rx-review-meta > div { min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
+.rx-review-meta code { overflow-wrap: anywhere; word-break: break-all; }
+.rx-review-body { max-height: 54vh; overflow: auto; border: 1px solid #dbe3ef; border-radius: 8px; padding: 10px 12px; background: #fff; }
+.rx-review-body h4 { margin: 10px 0 4px; font-size: 13px; }
+.rx-review-body section:first-child h4 { margin-top: 0; }
+.rx-review-text { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; line-height: 1.75; font-size: 13px; }
+.rx-review-list { margin: 4px 0 8px; padding-left: 22px; line-height: 1.75; font-size: 13px; }
+.rx-review-list li { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
 .learn-warn { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.7; }
 
   .learn-view-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 2px; }
@@ -120,3 +129,33 @@
 .learn-plan-diff { margin: 8px 0; padding: 8px 10px; border-radius: 8px; background: #eef6ff; color: #1e40af; font-size: 12px; }
 .learn-error-list { margin: 8px 0 0; padding-left: 20px; color: #9a3412; font-size: 12px; line-height: 1.8; }
 @media (max-width: 760px) { .learn-plan-meta { grid-template-columns: 1fr 1fr; } }
+
+/* 1.2.0 P0 · 学习记录/外部练习/独立统计 */
+.p0-stats-card { margin-bottom: 12px; }
+.p0-stat-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.p0-stat-head h3 { margin: 0; }
+.p0-stat-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.p0-stat .v { font-size: 18px; }
+.p0-essay-list { margin: 10px 0 4px; border-top: 1px solid #e2e8f0; padding-top: 8px; }
+.p0-essay-list h4 { margin: 4px 0 8px; font-size: 13px; }
+.p0-essay-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 6px 8px; border-radius: 8px; background: #f8fafc; margin: 4px 0; font-size: 12px; }
+.p0-essay-row b { min-width: 120px; }
+.p0-essay-row span { color: #1d4ed8; font-weight: 700; }
+.p0-essay-row small { color: #64748b; }
+.p0-table-title { margin: 14px 0 6px; font-size: 14px; }
+.p0-record-table { min-width: 900px; }
+.p0-note-cell { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.p0-actions { display: flex; gap: 4px; flex-wrap: wrap; min-width: 170px; }
+.p0-actions .learn-btn { padding: 3px 6px; font-size: 11px; min-height: 25px; }
+.p0-wrong-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; margin: 6px 0; font-size: 12px; line-height: 1.75; background: #fbfdff; }
+.p0-wrong-card > div:first-child { color: #1e3a8a; }
+.p0-revisions { margin-top: 10px; }
+.p0-revisions summary { cursor: pointer; color: #1d4ed8; font-size: 12px; }
+.p0-revisions table code { font-size: 10px; white-space: pre-wrap; max-width: 260px; display: inline-block; }
+.essay-review-history { margin: 10px 0; border: 1px solid #dbe3ef; border-radius: 10px; padding: 8px 10px; background: #fff; }
+.essay-review-history > summary { cursor: pointer; color: #1d4ed8; font-size: 13px; padding: 3px 0; }
+.essay-review-history[open] > summary { margin-bottom: 6px; }
+@media (max-width: 760px) { .p0-actions { min-width: 140px; } }
+.learn-report-viewer { max-height: 66vh; overflow: auto; background: #525659; padding: 10px; border-radius: 8px; text-align: center; }
+.learn-report-viewer canvas { display: block; margin: 0 auto; background: #fff; box-shadow: 0 4px 18px rgba(0,0,0,.35); }
+.learn-actions-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }

@@ -1,0 +1,268 @@
+{
+  "schema": "examcard.review-exchange/v1",
+  "batch_id": "work-wp10-mixed-golden-v1",
+  "source": {
+    "kind": "other",
+    "ref": "work-synthetic-mixed-v1",
+    "label": "原创合成验收；使用授权报告数值与分类，不是粉笔官方导出"
+  },
+  "generated_at": "2026-11-03T10:00:00+08:00",
+  "activities": [
+    {
+      "activity_id": "work-real-report-0",
+      "kind": "external",
+      "assessment": "objective",
+      "date": "2026-11-02",
+      "content": "资料分析专项练习（合成验收：5/6）",
+      "module": "资料分析",
+      "topic": "资料分析专项",
+      "knowledge_point": "资料分析综合",
+      "practice_type": "retest",
+      "question_count": 6,
+      "correct_count": 5,
+      "duration_seconds": null,
+      "duration_minutes": null,
+      "duration_precision": "unknown",
+      "duration_unit": "seconds",
+      "report_ref": "derived-from:sha256:92b28cc02002e7c3f9b2728de19d56d37860d1bc9a5123a732d425c9d5f1d1fe",
+      "note": "",
+      "groups": [],
+      "wrong_questions": [
+        {
+          "question_no": "4",
+          "question_type": "single",
+          "knowledge_point": "资料分析",
+          "primary_cause": "审题错误",
+          "secondary_causes": [
+            "计算或估算错误",
+            "注意力或计算耐心问题"
+          ],
+          "method": "先定位时间与单位，再列式估算",
+          "logic_symbols": "",
+          "reasoning": "合成验收错题：审题与计算耐心不足。",
+          "retest_history": []
+        }
+      ],
+      "source": "fenbi-synthetic",
+      "external_id": "synthetic-20261102-zl"
+    },
+    {
+      "activity_id": "work-real-report-1",
+      "kind": "external",
+      "assessment": "objective",
+      "date": "2026-11-02",
+      "content": "判断推理专项练习（合成验收：3/6）",
+      "module": "判断推理",
+      "topic": "判断推理专项",
+      "knowledge_point": "论证/选非/加强",
+      "practice_type": "retest",
+      "question_count": 6,
+      "correct_count": 3,
+      "duration_seconds": null,
+      "duration_minutes": null,
+      "duration_precision": "unknown",
+      "duration_unit": "seconds",
+      "report_ref": "derived-from:sha256:92b28cc02002e7c3f9b2728de19d56d37860d1bc9a5123a732d425c9d5f1d1fe",
+      "note": "",
+      "groups": [],
+      "wrong_questions": [
+        {
+          "question_no": "3",
+          "question_type": "single",
+          "knowledge_point": "削弱论证",
+          "primary_cause": "逻辑方向错误",
+          "secondary_causes": [
+            "方法选择错误"
+          ],
+          "method": "先写论点与论据，再判断削弱方向",
+          "logic_symbols": "P→Q; 削弱：P∧¬Q",
+          "reasoning": "合成验收：误判选项与论点的关系。",
+          "retest_history": []
+        },
+        {
+          "question_no": "4",
+          "question_type": "single",
+          "knowledge_point": "分析推理",
+          "primary_cause": "审题错误",
+          "secondary_causes": [
+            "注意力或计算耐心问题"
+          ],
+          "method": "圈出选非/选是要求",
+          "logic_symbols": "",
+          "reasoning": "合成验收：排名推导正确，但忽视选非要求。",
+          "retest_history": []
+        },
+        {
+          "question_no": "5",
+          "question_type": "single",
+          "knowledge_point": "加强论证",
+          "primary_cause": "逻辑方向错误",
+          "secondary_causes": [
+            "知识点缺失"
+          ],
+          "method": "区分充分条件与必要条件",
+          "logic_symbols": "充分：P→Q；必要：Q→P",
+          "reasoning": "合成验收：加强论证方向混淆。",
+          "retest_history": []
+        }
+      ],
+      "source": "fenbi-synthetic",
+      "external_id": "synthetic-20261102-pd"
+    },
+    {
+      "activity_id": "work-real-report-2",
+      "kind": "external",
+      "assessment": "objective",
+      "date": "2026-11-02",
+      "content": "言语理解专项练习（合成验收：4/6）",
+      "module": "言语理解与表达",
+      "topic": "言语理解专项",
+      "knowledge_point": "主旨/细节",
+      "practice_type": "retest",
+      "question_count": 6,
+      "correct_count": 4,
+      "duration_seconds": null,
+      "duration_minutes": null,
+      "duration_precision": "unknown",
+      "duration_unit": "seconds",
+      "report_ref": "derived-from:sha256:92b28cc02002e7c3f9b2728de19d56d37860d1bc9a5123a732d425c9d5f1d1fe",
+      "note": "",
+      "groups": [],
+      "wrong_questions": [
+        {
+          "question_no": "2",
+          "question_type": "single",
+          "knowledge_point": "主旨概括",
+          "primary_cause": "审题错误",
+          "secondary_causes": [
+            "方法选择错误"
+          ],
+          "method": "区分局部信息与全文中心",
+          "logic_symbols": "",
+          "reasoning": "合成验收：戏曲艺术题以局部信息代替全文中心。",
+          "retest_history": []
+        },
+        {
+          "question_no": "6",
+          "question_type": "single",
+          "knowledge_point": "主旨概括",
+          "primary_cause": "审题错误",
+          "secondary_causes": [],
+          "method": "区分重要意义与主要内容",
+          "logic_symbols": "",
+          "reasoning": "合成验收：城乡融合题把重要意义误判为主要内容。",
+          "retest_history": []
+        }
+      ],
+      "source": "fenbi-synthetic",
+      "external_id": "synthetic-20261102-yy"
+    },
+    {
+      "activity_id": "work-real-report-3",
+      "kind": "manual",
+      "assessment": "objective",
+      "date": "2026-11-02",
+      "content": "三位数除法训练（合成验收：18/30，980 秒）",
+      "module": "数量关系",
+      "topic": "三位数除法",
+      "knowledge_point": "除法/估算",
+      "practice_type": null,
+      "question_count": 30,
+      "correct_count": 18,
+      "duration_seconds": 980,
+      "duration_minutes": 16.333333333333332,
+      "duration_precision": "exact",
+      "duration_unit": "seconds",
+      "report_ref": "derived-from:sha256:92b28cc02002e7c3f9b2728de19d56d37860d1bc9a5123a732d425c9d5f1d1fe",
+      "note": "依据用户报告的速算18/30及980秒，首次/复测类别未获确认，保持未分类。",
+      "groups": [
+        {
+          "label": "第一组",
+          "question_count": 10,
+          "correct_count": 7,
+          "duration_seconds": 235
+        },
+        {
+          "label": "第二组",
+          "question_count": 10,
+          "correct_count": 6,
+          "duration_seconds": 389
+        },
+        {
+          "label": "第三组",
+          "question_count": 10,
+          "correct_count": 5,
+          "duration_seconds": 356
+        }
+      ],
+      "wrong_questions": []
+    },
+    {
+      "activity_id": "work-real-report-4",
+      "kind": "external",
+      "assessment": "objective",
+      "date": "2026-11-02",
+      "content": "15 题综合练习（合成验收：单独保留，不并入专项）",
+      "module": "综合",
+      "topic": "15 题综合练习",
+      "knowledge_point": "综合",
+      "practice_type": "comprehensive",
+      "question_count": 15,
+      "correct_count": 11,
+      "duration_seconds": null,
+      "duration_minutes": null,
+      "duration_precision": "unknown",
+      "duration_unit": "seconds",
+      "report_ref": "derived-from:sha256:92b28cc02002e7c3f9b2728de19d56d37860d1bc9a5123a732d425c9d5f1d1fe",
+      "note": "",
+      "groups": [],
+      "wrong_questions": [],
+      "source": "fenbi-synthetic",
+      "external_id": "synthetic-20261102-mix15"
+    },
+    {
+      "activity_id": "work-real-report-5",
+      "kind": "external",
+      "assessment": "essay",
+      "date": "2026-11-02",
+      "content": "申论小题首次 7/10，复评 9/10（合成验收）",
+      "module": "申论",
+      "topic": "申论小题",
+      "knowledge_point": "申论表达",
+      "practice_type": null,
+      "question_count": null,
+      "correct_count": null,
+      "duration_seconds": null,
+      "duration_minutes": null,
+      "duration_precision": "unknown",
+      "duration_unit": "seconds",
+      "report_ref": "derived-from:sha256:92b28cc02002e7c3f9b2728de19d56d37860d1bc9a5123a732d425c9d5f1d1fe",
+      "note": "",
+      "groups": [],
+      "wrong_questions": [],
+      "source": "fenbi-synthetic",
+      "external_id": "synthetic-20261102-sl",
+      "essay_scores": [
+        {
+          "round": "first",
+          "score": 7,
+          "max_score": 10,
+          "reviewed_at": null,
+          "reviewer": "用户录入",
+          "note": "首次评分"
+        },
+        {
+          "round": "reevaluation",
+          "score": 9,
+          "max_score": 10,
+          "reviewed_at": null,
+          "reviewer": "用户录入",
+          "note": "复评保留"
+        }
+      ]
+    }
+  ],
+  "reviews": [],
+  "corrections": [],
+  "notes": "Adapted synthetic Work golden batch for isolated Stage B tests; report_ref sanitized to SHA only; no PDF copied."
+}

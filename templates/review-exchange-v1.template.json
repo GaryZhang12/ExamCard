@@ -1,0 +1,97 @@
+{
+  "schema": "examcard.review-exchange/v1",
+  "batch_id": "chatgpt-review-2026-11-02-synthetic-001",
+  "source": {
+    "kind": "chatgpt",
+    "label": "ChatGPT 结构化复盘（模板，非真实用户数据）",
+    "ref": "chatgpt-2026-11-02-template"
+  },
+  "generated_at": "2026-11-02T16:10:00.000Z",
+  "activities": [
+    {
+      "activity_id": "manual-speed-2026-11-02",
+      "kind": "manual",
+      "assessment": "objective",
+      "date": "2026-11-02",
+      "occurred_at": "2026-11-02T09:10:00.000Z",
+      "content": "速算 18/30（真实报告未说明首次/复测，practiceType=null，不猜 new/retest）",
+      "module": "数量关系",
+      "topic": "三位数除法/速算",
+      "knowledge_point": "除法估算",
+      "practice_type": null,
+      "question_count": 30,
+      "correct_count": 18,
+      "duration_seconds": null,
+      "duration_minutes": null,
+      "duration_precision": "unknown",
+      "duration_unit": "seconds",
+      "groups": [],
+      "wrong_questions": [],
+      "essay_scores": [],
+      "task_id": null,
+      "retest_status": "not_required",
+      "report_ref": "derived-from:sha256:92b28cc02002e7c3f9b2728de19d56d37860d1bc9a5123a732d425c9d5f1d1fe",
+      "note": "合成模板；未复制真实 PDF。"
+    },
+    {
+      "activity_id": "external-retest-zl-2026-11-02",
+      "kind": "external",
+      "source": "fenbi",
+      "external_id": "synthetic-retest-zl-2026-11-02",
+      "assessment": "objective",
+      "date": "2026-11-02",
+      "occurred_at": "2026-11-02T09:20:00.000Z",
+      "content": "资料分析错题复测 5/6（模板）",
+      "module": "资料分析",
+      "topic": "资料分析错题复测",
+      "knowledge_point": "资料分析综合",
+      "practice_type": "retest",
+      "question_count": 6,
+      "correct_count": 5,
+      "duration_seconds": null,
+      "duration_minutes": null,
+      "duration_precision": "unknown",
+      "duration_unit": "seconds",
+      "groups": [],
+      "wrong_questions": [
+        {
+          "question_no": "4",
+          "question_type": "single",
+          "knowledge_point": "资料分析",
+          "primary_cause": "审题错误",
+          "secondary_causes": ["计算或估算错误"],
+          "method": "先定位时间与单位，再列式估算",
+          "logic_symbols": "",
+          "reasoning": "模板示例。",
+          "retest_history": []
+        }
+      ],
+      "essay_scores": [],
+      "task_id": null,
+      "retest_status": "pending",
+      "report_ref": "derived-from:sha256:92b28cc02002e7c3f9b2728de19d56d37860d1bc9a5123a732d425c9d5f1d1fe",
+      "note": "合成模板；external 以 source+external_id 去重。"
+    }
+  ],
+  "reviews": [
+    {
+      "review_id": "review-manual-speed-001",
+      "target": {
+        "type": "batchActivity",
+        "namespace": "batch:activity",
+        "id": "manual-speed-2026-11-02",
+        "expected_revision": 0,
+        "expected_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "summary": "速算 18/30，错误集中在量级判断与小数精度；不把未确认的新旧分类写成 new。",
+      "primary_cause": "计算或估算错误",
+      "secondary_causes": ["时间分配不足"],
+      "knowledge_points": ["除法估算"],
+      "next_actions": ["D+1 做 10 道同类题，记录准确率与误差类型"],
+      "reviewed_at": "2026-11-02T16:15:00.000Z",
+      "note": "模板中的 expected_hash 需由 Stage B 按真实 activity 计算后替换。"
+    }
+  ],
+  "corrections": [],
+  "notes": "原创模板；不是真实用户报告；Stage A 仅做格式/语义校验，不写数据库。"
+}
